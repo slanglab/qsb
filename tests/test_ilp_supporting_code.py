@@ -1,15 +1,15 @@
 import json
 import pytest
 
-from ilp.util import jdoc_to_constit_list
-from ilp.supporting_code import get_verb_ix, get_PPs, to_lists, get_SBARs, get_verb_groups
-from ilp.supporting_code import get_coordination, get_personal_pronouns, to_lists
-from ilp.supporting_code import get_det_mods, default_to_regular, get_alpha_scores
-from ilp.supporting_code import get_possessives, get_negations, get_case, get_PPs
+from ilp2008.util import jdoc_to_constit_list
+from ilp2008.supporting_code import get_verb_ix, get_PPs, to_lists, get_SBARs, get_verb_groups
+from ilp2008.supporting_code import get_coordination, get_personal_pronouns, to_lists
+from ilp2008.supporting_code import get_det_mods, default_to_regular, get_alpha_scores
+from ilp2008.supporting_code import get_possessives, get_negations, get_case, get_PPs
 from code.printers import pretty_print_conl
-from ilp.supporting_code import enum_alpha, generate_beta_indexes, enum_gamma, to_lists
-from ilp.supporting_code import get_beta_scores, get_gamma_scores, get_SBARs
-from ilp.supporting_code import load_sentence
+from ilp2008.supporting_code import enum_alpha, generate_beta_indexes, enum_gamma, to_lists
+from ilp2008.supporting_code import get_beta_scores, get_gamma_scores, get_SBARs
+from ilp2008.supporting_code import load_sentence
 
 
 FIXTURE_DIRECTORY = "tests/fixtures/"
