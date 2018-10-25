@@ -55,7 +55,7 @@ TODO
 
 \begin{enumerate}
 \item{$(q,s,r)$ compression is useful.}
-\item{How do we do it: ILPs, neural net taggers, iterative deletion supervised w/ something. (\S\ref{s:method}) Neural net taggers are a research question.}
+\item{How do you do it? ILPs, neural net taggers, iterative deletion supervised w/ people or w/ gold data? (\S\ref{s:method}).}
 \item{Why iterative deletion is good. Description of current system for making deletion decisions w/ human supervision. Possibly make this system better too}
 \item{Computational experiments (1): Properties of q,s,r compression in English. }
 \item{Computational experiments (2): F and A data, interpreted as q,s,r supervision/data. Enumerate methods and bold the one with the best token-level F1 score.}
@@ -68,13 +68,13 @@ TODO
 \section{Why iterative deletion is good}\label{s:method}
 \begin{enumerate}
 \item{Historical reasons}
-\item{practical}
-\item{grammatical bias + syntax bias. Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
+\item{simple/straight foward}
+\item{grammatical bias + syntax bias + linguistically-motivated? Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
 \item{budget and query are trivial}
 \item{linear (taggers) vs. quadratic (this work) vs. ILPs (exponential). }
 \item{single op supervision can be used}
 \item{avoid computational waste w/ grammar! HUGE divergence between mathematical properties of compression problem (exponential) and ways you can actually compress a sentence.}
-\item{Cool idea: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a softmax over trees? This sounds hard to implement.}
+\item{One thought: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a softmax over trees? This sounds hard to implement.}
 \end{enumerate}
 
 \subsection{Preprocessing with extract}
@@ -86,11 +86,11 @@ Extract preprocessing. Make up a few simple rules. They will help a bunch. Only 
 \item{r = random}
 \item{What is the size of the minimum compression?}
 \item{Reachability by position of q in syntax tree. if q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too}
-\item{avoid computational waste w/ grammar.  ILPs worry about pruning the nsubj. You could do this w/ a plot: ops saved v. p(deletion endorsement). Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis, a great op. constrast: pruning a noun subj does not  ever work and usually does not delete many tokens.}
-\item{what is the empirical number of ops (i.e. prune decisions) if you greedily drop branches but never drop if single op probability is less than $p$. My gut is you can make this problem way, way, simpler than implied by exponential formulation}
+\item{avoid computational waste w/ grammar.  ILPs worry about pruning the nsubj. You could do this w/ a plot: ops you never have to worry about if you prune this branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis, a great op. By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens.}
+\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if single op probability is less than $p$? My gut is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
 \item{position of query in tree vs. reachability at $r$}
 \item{distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? when using based on p(endorsement)?}
-\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree}
+\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
 \end{enumerate}
 
 \section{Computational experiments part 2: sentence compression}
@@ -101,30 +101,25 @@ Interpret F and A as Q,S,R supervision/data. Then test methods which do this. Me
 \begin{tabular}{ll}
 \centering
 Approach & F1 \\ \hline
-\textbf{This work}         & \textbf{A}           \\
+Human acceptability supervision         &  A          \\
 F and A (2013)    & B           \\
-C and L (2008)    & C          
+C and L (2008)    & C        \\
+Neural subtree deletion methods? &  D    \\   
 \end{tabular}
 \end{table}
 
 \begin{enumerate}
-\item{q = a list of 1 to 3 NER, generated at random. If the compression has no NER, use noun unigrams I guess? or probably just skip it}
+\item{q = a list of 1 to 3 NER which are in the compression. All the NER in the compression? If the compression has no NER, use noun unigrams I guess? or probably just skip it}
 \item{r = length of gold}
 \end{enumerate}
-
 
 
 \section{TODO}
 \begin{enumerate}
 \item{Look at query-biased snippets in IR. There is an old email about this. Look at J and M chapter 23 second edition. Ask Hamed and John}
 \item{Find old ILP code and get stuff working}
-\item{Brendan email about subsective adjectives ellie pavlik work. How will we deal with semantics? }
+\item{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. }
 \end{enumerate}
-
-\section{Future work}
-Constrained neural network methods that actually do pruning w/ tree like deletion structures. 
-Real-fake detection?
-
 
 
 
