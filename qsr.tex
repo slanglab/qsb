@@ -68,13 +68,12 @@ TODO
 \section{Why iterative deletion is good}\label{s:method}
 \begin{enumerate}
 \item{Historical reasons}
-\item{simple/straight foward}
 \item{grammatical bias + syntax bias + linguistically-motivated? Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
 \item{budget and query are trivial}
 \item{linear (taggers) vs. quadratic (this work) vs. ILPs (exponential). }
 \item{single op supervision can be used}
 \item{avoid computational waste w/ grammar! HUGE divergence between mathematical properties of compression problem (exponential) and ways you can actually compress a sentence.}
-\item{One thought: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a softmax over trees? This sounds hard to implement.}
+\item{One thought: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a pointer network style softmax over trees? This sounds hard to implement.}
 \end{enumerate}
 
 \subsection{Preprocessing with extract}
@@ -85,16 +84,15 @@ Extract preprocessing. Make up a few simple rules. They will help a bunch. Only 
 \item{q = a list of 1 to 3 NER}
 \item{r = random}
 \item{What is the size of the minimum compression?}
-\item{Reachability by position of q in syntax tree. if q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too}
-\item{avoid computational waste w/ grammar.  ILPs worry about pruning the nsubj. You could do this w/ a plot: ops you never have to worry about if you prune this branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis, a great op. By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens.}
-\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if single op probability is less than $p$? My gut is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
-\item{position of query in tree vs. reachability at $r$}
-\item{distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? when using based on p(endorsement)?}
+\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}
+\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
+\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
+\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
 \item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
 \end{enumerate}
 
 \section{Computational experiments part 2: sentence compression}
-Interpret F and A as Q,S,R supervision/data. Then test methods which do this. Measure w/ token level F1
+Interpret F and A as Q,S,R supervision/data. Then test methods which do $(q,s,r)$ compression. Measure w/ token level F1.
 
 
 \begin{table}[htb!]
