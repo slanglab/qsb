@@ -1,0 +1,261 @@
+{
+  "sentences": [
+    {
+      "index": 0,
+      "parse": "(ROOT\n  (S\n    (NP (PRP I))\n    (VP (VBD did) (RB n't)\n      (VP (VB go)\n        (PP (TO to)\n          (NP (NNP Texas)))))\n    (. .)))",
+      "basicDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 4,
+          "dependentGloss": "go"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 1,
+          "dependentGloss": "I"
+        },
+        {
+          "dep": "aux",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 2,
+          "dependentGloss": "did"
+        },
+        {
+          "dep": "neg",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 3,
+          "dependentGloss": "n't"
+        },
+        {
+          "dep": "case",
+          "governor": 6,
+          "governorGloss": "Texas",
+          "dependent": 5,
+          "dependentGloss": "to"
+        },
+        {
+          "dep": "nmod",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 6,
+          "dependentGloss": "Texas"
+        },
+        {
+          "dep": "punct",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 7,
+          "dependentGloss": "."
+        }
+      ],
+      "enhancedDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 4,
+          "dependentGloss": "go"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 1,
+          "dependentGloss": "I"
+        },
+        {
+          "dep": "aux",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 2,
+          "dependentGloss": "did"
+        },
+        {
+          "dep": "neg",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 3,
+          "dependentGloss": "n't"
+        },
+        {
+          "dep": "case",
+          "governor": 6,
+          "governorGloss": "Texas",
+          "dependent": 5,
+          "dependentGloss": "to"
+        },
+        {
+          "dep": "nmod:to",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 6,
+          "dependentGloss": "Texas"
+        },
+        {
+          "dep": "punct",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 7,
+          "dependentGloss": "."
+        }
+      ],
+      "enhancedPlusPlusDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 4,
+          "dependentGloss": "go"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 1,
+          "dependentGloss": "I"
+        },
+        {
+          "dep": "aux",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 2,
+          "dependentGloss": "did"
+        },
+        {
+          "dep": "neg",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 3,
+          "dependentGloss": "n't"
+        },
+        {
+          "dep": "case",
+          "governor": 6,
+          "governorGloss": "Texas",
+          "dependent": 5,
+          "dependentGloss": "to"
+        },
+        {
+          "dep": "nmod:to",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 6,
+          "dependentGloss": "Texas"
+        },
+        {
+          "dep": "punct",
+          "governor": 4,
+          "governorGloss": "go",
+          "dependent": 7,
+          "dependentGloss": "."
+        }
+      ],
+      "openie": [
+      ],
+      "entitymentions": [
+        {
+          "docTokenBegin": 5,
+          "docTokenEnd": 6,
+          "tokenBegin": 5,
+          "tokenEnd": 6,
+          "text": "Texas",
+          "characterOffsetBegin": 15,
+          "characterOffsetEnd": 20,
+          "ner": "LOCATION"
+        }
+      ],
+      "tokens": [
+        {
+          "index": 1,
+          "word": "I",
+          "originalText": "I",
+          "lemma": "I",
+          "characterOffsetBegin": 0,
+          "characterOffsetEnd": 1,
+          "pos": "PRP",
+          "ner": "O",
+          "before": "",
+          "after": " "
+        },
+        {
+          "index": 2,
+          "word": "did",
+          "originalText": "did",
+          "lemma": "do",
+          "characterOffsetBegin": 2,
+          "characterOffsetEnd": 5,
+          "pos": "VBD",
+          "ner": "O",
+          "before": " ",
+          "after": ""
+        },
+        {
+          "index": 3,
+          "word": "n't",
+          "originalText": "n't",
+          "lemma": "not",
+          "characterOffsetBegin": 5,
+          "characterOffsetEnd": 8,
+          "pos": "RB",
+          "ner": "O",
+          "before": "",
+          "after": " "
+        },
+        {
+          "index": 4,
+          "word": "go",
+          "originalText": "go",
+          "lemma": "go",
+          "characterOffsetBegin": 9,
+          "characterOffsetEnd": 11,
+          "pos": "VB",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 5,
+          "word": "to",
+          "originalText": "to",
+          "lemma": "to",
+          "characterOffsetBegin": 12,
+          "characterOffsetEnd": 14,
+          "pos": "TO",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 6,
+          "word": "Texas",
+          "originalText": "Texas",
+          "lemma": "Texas",
+          "characterOffsetBegin": 15,
+          "characterOffsetEnd": 20,
+          "pos": "NNP",
+          "ner": "LOCATION",
+          "before": " ",
+          "after": ""
+        },
+        {
+          "index": 7,
+          "word": ".",
+          "originalText": ".",
+          "lemma": ".",
+          "characterOffsetBegin": 20,
+          "characterOffsetEnd": 21,
+          "pos": ".",
+          "ner": "O",
+          "before": "",
+          "after": "\n"
+        }
+      ]
+    }
+  ]
+}

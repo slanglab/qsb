@@ -1,0 +1,195 @@
+{
+  "sentences": [
+    {
+      "index": 0,
+      "parse": "(ROOT\n  (S\n    (NP (NNP Bob))\n    (VP (VBZ is) (RB not)\n      (ADJP (JJ safe)))\n    (. .)))",
+      "basicDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 4,
+          "dependentGloss": "safe"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 1,
+          "dependentGloss": "Bob"
+        },
+        {
+          "dep": "cop",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 2,
+          "dependentGloss": "is"
+        },
+        {
+          "dep": "neg",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 3,
+          "dependentGloss": "not"
+        },
+        {
+          "dep": "punct",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 5,
+          "dependentGloss": "."
+        }
+      ],
+      "enhancedDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 4,
+          "dependentGloss": "safe"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 1,
+          "dependentGloss": "Bob"
+        },
+        {
+          "dep": "cop",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 2,
+          "dependentGloss": "is"
+        },
+        {
+          "dep": "neg",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 3,
+          "dependentGloss": "not"
+        },
+        {
+          "dep": "punct",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 5,
+          "dependentGloss": "."
+        }
+      ],
+      "enhancedPlusPlusDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 4,
+          "dependentGloss": "safe"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 1,
+          "dependentGloss": "Bob"
+        },
+        {
+          "dep": "cop",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 2,
+          "dependentGloss": "is"
+        },
+        {
+          "dep": "neg",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 3,
+          "dependentGloss": "not"
+        },
+        {
+          "dep": "punct",
+          "governor": 4,
+          "governorGloss": "safe",
+          "dependent": 5,
+          "dependentGloss": "."
+        }
+      ],
+      "openie": [
+      ],
+      "entitymentions": [
+        {
+          "docTokenBegin": 0,
+          "docTokenEnd": 1,
+          "tokenBegin": 0,
+          "tokenEnd": 1,
+          "text": "Bob",
+          "characterOffsetBegin": 0,
+          "characterOffsetEnd": 3,
+          "ner": "PERSON"
+        }
+      ],
+      "tokens": [
+        {
+          "index": 1,
+          "word": "Bob",
+          "originalText": "Bob",
+          "lemma": "Bob",
+          "characterOffsetBegin": 0,
+          "characterOffsetEnd": 3,
+          "pos": "NNP",
+          "ner": "PERSON",
+          "before": "",
+          "after": " "
+        },
+        {
+          "index": 2,
+          "word": "is",
+          "originalText": "is",
+          "lemma": "be",
+          "characterOffsetBegin": 4,
+          "characterOffsetEnd": 6,
+          "pos": "VBZ",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 3,
+          "word": "not",
+          "originalText": "not",
+          "lemma": "not",
+          "characterOffsetBegin": 7,
+          "characterOffsetEnd": 10,
+          "pos": "RB",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 4,
+          "word": "safe",
+          "originalText": "safe",
+          "lemma": "safe",
+          "characterOffsetBegin": 11,
+          "characterOffsetEnd": 15,
+          "pos": "JJ",
+          "ner": "O",
+          "before": " ",
+          "after": ""
+        },
+        {
+          "index": 5,
+          "word": ".",
+          "originalText": ".",
+          "lemma": ".",
+          "characterOffsetBegin": 15,
+          "characterOffsetEnd": 16,
+          "pos": ".",
+          "ner": "O",
+          "before": "",
+          "after": "\n"
+        }
+      ]
+    }
+  ]
+}

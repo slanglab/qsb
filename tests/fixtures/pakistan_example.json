@@ -1,0 +1,1039 @@
+{
+  "sentences": [
+    {
+      "index": 0,
+      "basicDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 29,
+          "dependentGloss": "said"
+        },
+        {
+          "dep": "amod",
+          "governor": 2,
+          "governorGloss": "troops",
+          "dependent": 1,
+          "dependentGloss": "Pakistani"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 2,
+          "dependentGloss": "troops"
+        },
+        {
+          "dep": "ccomp",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 3,
+          "dependentGloss": "pressed"
+        },
+        {
+          "dep": "nmod:poss",
+          "governor": 5,
+          "governorGloss": "offensive",
+          "dependent": 4,
+          "dependentGloss": "their"
+        },
+        {
+          "dep": "dobj",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 5,
+          "dependentGloss": "offensive"
+        },
+        {
+          "dep": "case",
+          "governor": 8,
+          "governorGloss": "Taliban",
+          "dependent": 6,
+          "dependentGloss": "against"
+        },
+        {
+          "dep": "det",
+          "governor": 8,
+          "governorGloss": "Taliban",
+          "dependent": 7,
+          "dependentGloss": "the"
+        },
+        {
+          "dep": "nmod",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 8,
+          "dependentGloss": "Taliban"
+        },
+        {
+          "dep": "case",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 9,
+          "dependentGloss": "in"
+        },
+        {
+          "dep": "det",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 10,
+          "dependentGloss": "the"
+        },
+        {
+          "dep": "advmod",
+          "governor": 12,
+          "governorGloss": "Swat",
+          "dependent": 11,
+          "dependentGloss": "northwest"
+        },
+        {
+          "dep": "amod",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 12,
+          "dependentGloss": "Swat"
+        },
+        {
+          "dep": "nmod",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 13,
+          "dependentGloss": "district"
+        },
+        {
+          "dep": "punct",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 14,
+          "dependentGloss": ","
+        },
+        {
+          "dep": "xcomp",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 15,
+          "dependentGloss": "closing"
+        },
+        {
+          "dep": "compound:prt",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 16,
+          "dependentGloss": "in"
+        },
+        {
+          "dep": "case",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 17,
+          "dependentGloss": "on"
+        },
+        {
+          "dep": "det",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 18,
+          "dependentGloss": "a"
+        },
+        {
+          "dep": "amod",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 19,
+          "dependentGloss": "key"
+        },
+        {
+          "dep": "nmod",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 20,
+          "dependentGloss": "town"
+        },
+        {
+          "dep": "mark",
+          "governor": 22,
+          "governorGloss": "pushing",
+          "dependent": 21,
+          "dependentGloss": "after"
+        },
+        {
+          "dep": "advcl",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 22,
+          "dependentGloss": "pushing"
+        },
+        {
+          "dep": "case",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 23,
+          "dependentGloss": "into"
+        },
+        {
+          "dep": "det",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 24,
+          "dependentGloss": "a"
+        },
+        {
+          "dep": "amod",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 25,
+          "dependentGloss": "strategic"
+        },
+        {
+          "dep": "nmod",
+          "governor": 22,
+          "governorGloss": "pushing",
+          "dependent": 26,
+          "dependentGloss": "valley"
+        },
+        {
+          "dep": "punct",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 27,
+          "dependentGloss": ","
+        },
+        {
+          "dep": "nsubj",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 28,
+          "dependentGloss": "officials"
+        },
+        {
+          "dep": "punct",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 30,
+          "dependentGloss": "."
+        }
+      ],
+      "enhancedDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 29,
+          "dependentGloss": "said"
+        },
+        {
+          "dep": "amod",
+          "governor": 2,
+          "governorGloss": "troops",
+          "dependent": 1,
+          "dependentGloss": "Pakistani"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 2,
+          "dependentGloss": "troops"
+        },
+        {
+          "dep": "ccomp",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 3,
+          "dependentGloss": "pressed"
+        },
+        {
+          "dep": "nmod:poss",
+          "governor": 5,
+          "governorGloss": "offensive",
+          "dependent": 4,
+          "dependentGloss": "their"
+        },
+        {
+          "dep": "dobj",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 5,
+          "dependentGloss": "offensive"
+        },
+        {
+          "dep": "case",
+          "governor": 8,
+          "governorGloss": "Taliban",
+          "dependent": 6,
+          "dependentGloss": "against"
+        },
+        {
+          "dep": "det",
+          "governor": 8,
+          "governorGloss": "Taliban",
+          "dependent": 7,
+          "dependentGloss": "the"
+        },
+        {
+          "dep": "nmod:against",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 8,
+          "dependentGloss": "Taliban"
+        },
+        {
+          "dep": "case",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 9,
+          "dependentGloss": "in"
+        },
+        {
+          "dep": "det",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 10,
+          "dependentGloss": "the"
+        },
+        {
+          "dep": "advmod",
+          "governor": 12,
+          "governorGloss": "Swat",
+          "dependent": 11,
+          "dependentGloss": "northwest"
+        },
+        {
+          "dep": "amod",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 12,
+          "dependentGloss": "Swat"
+        },
+        {
+          "dep": "nmod:in",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 13,
+          "dependentGloss": "district"
+        },
+        {
+          "dep": "punct",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 14,
+          "dependentGloss": ","
+        },
+        {
+          "dep": "xcomp",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 15,
+          "dependentGloss": "closing"
+        },
+        {
+          "dep": "compound:prt",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 16,
+          "dependentGloss": "in"
+        },
+        {
+          "dep": "case",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 17,
+          "dependentGloss": "on"
+        },
+        {
+          "dep": "det",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 18,
+          "dependentGloss": "a"
+        },
+        {
+          "dep": "amod",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 19,
+          "dependentGloss": "key"
+        },
+        {
+          "dep": "nmod:on",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 20,
+          "dependentGloss": "town"
+        },
+        {
+          "dep": "mark",
+          "governor": 22,
+          "governorGloss": "pushing",
+          "dependent": 21,
+          "dependentGloss": "after"
+        },
+        {
+          "dep": "advcl:after",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 22,
+          "dependentGloss": "pushing"
+        },
+        {
+          "dep": "case",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 23,
+          "dependentGloss": "into"
+        },
+        {
+          "dep": "det",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 24,
+          "dependentGloss": "a"
+        },
+        {
+          "dep": "amod",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 25,
+          "dependentGloss": "strategic"
+        },
+        {
+          "dep": "nmod:into",
+          "governor": 22,
+          "governorGloss": "pushing",
+          "dependent": 26,
+          "dependentGloss": "valley"
+        },
+        {
+          "dep": "punct",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 27,
+          "dependentGloss": ","
+        },
+        {
+          "dep": "nsubj",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 28,
+          "dependentGloss": "officials"
+        },
+        {
+          "dep": "punct",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 30,
+          "dependentGloss": "."
+        }
+      ],
+      "enhancedPlusPlusDependencies": [
+        {
+          "dep": "ROOT",
+          "governor": 0,
+          "governorGloss": "ROOT",
+          "dependent": 29,
+          "dependentGloss": "said"
+        },
+        {
+          "dep": "amod",
+          "governor": 2,
+          "governorGloss": "troops",
+          "dependent": 1,
+          "dependentGloss": "Pakistani"
+        },
+        {
+          "dep": "nsubj",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 2,
+          "dependentGloss": "troops"
+        },
+        {
+          "dep": "ccomp",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 3,
+          "dependentGloss": "pressed"
+        },
+        {
+          "dep": "nmod:poss",
+          "governor": 5,
+          "governorGloss": "offensive",
+          "dependent": 4,
+          "dependentGloss": "their"
+        },
+        {
+          "dep": "dobj",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 5,
+          "dependentGloss": "offensive"
+        },
+        {
+          "dep": "case",
+          "governor": 8,
+          "governorGloss": "Taliban",
+          "dependent": 6,
+          "dependentGloss": "against"
+        },
+        {
+          "dep": "det",
+          "governor": 8,
+          "governorGloss": "Taliban",
+          "dependent": 7,
+          "dependentGloss": "the"
+        },
+        {
+          "dep": "nmod:against",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 8,
+          "dependentGloss": "Taliban"
+        },
+        {
+          "dep": "case",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 9,
+          "dependentGloss": "in"
+        },
+        {
+          "dep": "det",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 10,
+          "dependentGloss": "the"
+        },
+        {
+          "dep": "advmod",
+          "governor": 12,
+          "governorGloss": "Swat",
+          "dependent": 11,
+          "dependentGloss": "northwest"
+        },
+        {
+          "dep": "amod",
+          "governor": 13,
+          "governorGloss": "district",
+          "dependent": 12,
+          "dependentGloss": "Swat"
+        },
+        {
+          "dep": "nmod:in",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 13,
+          "dependentGloss": "district"
+        },
+        {
+          "dep": "punct",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 14,
+          "dependentGloss": ","
+        },
+        {
+          "dep": "xcomp",
+          "governor": 3,
+          "governorGloss": "pressed",
+          "dependent": 15,
+          "dependentGloss": "closing"
+        },
+        {
+          "dep": "compound:prt",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 16,
+          "dependentGloss": "in"
+        },
+        {
+          "dep": "case",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 17,
+          "dependentGloss": "on"
+        },
+        {
+          "dep": "det",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 18,
+          "dependentGloss": "a"
+        },
+        {
+          "dep": "amod",
+          "governor": 20,
+          "governorGloss": "town",
+          "dependent": 19,
+          "dependentGloss": "key"
+        },
+        {
+          "dep": "nmod:on",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 20,
+          "dependentGloss": "town"
+        },
+        {
+          "dep": "mark",
+          "governor": 22,
+          "governorGloss": "pushing",
+          "dependent": 21,
+          "dependentGloss": "after"
+        },
+        {
+          "dep": "advcl:after",
+          "governor": 15,
+          "governorGloss": "closing",
+          "dependent": 22,
+          "dependentGloss": "pushing"
+        },
+        {
+          "dep": "case",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 23,
+          "dependentGloss": "into"
+        },
+        {
+          "dep": "det",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 24,
+          "dependentGloss": "a"
+        },
+        {
+          "dep": "amod",
+          "governor": 26,
+          "governorGloss": "valley",
+          "dependent": 25,
+          "dependentGloss": "strategic"
+        },
+        {
+          "dep": "nmod:into",
+          "governor": 22,
+          "governorGloss": "pushing",
+          "dependent": 26,
+          "dependentGloss": "valley"
+        },
+        {
+          "dep": "punct",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 27,
+          "dependentGloss": ","
+        },
+        {
+          "dep": "nsubj",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 28,
+          "dependentGloss": "officials"
+        },
+        {
+          "dep": "punct",
+          "governor": 29,
+          "governorGloss": "said",
+          "dependent": 30,
+          "dependentGloss": "."
+        }
+      ],
+      "openie": [
+      ],
+      "entitymentions": [
+        {
+          "docTokenBegin": 0,
+          "docTokenEnd": 1,
+          "tokenBegin": 0,
+          "tokenEnd": 1,
+          "text": "Pakistani",
+          "characterOffsetBegin": 0,
+          "characterOffsetEnd": 9,
+          "ner": "MISC"
+        },
+        {
+          "docTokenBegin": 7,
+          "docTokenEnd": 8,
+          "tokenBegin": 7,
+          "tokenEnd": 8,
+          "text": "Taliban",
+          "characterOffsetBegin": 53,
+          "characterOffsetEnd": 60,
+          "ner": "ORGANIZATION"
+        },
+        {
+          "docTokenBegin": 11,
+          "docTokenEnd": 12,
+          "tokenBegin": 11,
+          "tokenEnd": 12,
+          "text": "Swat",
+          "characterOffsetBegin": 78,
+          "characterOffsetEnd": 82,
+          "ner": "MISC"
+        }
+      ],
+      "tokens": [
+        {
+          "index": 1,
+          "word": "Pakistani",
+          "originalText": "Pakistani",
+          "lemma": "pakistani",
+          "characterOffsetBegin": 0,
+          "characterOffsetEnd": 9,
+          "pos": "JJ",
+          "ner": "MISC",
+          "before": "",
+          "after": " "
+        },
+        {
+          "index": 2,
+          "word": "troops",
+          "originalText": "troops",
+          "lemma": "troops",
+          "characterOffsetBegin": 10,
+          "characterOffsetEnd": 16,
+          "pos": "NNS",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 3,
+          "word": "pressed",
+          "originalText": "pressed",
+          "lemma": "press",
+          "characterOffsetBegin": 17,
+          "characterOffsetEnd": 24,
+          "pos": "VBD",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 4,
+          "word": "their",
+          "originalText": "their",
+          "lemma": "they",
+          "characterOffsetBegin": 25,
+          "characterOffsetEnd": 30,
+          "pos": "PRP$",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 5,
+          "word": "offensive",
+          "originalText": "offensive",
+          "lemma": "offensive",
+          "characterOffsetBegin": 31,
+          "characterOffsetEnd": 40,
+          "pos": "NN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 6,
+          "word": "against",
+          "originalText": "against",
+          "lemma": "against",
+          "characterOffsetBegin": 41,
+          "characterOffsetEnd": 48,
+          "pos": "IN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 7,
+          "word": "the",
+          "originalText": "the",
+          "lemma": "the",
+          "characterOffsetBegin": 49,
+          "characterOffsetEnd": 52,
+          "pos": "DT",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 8,
+          "word": "Taliban",
+          "originalText": "Taliban",
+          "lemma": "Taliban",
+          "characterOffsetBegin": 53,
+          "characterOffsetEnd": 60,
+          "pos": "NNP",
+          "ner": "ORGANIZATION",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 9,
+          "word": "in",
+          "originalText": "in",
+          "lemma": "in",
+          "characterOffsetBegin": 61,
+          "characterOffsetEnd": 63,
+          "pos": "IN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 10,
+          "word": "the",
+          "originalText": "the",
+          "lemma": "the",
+          "characterOffsetBegin": 64,
+          "characterOffsetEnd": 67,
+          "pos": "DT",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 11,
+          "word": "northwest",
+          "originalText": "northwest",
+          "lemma": "northwest",
+          "characterOffsetBegin": 68,
+          "characterOffsetEnd": 77,
+          "pos": "RB",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 12,
+          "word": "Swat",
+          "originalText": "Swat",
+          "lemma": "swat",
+          "characterOffsetBegin": 78,
+          "characterOffsetEnd": 82,
+          "pos": "JJ",
+          "ner": "MISC",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 13,
+          "word": "district",
+          "originalText": "district",
+          "lemma": "district",
+          "characterOffsetBegin": 83,
+          "characterOffsetEnd": 91,
+          "pos": "NN",
+          "ner": "O",
+          "before": " ",
+          "after": ""
+        },
+        {
+          "index": 14,
+          "word": ",",
+          "originalText": ",",
+          "lemma": ",",
+          "characterOffsetBegin": 91,
+          "characterOffsetEnd": 92,
+          "pos": ",",
+          "ner": "O",
+          "before": "",
+          "after": " "
+        },
+        {
+          "index": 15,
+          "word": "closing",
+          "originalText": "closing",
+          "lemma": "closing",
+          "characterOffsetBegin": 93,
+          "characterOffsetEnd": 100,
+          "pos": "NN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 16,
+          "word": "in",
+          "originalText": "in",
+          "lemma": "in",
+          "characterOffsetBegin": 101,
+          "characterOffsetEnd": 103,
+          "pos": "IN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 17,
+          "word": "on",
+          "originalText": "on",
+          "lemma": "on",
+          "characterOffsetBegin": 104,
+          "characterOffsetEnd": 106,
+          "pos": "IN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 18,
+          "word": "a",
+          "originalText": "a",
+          "lemma": "a",
+          "characterOffsetBegin": 107,
+          "characterOffsetEnd": 108,
+          "pos": "DT",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 19,
+          "word": "key",
+          "originalText": "key",
+          "lemma": "key",
+          "characterOffsetBegin": 109,
+          "characterOffsetEnd": 112,
+          "pos": "JJ",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 20,
+          "word": "town",
+          "originalText": "town",
+          "lemma": "town",
+          "characterOffsetBegin": 113,
+          "characterOffsetEnd": 117,
+          "pos": "NN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 21,
+          "word": "after",
+          "originalText": "after",
+          "lemma": "after",
+          "characterOffsetBegin": 118,
+          "characterOffsetEnd": 123,
+          "pos": "IN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 22,
+          "word": "pushing",
+          "originalText": "pushing",
+          "lemma": "push",
+          "characterOffsetBegin": 124,
+          "characterOffsetEnd": 131,
+          "pos": "VBG",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 23,
+          "word": "into",
+          "originalText": "into",
+          "lemma": "into",
+          "characterOffsetBegin": 132,
+          "characterOffsetEnd": 136,
+          "pos": "IN",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 24,
+          "word": "a",
+          "originalText": "a",
+          "lemma": "a",
+          "characterOffsetBegin": 137,
+          "characterOffsetEnd": 138,
+          "pos": "DT",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 25,
+          "word": "strategic",
+          "originalText": "strategic",
+          "lemma": "strategic",
+          "characterOffsetBegin": 139,
+          "characterOffsetEnd": 148,
+          "pos": "JJ",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 26,
+          "word": "valley",
+          "originalText": "valley",
+          "lemma": "valley",
+          "characterOffsetBegin": 149,
+          "characterOffsetEnd": 155,
+          "pos": "NN",
+          "ner": "O",
+          "before": " ",
+          "after": ""
+        },
+        {
+          "index": 27,
+          "word": ",",
+          "originalText": ",",
+          "lemma": ",",
+          "characterOffsetBegin": 155,
+          "characterOffsetEnd": 156,
+          "pos": ",",
+          "ner": "O",
+          "before": "",
+          "after": " "
+        },
+        {
+          "index": 28,
+          "word": "officials",
+          "originalText": "officials",
+          "lemma": "official",
+          "characterOffsetBegin": 157,
+          "characterOffsetEnd": 166,
+          "pos": "NNS",
+          "ner": "O",
+          "before": " ",
+          "after": " "
+        },
+        {
+          "index": 29,
+          "word": "said",
+          "originalText": "said",
+          "lemma": "say",
+          "characterOffsetBegin": 167,
+          "characterOffsetEnd": 171,
+          "pos": "VBD",
+          "ner": "O",
+          "before": " ",
+          "after": ""
+        },
+        {
+          "index": 30,
+          "word": ".",
+          "originalText": ".",
+          "lemma": ".",
+          "characterOffsetBegin": 171,
+          "characterOffsetEnd": 172,
+          "pos": ".",
+          "ner": "O",
+          "before": "",
+          "after": "\n"
+        }
+      ]
+    }
+  ]
+}
