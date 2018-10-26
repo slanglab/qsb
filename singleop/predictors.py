@@ -7,7 +7,6 @@ The following predictors are what we have so far
 '''
 from __future__ import division
 
-import random
 import pickle
 
 

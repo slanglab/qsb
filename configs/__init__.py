@@ -1,11 +1,10 @@
 import socket
 import json
 import kenlm as klm
-import argparse
 
 '''define the version of klm to use for the whole package'''
 if socket.gethostname() == "dewey":
-    BASEDIR = "/Users/ahandler/qsr/"
+    BASEDIR = "/Users/ahandler/qsr"
     klm = klm.LanguageModel(BASEDIR + '/klm/vox.klm')
     with open(BASEDIR + "/klm/unigram.json", "r") as inf: # use giga word for these b/c not computered w/ vox
         unigram_probs = json.load(inf)
