@@ -1,12 +1,19 @@
 '''
 Make a validation and training set from the processed data
+
+Also make the vocabs for the ilp
 '''
+
 import pickle
 import random
 import json
-import string
 import glob
+
+from code.log import logger
+from unidecode import unidecode
+from ilp2013.fillipova_altun_supporting_code import get_tok
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
+
 random.seed(1)
 
 
@@ -78,11 +85,11 @@ if __name__ == "__main__":
                 lemma = get_tok(d["governor"], jdoc=ln2)["lemma"]
                 lemma_v_dep_v.add(unidecode(lemma + "-" + d["dep"]))
             except:
-                logger.warning("this dep points to non existing token$${}$${}".format(ln, json.dumps(d)))
+                logger.warning("this dep points to non existing token$${}$${}".format(json.dumps(ln2), json.dumps(d)))
         for d in get_deps(ln2):
             dep_v.add(unidecode(d))
 
-    with open(sys.argv[1] + ".vocabs", "w") as of:
+    with open("preproc/vocabs", "w") as of:
         of.write(json.dumps({"V": list(V),
                              "pos_v": list(pos_v),
                              "dep_v": list(dep_v),
