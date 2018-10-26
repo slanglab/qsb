@@ -39,6 +39,51 @@ predictor = FigureEightPredictor(cache="cache/")
 pretty_print_conl(dt)
 print get_min_compression(8, dt)
 
+validation_set = []
+
+
+def ner_to_s(tok):
+    if tok["ner"] == "PERSON":
+        return "P"
+    if tok['ner'] == "LOCATION":
+        return "L"
+    if tok["ner"] == "ORGANIZATION":
+        return "O"
+    return "X"
+
+
+with open("preproc/validation.jsonl", "r") as inf:
+    for vno, _ in enumerate(inf):
+        validation_set.append(json.loads(_))
+        if vno > 1000:
+            break
+
+def get_ner_string(jdoc):
+    nerstr = "".join([ner_to_s(_) for _ in jdoc["tokens"]]) 
+    return nerstr
+
+
+def get_ner_spans(jdoc):
+
+    a = get_ner_string(jdoc)
+    
+    out = []
+
+    for i in re.finditer("P+", a):
+        out.append(i)
+
+    for i in re.finditer("O+", a):
+        out.append(i)
+
+    for i in re.finditer("L+", a):
+        out.append(i)
+    
+    return out
+    
+
+import re
+for v in validation_set:
+    print "***"
 
 for tok in dt["tokens"]:
     v = int(tok["index"])
