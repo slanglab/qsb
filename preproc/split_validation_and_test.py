@@ -6,6 +6,7 @@ import random
 import json
 import string
 import glob
+from ilp2013.fillipova_altun_supporting_code import fillipova_altun_supporting_code 
 random.seed(1)
 
 
@@ -43,5 +44,5 @@ if __name__ == "__main__":
     print "[*] dumped validation examples"
     # this is to train the ILP from F & A
     with open("preproc/100k", "w") as of:
-        dt = dt[0:100000] 
+        dt = [filippova_tree_transform(i) for i in dt[0:100000]] 
         pickle.dump(dt,of) 
