@@ -58,7 +58,7 @@ def test_pos():
     assert lemma(2, sent) == "be", "the word is has lemma be"
 
 def test_ne():
-    sent = load_sentence("tests/fixture/simple_negation2.txt.json")
+    sent = load_sentence("tests/fixtures/simple_negation2.txt.json")
     assert ne_tag(2, sent) == "O"
 
 def test_num_children():
