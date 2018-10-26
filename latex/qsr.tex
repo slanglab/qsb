@@ -115,11 +115,21 @@ Neural subtree deletion methods? &  D    \\
 
 \section{TODO}
 \begin{enumerate}
-\item{Look at query-biased snippets in IR. There is an old email about this. Look at J and M chapter 23 second edition. Ask Hamed and John}
+\item{Look at query-biased snippets in IR. There is an old email about this. Look a. Ask Hamed and John. JM chap 23 2ed does not really have cites for this.}
 \item{Find old ILP code and get stuff working}
 \item{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. }
 \end{enumerate}
 
+\section{Related work}
 
+Traditional study of sentence compression is closely aligned with research on text summarization  \cite{Knight2000StatisticsBasedS}: classical approaches to summarization focus on selecting and (sometimes) shortening sentences \cite{vanderwende2007beyond,Nenkova2012ASO}. The traditional goal of retaining the most ``important'' information from a source sentence during compression \cite{filippova2008dependency,clarke2008global,filippova2013overcoming} reflects this intended use case; shorter sentences should stand in for longer sentences in summaries.
+
+
+(Our interest in this problem arose while developing a practical, custom search system.)
+
+Length and lexically constrained compressions could also be used as part of new search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}.
+
+\bibliography{abe}
+\bibliographystyle{acl_natbib}
 
 \end{document}
