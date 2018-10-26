@@ -4,7 +4,7 @@ from collections import defaultdict
 from code.treeops import dfs
 import kenlm as klm
 
-from round2 import klm
+from configs import klm
 
 
 def load_sentence(filename):

@@ -45,7 +45,7 @@ def test_get_coordination():
 
 
 def test_jdoc_to_constit_list():
-    jdoc = load_sentence("tests/uganda_example.txt.json")
+    jdoc = load_sentence(FIXTURE_DIRECTORY + "uganda_example.txt.json")
     assert type(jdoc_to_constit_list(jdoc)) == list
 
 
