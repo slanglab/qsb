@@ -114,7 +114,8 @@ Neural subtree deletion methods? &  D    \\
 \item{r = length of gold}
 \end{enumerate}
 
-\ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu}
+\ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
+ (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
 
 \section{TODO}
 \begin{enumerate}
@@ -124,9 +125,13 @@ Neural subtree deletion methods? &  D    \\
 \section{Related work}
 
 Traditional study of sentence compression is closely aligned with text summarization techniques that select and  shorten sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,clarke2008global,Nenkova2012ASO}. 
-In these settings, it is important for compressions to retain ``important'' information from source sentences because they must stand-in for longer sentences in summaries.
+In these settings, it is important for compressions to retain ``important'' information from source sentences because they must stand-in for longer sentences within summaries.
 
-Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-based snippets \cite{tombros1998advantages,Metzler2008MachineLS} on a search engine results page. (Often, such snippets must contain query terms.) (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}). Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company}, in which a hard lexical constraint might be appropriated. (Other work on query-focused summarization \cite{das} assumes a soft query constraint). Length and lexically constrained compressions could also be used as part of new search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. (Our interest in this problem arose from constructing one such system.
+Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-based snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS}. Often, such snippets must contain query terms. \ahcomment{screenshot?}
+
+Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint. (Other work on query-focused summarization \cite{das} assumes softer constraints). 
+
+Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Our interest in this problem arose from constructing one such novel search system.
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
