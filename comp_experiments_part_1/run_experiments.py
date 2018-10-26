@@ -32,12 +32,9 @@ def get_min_compression(v, jdoc):
     return list(reversed(path))
 
 
+
 with open("tests/fixtures/pakistan_example.json", "r") as inf:
     dt = json.load(inf)["sentences"][0]
-
-with open("tests/fixtures/simple_sbar.txt.json", "r") as inf:
-    dt = json.load(inf)["sentences"][0]
-
 
 predictor = FigureEightPredictor(cache="cache/")
 
