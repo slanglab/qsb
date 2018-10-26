@@ -76,6 +76,6 @@ if __name__ == "__main__":
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=snapshot, epochs=args.epochs)
+    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs)
     with open("output/{}".format(args.epochs), "w") as of:
         pickle.dump(averaged_weights, of)

@@ -8,6 +8,7 @@ import gzip
 import string
 import cPickle as pickle
 import numpy as np
+import json
 import random
 from code.log import logger
 from code.printers import pretty_print_conl
@@ -263,8 +264,8 @@ def get_all_vocabs():
     It takes about 30 seconds to load everything so I use
     get_all_vocab_quick_for_tests for testing
     '''
-    with gzip.open("preproc/vocabs", "r") as inf:
-        all_vocabs = pickle.load(inf)
+    with open("preproc/vocabs", "r") as inf:
+        all_vocabs = json.load(inf)
 
     kys = set(all_vocabs.keys())
     for v in kys:
