@@ -16,6 +16,8 @@
 \usepackage{times}
 \usepackage{latexsym}
 
+\newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
+
 \usepackage{url}
 
 %\aclfinalcopy % Uncomment this line for the final submission
@@ -112,22 +114,19 @@ Neural subtree deletion methods? &  D    \\
 \item{r = length of gold}
 \end{enumerate}
 
+\ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu}
 
 \section{TODO}
 \begin{enumerate}
-\item{Look at query-biased snippets in IR. There is an old email about this. Look a. Ask Hamed and John. JM chap 23 2ed does not really have cites for this.}
-\item{Find old ILP code and get stuff working}
 \item{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. }
 \end{enumerate}
 
 \section{Related work}
 
-Traditional study of sentence compression is closely aligned with research on text summarization  \cite{Knight2000StatisticsBasedS}: classical approaches to summarization focus on selecting and (sometimes) shortening sentences \cite{vanderwende2007beyond,Nenkova2012ASO}. The traditional goal of retaining the most ``important'' information from a source sentence during compression \cite{filippova2008dependency,clarke2008global,filippova2013overcoming} reflects this intended use case; shorter sentences should stand in for longer sentences in summaries.
+Traditional study of sentence compression is closely aligned with text summarization techniques that select and  shorten sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,clarke2008global,Nenkova2012ASO}. 
+In these settings, it is important for compressions to retain ``important'' information from source sentences because they must stand-in for longer sentences in summaries.
 
-
-(Our interest in this problem arose while developing a practical, custom search system.)
-
-Length and lexically constrained compressions could also be used as part of new search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}.
+Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-based snippets \cite{tombros1998advantages,Metzler2008MachineLS} on a search engine results page. (Often, such snippets must contain query terms.) (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}). Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company}, in which a hard lexical constraint might be appropriated. (Other work on query-focused summarization \cite{das} assumes a soft query constraint). Length and lexically constrained compressions could also be used as part of new search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. (Our interest in this problem arose from constructing one such system.
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
