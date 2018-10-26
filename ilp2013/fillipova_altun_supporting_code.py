@@ -235,7 +235,7 @@ def get_all_vocab_quick_for_tests():
     '''
     This is a dummy version of get_all_vocabs that goes very fast for testing
     '''
-    with gzip.open("tests/all_vocabs.json.p", "r") as inf:
+    with gzip.open("tests/fixtures/all_vocabs.json.p", "r") as inf:
         all_vocabs = pickle.load(inf)
 
     def product_as_strings(l1,l2):
