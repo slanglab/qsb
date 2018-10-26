@@ -14,7 +14,6 @@ from __future__ import division
 from code.treeops import bfs
 from code.treeops import dfs
 from code.log import logger
-from cuvplus.cuv_plus_reader import get_cuv, is_count_noun
 from round2 import BASEDIR
 from round2 import COLLOCATION_DIRECTORY
 from round2 import unigram_probs
@@ -1486,28 +1485,6 @@ def f_pos_tag_of_determiner_parent_nns(d):
         return pos in ["NNS", "NNPS"]
     else:
         return False
-
-
-def f_is_count_noun_determiner(d):
-    if d["dep"] == "det":  
-        gov = [int(_["governor"]) for _ in
-               d["source_json"]["basicDependencies"]
-               if _["dependent"] == int(d["vertex"])][0]
-        gov = [_ for _ in d["source_json"]["tokens"]
-               if int(_["index"]) == gov][0]
-        return is_count_noun(noun=gov["word"], cuv=cuv)
-    else:
-        return False
-
-
-def f_is_singular_determiner(d):
-    if d["dep"] == "det":
-        return f_pos_tag_of_determiner_parent_cv(d)[-1] == "S"
-    return False
-
-
-def f_is_singular_and_noun_count_determiner(d):
-    return f_is_singular_determiner(d) and f_is_count_noun_determiner(d)
 
 
 def f_dep_is_det_and_next_token_is_plural_noun(jdoc):
