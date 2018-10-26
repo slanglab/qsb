@@ -10,8 +10,6 @@ from fabric.api import local, run
 from code.log import logger
 import os
 
-	
-
 
 def download():
     '''
@@ -20,6 +18,7 @@ def download():
     local("rm -rf sentence-compression")
     local("git clone https://github.com/google-research-datasets/sentence-compression.git")
     local("rm -rf sentence-compression/*.git && mkdir -p sentence-compression/data/")
+
 
 def preproc():
     '''

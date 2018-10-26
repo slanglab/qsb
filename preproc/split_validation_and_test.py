@@ -1,6 +1,7 @@
 '''
 Make a validation and training set from the processed data
 '''
+import pickle
 import random
 import json
 import string
@@ -33,8 +34,14 @@ if __name__ == "__main__":
         of.write(dt)
 
     print "[*] dumped validation examples"
-    # this is to train the ILP from F & A
+    # this is to train lstm taggers 
     with open("preproc/training.jsonl", "w") as of:
         dt = [json.dumps(_) for _ in data[0:-validation_size]]
         print len(dt)
-        of.write("\n".join(dt)) 
+        of.write("\n".join(dt))
+ 
+    print "[*] dumped validation examples"
+    # this is to train the ILP from F & A
+    with open("preproc/100k", "w") as of:
+        dt = dt[0:100000] 
+        pickle.dump(dt,of) 
