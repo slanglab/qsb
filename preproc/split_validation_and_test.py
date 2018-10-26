@@ -6,7 +6,7 @@ import random
 import json
 import string
 import glob
-from ilp2013.fillipova_altun_supporting_code import fillipova_altun_supporting_code 
+from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 random.seed(1)
 
 
