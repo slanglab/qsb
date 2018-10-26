@@ -31,8 +31,6 @@ def get_min_compression(v, jdoc):
     assert top_of_path.lower() == "root"  # path should end in root
     return list(reversed(path))
 
-
-
 with open("tests/fixtures/pakistan_example.json", "r") as inf:
     dt = json.load(inf)["sentences"][0]
 
