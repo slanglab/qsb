@@ -14,10 +14,10 @@ from __future__ import division
 from code.treeops import bfs
 from code.treeops import dfs
 from code.log import logger
-from round2 import BASEDIR
-from round2 import COLLOCATION_DIRECTORY
-from round2 import unigram_probs
-from round2 import klm
+from configs import BASEDIR
+from configs import COLLOCATION_DIRECTORY
+from configs import unigram_probs
+from configs import klm
 from round2.greedy_summarizer import BVCompressor
 from round2.predictors import FigureEightPredictor
 import string
@@ -37,8 +37,6 @@ RHS_COLLOCATION_THRESHOLD = 1.5
 # https://stackoverflow.com/questions/5067604/determine-function-name-from-within-that-function-without-using-traceback
 
 myself = lambda: inspect.stack()[1][3] + ":"
-
-cuv = get_cuv(cuv_file=BASEDIR + "/cuvplus/cuvplus.txt")
 
 
 def f_is_nmod(d):

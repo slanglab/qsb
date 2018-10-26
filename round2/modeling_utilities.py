@@ -15,9 +15,8 @@ from collections import defaultdict
 from sklearn.feature_extraction.text import CountVectorizer
 from scipy import sparse
 from scipy.sparse import hstack
-from round2.dataset import PICK
+from configs import PICK
 from _jsonnet import evaluate_file
-from round2.dataset import *
 from inspect import getmembers, isfunction
 
 sys.path.insert(0,'..')

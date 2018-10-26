@@ -19,3 +19,7 @@ elif socket.gethostname() == "hobbes":
         unigram_probs = json.load(inf)
     LOGDIR = BASEDIR + '/logs/tree.log'
     COLLOCATION_DIRECTORY = "collocation_lookups/"
+    PICK = "can_sentence_1_be_shortened_to_sentence_2"
+
+
+
