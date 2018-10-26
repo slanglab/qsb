@@ -44,5 +44,5 @@ if __name__ == "__main__":
     print "[*] dumped validation examples"
     # this is to train the ILP from F & A
     with open("preproc/100k", "w") as of:
-        dt = [filippova_tree_transform(i) for i in dt[0:100000]] 
+        dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:100000]] 
         pickle.dump(dt,of) 
