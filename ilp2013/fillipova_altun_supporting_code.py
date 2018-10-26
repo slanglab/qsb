@@ -263,7 +263,7 @@ def get_all_vocabs():
     It takes about 30 seconds to load everything so I use
     get_all_vocab_quick_for_tests for testing
     '''
-    with gzip.open("preproc/all_vocabs.json.p", "r") as inf:
+    with gzip.open("preproc/vocabs", "r") as inf:
         all_vocabs = pickle.load(inf)
 
     kys = set(all_vocabs.keys())
