@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from round2 import LOGDIR
+from configs import LOGDIR
 
 tag = str(uuid.uuid4())[0:8]
 

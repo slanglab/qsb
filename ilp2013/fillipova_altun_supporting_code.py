@@ -15,7 +15,6 @@ from scipy.sparse import csr_matrix
 from itertools import product
 from scipy.sparse import hstack
 from scipy.sparse import find
-random.seed(1)
 
 PUNCT = [_ for _ in string.punctuation]
 PUNCT.remove("$") # the dollar sign is a semantically meaningful token and needs to be included
