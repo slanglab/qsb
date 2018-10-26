@@ -38,3 +38,18 @@ predictor = FigureEightPredictor(cache="cache/")
 
 pretty_print_conl(dt)
 print get_min_compression(8, dt)
+
+
+for tok in dt["tokens"]:
+    v = int(tok["index"])
+    dep = [_["dep"] for _ in dt["basicDependencies"] if int(_["dependent"]) == int(v)][0]
+    #jdoc, op, vertex, dep, worker_id=0
+    if dep.lower() != "root":
+        print v
+        print predictor.predict_proba(jdoc=dt,
+                                      op="prune",
+                                      vertex=v,
+                                      dep=dep,
+                                      worker_id=0
+                                     )
+        
