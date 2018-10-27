@@ -70,13 +70,13 @@ def get_ner_spans(jdoc):
     out = []
 
     for i in re.finditer("P+", a):
-        out.append(i)
+        out.append(i.span())
 
     for i in re.finditer("O+", a):
-        out.append(i)
+        out.append(i.span())
 
     for i in re.finditer("L+", a):
-        out.append(i)
+        out.append(i.span())
     
     return out
     
@@ -84,6 +84,8 @@ def get_ner_spans(jdoc):
 import re
 for v in validation_set:
     print "***"
+    for s,e in get_ner_spans(v):
+        print " ".join([i["word"] for i in v["tokens"][s:e]])
 
 for tok in dt["tokens"]:
     v = int(tok["index"])
