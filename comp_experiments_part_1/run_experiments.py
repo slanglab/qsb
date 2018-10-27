@@ -1,4 +1,5 @@
 import json
+import re
 from code.printers import pretty_print_conl
 from singleop.predictors import FigureEightPredictor
 
@@ -37,6 +38,7 @@ with open("tests/fixtures/pakistan_example.json", "r") as inf:
 predictor = FigureEightPredictor(cache="cache/")
 
 pretty_print_conl(dt)
+
 print get_min_compression(8, dt)
 
 validation_set = []
@@ -58,6 +60,7 @@ with open("preproc/validation.jsonl", "r") as inf:
         if vno > 1000:
             break
 
+
 def get_ner_string(jdoc):
     nerstr = "".join([ner_to_s(_) for _ in jdoc["tokens"]]) 
     return nerstr
@@ -66,7 +69,7 @@ def get_ner_string(jdoc):
 def get_ner_spans(jdoc):
 
     a = get_ner_string(jdoc)
-    
+
     out = []
 
     for i in re.finditer("P+", a):
@@ -77,20 +80,30 @@ def get_ner_spans(jdoc):
 
     for i in re.finditer("L+", a):
         out.append(i.span())
-    
-    return out
-    
 
-import re
+    return out
+
+
+def get_ner_spans_in_compression(v):
+    c_ix = v["compression_indexes"]
+    out = []
+    for s, e in get_ner_spans(v):
+        if all(i in c_ix for i in range(s, e)):
+            out.append((s, e))
+    return out
+
+
 for v in validation_set:
     print "***"
-    for s,e in get_ner_spans(v):
+    for s, e in get_ner_spans_in_compression(v):
+        print " ".join([i["word"] for i in v["tokens"] if i['index'] in v["compression_indexes"]])
         print " ".join([i["word"] for i in v["tokens"][s:e]])
 
 for tok in dt["tokens"]:
     v = int(tok["index"])
-    dep = [_["dep"] for _ in dt["basicDependencies"] if int(_["dependent"]) == int(v)][0]
-    #jdoc, op, vertex, dep, worker_id=0
+    dep = [_["dep"] for _ in dt["basicDependencies"]
+           if int(_["dependent"]) == int(v)][0]
+    # jdoc, op, vertex, dep, worker_id=0
     if dep.lower() != "root":
         print v
         print predictor.predict_proba(jdoc=dt,
@@ -98,5 +111,4 @@ for tok in dt["tokens"]:
                                       vertex=v,
                                       dep=dep,
                                       worker_id=0
-                                     )
-        
+                                      )
