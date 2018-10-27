@@ -90,16 +90,15 @@ def get_ner_spans_in_compression(v):
     for s, e in get_ner_spans(v):
         ner_toks = [i["index"] for i in v["tokens"][s:e]]
         if all(i in c_ix for i in ner_toks): 
-            out.append((s, e))
+            out.append(ner_toks)
     return out
 
-
-for v in validation_set:
+all_ = []
+for s in validation_set:
     print "***"
-    for s, e in get_ner_spans_in_compression(v):
-        print " ".join([i["word"] for i in v["tokens"] if i['index'] in v["compression_indexes"]])
-        ou = " ".join([i["word"] for i in v["tokens"][s:e]])
-        print ou 
+    q = [_ for _ in get_ner_spans_in_compression(s)]
+    r = len(" ".join([i["word"] for i in s["tokens"] if i['index'] in s["compression_indexes"]]))
+    all_.append((q,s,r)) 
 
 for tok in dt["tokens"]:
     v = int(tok["index"])
