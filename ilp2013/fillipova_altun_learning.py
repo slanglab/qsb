@@ -57,8 +57,6 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             if (t % 1000 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []
-                print output["predicted"]
-                print gold
         if snapshot:
             with open("snapshots/{}".format(epoch), "w") as of:
                 pickle.dump(avg_weights, of)
