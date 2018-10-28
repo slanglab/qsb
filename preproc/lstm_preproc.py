@@ -67,6 +67,6 @@ def save_split(fn, data, cap=None):
                             of.write(json.dumps(_) + "\n")
                             total_so_far += 1 
 
-save_split('preproc/lstm_train.jsonl', train, 1000)
+save_split('preproc/lstm_train.jsonl', train)
 
-save_split('preproc/lstm_validation.jsonl', val, 100)
+save_split('preproc/lstm_validation.jsonl', val, 10000)
