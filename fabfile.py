@@ -20,6 +20,13 @@ def download():
     local("rm -rf sentence-compression/*.git && mkdir -p sentence-compression/data/")
 
 
+def lstm_preproc():
+    local("python preproc/lstm_preproc.py")
+    local("./scripts/send_to_gpu.sh")
+
+def computational_experiments_1():
+    local("python comp_experiments_part_1/p_deletion_oracle_path.py") 
+
 def preproc():
     '''
     Run preprocessing for fillipova corpus
