@@ -1,6 +1,7 @@
 import json
 import csv
 
+from tqdm import tqdm
 from singleop.predictors import FigureEightPredictor
 
 mini_validation_set = []
@@ -32,7 +33,7 @@ def p_endorsement(jdoc):
 
 
 cats = []
-for wno, w in enumerate(mini_validation_set):
+for w in tqdm(mini_validation_set):
     probs_endorse = p_endorsement(w)
     w["p_endorsement"] = probs_endorse
     for v in probs_endorse:
