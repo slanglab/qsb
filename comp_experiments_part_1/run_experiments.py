@@ -1,5 +1,7 @@
 import json
 import re
+from code.treeops import dfs
+from code.treeops import prune
 from code.printers import pretty_print_conl
 from singleop.predictors import FigureEightPredictor
 
@@ -89,27 +91,55 @@ def get_ner_spans_in_compression(v):
     out = []
     for s, e in get_ner_spans(v):
         ner_toks = [i["index"] for i in v["tokens"][s:e]]
-        if all(i in c_ix for i in ner_toks): 
+        if all(i in c_ix for i in ner_toks):
             out.append(ner_toks)
     return out
 
-all_ = []
+
+QSRs = []
 for s in validation_set:
     print "***"
-    q = [_ for _ in get_ner_spans_in_compression(s)]
-    r = len(" ".join([i["word"] for i in s["tokens"] if i['index'] in s["compression_indexes"]]))
-    all_.append((q,s,r)) 
+    q = [i for _ in get_ner_spans_in_compression(s) for i in _]
+    r = len(" ".join([i["word"] for i in s["tokens"] if
+                      i['index'] in s["compression_indexes"]]))
+    QSRs.append((set(q), s, r))
 
-for tok in dt["tokens"]:
-    v = int(tok["index"])
-    dep = [_["dep"] for _ in dt["basicDependencies"]
-           if int(_["dependent"]) == int(v)][0]
-    # jdoc, op, vertex, dep, worker_id=0
-    if dep.lower() != "root":
-        print v
-        print predictor.predict_proba(jdoc=dt,
-                                      op="prune",
-                                      vertex=v,
-                                      dep=dep,
-                                      worker_id=0
-                                      )
+
+def p_endorsement(jdoc):
+    out = {}
+    for tok in jdoc["tokens"]:
+        v = int(tok["index"])
+        dep = [_["dep"] for _ in dt["basicDependencies"]
+               if int(_["dependent"]) == int(v)][0]
+        # jdoc, op, vertex, dep, worker_id=0
+        if dep.lower() != "root":
+            out[v] = predictor.predict_proba(jdoc=dt,
+                                             op="prune",
+                                             vertex=v,
+                                             dep=dep,
+                                             worker_id=0
+                                             )
+    return out
+
+
+def len_s(jdoc):
+    return len(" ".join(" ".join([_["word"] for _ in jdoc["tokens"]])))
+
+
+def deletes_q(v, q, jdoc):
+    children = set(dfs(g=jdoc, hop_s=v["index"], D=[]))
+    return len(q & children) > 0
+
+
+def greedy_humans(qsr):
+    q, s, r = qsr
+    len_c = " ".join(" ".join([_["word"] for _ in s]))
+    while len_s(s) > r:
+        probs = [(k, v) for k, v in p_endorsement(jdoc).items()
+                 if not deletes_q(v, q, s)]
+        probs.sort(key=lambda x: x[0], reverse=True)
+        best_k, best_v = probs[0]
+        prune(s, v=best_v)
+
+for w in QSRs:
+    greedy_humans(w)
