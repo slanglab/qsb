@@ -1,3 +1,3 @@
-from lib.dataset_readers import *
-from lib.models import *
-from lib.predictors import *
+from nn.dataset_readers import *
+from nn.models import *
+from nn.predictors import *
