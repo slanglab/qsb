@@ -39,6 +39,8 @@ for w in tqdm(mini_validation_set):
     for v in probs_endorse:
         p_yes = probs_endorse[v]
         oracle = w["oracle"][str(v)]
+        if oracle == "NA":
+            oracle = "k"
         cats.append((oracle, str(p_yes)))
 
 with open('output/probs_oracles.csv', "w") as of:
