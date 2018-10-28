@@ -1,0 +1,48 @@
+import json
+import re
+import csv
+
+from sklearn.metrics import f1_score
+from code.treeops import dfs
+from code.treeops import prune
+from code.printers import pretty_print_conl
+from singleop.predictors import FigureEightPredictor
+
+
+mini_validation_set = []
+
+with open("preproc/training.jsonl", "r") as inf:
+    for vno, _ in enumerate(inf):
+        mini_validation_set.append(json.loads(_))
+        if vno > 1000:
+            break
+
+
+def p_endorsement(jdoc):
+    out = {}
+    for tok in jdoc["tokens"]:
+        v = int(tok["index"])
+        dep = [_["dep"] for _ in jdoc["basicDependencies"]
+               if int(_["dependent"]) == int(v)][0]
+        # jdoc, op, vertex, dep, worker_id=0
+        if dep.lower() != "root":
+            out[v] = predictor.predict_proba(jdoc=jdoc,
+                                             op="prune",
+                                             vertex=v,
+                                             dep=dep,
+                                             worker_id=0
+                                             )
+    return out
+
+cats = []
+for wno, w in enumerate(mini_validation_set):
+    probs_endorse = p_endorsement(w)
+    w["p_endorsement"] = probs_endorse
+    for v in probs_endorse:
+        p_yes = probs_endorse[v]
+        oracle = w["oracle"][v]
+        cats.append((oracle, str(p_yes)))
+
+with open('output/probs_oracles.csv', "w") as of:
+    writer = csv.writer(of)
+    writer.writerows(cats)
