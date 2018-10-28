@@ -39,7 +39,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             source_jdoc = d
             gold = get_gold_edges(source_jdoc)
             r = get_oracle_r(source_jdoc)
-            Q = get_NER_query(jdoc)
+            Q = get_NER_query(source_jdoc)
             #The maximum permitted compression length is set to be the same as the length of the oracle compression
             output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
             if output["solved"]:
