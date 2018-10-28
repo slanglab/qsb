@@ -6,11 +6,13 @@ from code.treeops import dfs
 from code.treeops import prune
 from code.printers import pretty_print_conl
 from singleop.predictors import FigureEightPredictor
+from code.utils import get_ner_spans_in_compression
 
 
 def get_parent(v, jdoc):
     '''get the parent of v in the jdoc'''
-    parent = [_ for _ in jdoc["basicDependencies"] if int(_["dependent"]) == int(v)]
+    parent = [_ for _ in jdoc["basicDependencies"]
+              if int(_["dependent"]) == int(v)]
     if parent == []:
         return None
     else:
@@ -36,6 +38,7 @@ def get_min_compression(v, jdoc):
     assert top_of_path.lower() == "root"  # path should end in root
     return list(reversed(path))
 
+
 with open("tests/fixtures/pakistan_example.json", "r") as inf:
     dt = json.load(inf)["sentences"][0]
 
@@ -48,54 +51,11 @@ print get_min_compression(8, dt)
 validation_set = []
 
 
-def ner_to_s(tok):
-    if tok["ner"] == "PERSON":
-        return "P"
-    if tok['ner'] == "LOCATION":
-        return "L"
-    if tok["ner"] == "ORGANIZATION":
-        return "O"
-    return "X"
-
-
 with open("preproc/validation.jsonl", "r") as inf:
     for vno, _ in enumerate(inf):
         validation_set.append(json.loads(_))
         if vno > 1000:
             break
-
-
-def get_ner_string(jdoc):
-    nerstr = "".join([ner_to_s(_) for _ in jdoc["tokens"]]) 
-    return nerstr
-
-
-def get_ner_spans(jdoc):
-
-    a = get_ner_string(jdoc)
-
-    out = []
-
-    for i in re.finditer("P+", a):
-        out.append(i.span())
-
-    for i in re.finditer("O+", a):
-        out.append(i.span())
-
-    for i in re.finditer("L+", a):
-        out.append(i.span())
-
-    return out
-
-
-def get_ner_spans_in_compression(v):
-    c_ix = v["compression_indexes"]
-    out = []
-    for s, e in get_ner_spans(v):
-        ner_toks = [i["index"] for i in v["tokens"][s:e]]
-        if all(i in c_ix for i in ner_toks):
-            out.append(ner_toks)
-    return out
 
 
 QSRs = []
@@ -136,10 +96,9 @@ def deletes_q(v, q, jdoc):
 
 
 def greedy_humans(qsr):
-    q, s, r = qsr 
+    q, s, r = qsr
     orig_toks = [_["index"] for _ in s["tokens"]]
     y_true = [_ in s['compression_indexes'] for _ in orig_toks] 
-    
     while len_s(s) > r:
         probs = [(vertex, prob) for vertex, prob in p_endorsement(jdoc=s).items()
                  if not deletes_q(v=vertex, q=q, jdoc=s)]
