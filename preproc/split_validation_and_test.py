@@ -28,8 +28,8 @@ def load_dataset():
             for ln in inf:
                 ln = json.loads(ln)
                 q = [i for _ in get_ner_spans_in_compression(ln) for i in _]
-                r = len(" ".join([i["word"] for i in s["tokens"] if
-                        i['index'] in s["compression_indexes"]]))
+                r = len(" ".join([i["word"] for i in ln["tokens"] if
+                        i['index'] in ln["compression_indexes"]]))
                 ln["r"] = r
                 ln["q"] = q
                 sources.append(ln)
