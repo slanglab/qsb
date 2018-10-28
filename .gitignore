@@ -1,3 +1,4 @@
+.ipynb_checkpoints/*
 sentence-compression/*
 latex/qsr.synctex.gz
 cache/*
