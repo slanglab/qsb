@@ -14,10 +14,10 @@ import ujson as json
 import argparse
 from code.printers import pretty_print_conl
 from ilp2013.fillipova_altun_supporting_code import *
+from code.utils import get_NER_query
 
 
 random.seed(1)
-
 
 
 def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
@@ -29,7 +29,6 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
     t = 0
     print "[*] running on ", len(dataset)
 
-
     for epoch in range(1, epochs):
         if verbose:
             print "[*] epoch {}".format(epoch)
@@ -40,20 +39,22 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             source_jdoc = d
             gold = get_gold_edges(source_jdoc)
             r = get_oracle_r(source_jdoc)
+            Q = get_NER_query(jdoc)
             #The maximum permitted compression length is set to be the same as the length of the oracle compression
-            output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
-            gold.sort()
-            pred = output["predicted"]
-            pred.sort()
-            weights = non_averaged_update(gold=gold, predicted=output["predicted"],
-                                          w_t=weights, vocabs=vocab, jdoc=source_jdoc,
-                                          epsilon=epsilon)
-            avg_weights *= (t - 1)
-            avg_weights += weights
-            avg_weights /= t
+            output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
+            if output["solved"]:
+                gold.sort()
+                pred = output["predicted"]
+                pred.sort()
+                weights = non_averaged_update(gold=gold, predicted=output["predicted"],
+                                              w_t=weights, vocabs=vocab, jdoc=source_jdoc,
+                                              epsilon=epsilon)
+                avg_weights *= (t - 1)
+                avg_weights += weights
+                avg_weights /= t
+                epoch_scores.append(f1(output["predicted"], gold))
             if verbose:
                 print f1(output["predicted"], gold)
-            epoch_scores.append(f1(output["predicted"], gold))
             if (t % 1000 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []

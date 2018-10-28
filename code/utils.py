@@ -43,3 +43,15 @@ def get_ner_spans_in_compression(v):
         if all(i in c_ix for i in ner_toks):
             out.append(ner_toks)
     return out
+
+
+def get_NER_query(jdoc):
+    '''get the query toks for the NER'''
+    c_ix = jdoc["compression_indexes"]
+    out = []
+    for s, e in get_ner_spans(jdoc):
+        ner_toks = [i["index"] for i in jdoc["tokens"][s:e]]
+        if all(i in c_ix for i in ner_toks):
+            for j in ner_toks:
+                out.append(int(j))
+    return out
