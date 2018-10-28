@@ -45,4 +45,5 @@ for w in tqdm(mini_validation_set):
 
 with open('output/probs_oracles.csv', "w") as of:
     writer = csv.writer(of)
+    spamwriter.writerow(['oracle', 'p'])
     writer.writerows(cats)
