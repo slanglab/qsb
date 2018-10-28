@@ -1,7 +1,8 @@
 '''
-Make a validation and training set from the processed data
-
-Also make the vocabs for the ilp
+- Make a validation and training set from the processed data
+- Also make the vocabs for the ilp
+- Also determine a q and r based on NER in gold compression
+- Also create an oracle path
 '''
 
 import pickle
@@ -14,6 +15,7 @@ from unidecode import unidecode
 from ilp2013.fillipova_altun_supporting_code import get_tok
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 from code.utils import get_ner_spans_in_compression
+from code.treeops import find_maximal_subtrees
 
 random.seed(1)
 
@@ -21,8 +23,31 @@ random.seed(1)
 validation_size = 25000
 
 
+def get_oracle(sentence, compresion_ixs, trees):
+    '''
+    get the oracle move for each token in the sentence
+    inputs:
+        sentence (dict):  a jdoc sentence
+        compresion_ixs (list:int): the indexes of the compressed tokens
+    '''
+
+    pruned = [i for t in trees for i in t.pruned]
+    extracted = [i.root for i in trees]
+    def oracle_move(v):
+        if v in pruned:
+            return "p"
+        if v in extracted:
+            return "e"
+        return "NA"
+
+    oracle = {i["index"]: oracle_move(i["index"])
+              for i in sentence["tokens"]}
+    return oracle
+
+
 def load_dataset():
     sources = []
+
     for source in glob.glob("sentence-compression/data/*sent-comp*source"):
         with open(source, "r") as inf:
             for ln in inf:
@@ -32,6 +57,8 @@ def load_dataset():
                         i['index'] in ln["compression_indexes"]]))
                 ln["r"] = r
                 ln["q"] = q
+                trees = find_maximal_subtrees(copy.deepcopy(ln), ln["compression_indexes"])
+                oracle = get_oracle(copy.deepcopy(ln), ln["compression_indexes"], trees)
                 sources.append(ln)
     return sources
 
