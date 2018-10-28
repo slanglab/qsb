@@ -39,21 +39,29 @@ def save_split(fn, data):
         with open(fn, 'w') as of:
             for ino, _ in enumerate(inf):
                     if ino in data:
-                        _ = json.loads(_)
-                        del _["basicDependencies"]
-                        del _["len"]
+                        _ = json.loads(_) 
                         del _["index"]
-                        del _["guid"]
                         del _["enhancedDependencies"]
                         del _["enhancedPlusPlusDependencies"]
-                        toks = [i["word"] for i in _["tokens"]]
+                        toks = [i for i in _["tokens"]]
                         for vertex in _["tokens"]:
-                            oracle = _["oracle"][str(vertex)]
+                            oracle = _["oracle"][str(vertex["index"])]
                             _['label'] = oracle
-                            cut = dfs(g=_, hop_s = v, D=[])
-                            print cut
-                            #_["tokens"] = toks
-                            #of.write(json.dumps(_) + "\n")
+                            cut = dfs(g=_, hop_s = vertex["index"], D=[])
+                            cut.sort()
+                            mint = min(cut)
+                            maxt = max(cut)
+                            assert len(cut) == len(range(mint, maxt + 1))
+                            labeled_toks = []
+                            if len(cut) < len(toks): 
+                                for counter, t in enumerate(toks):  
+                                    if t["index"] == mint:
+                                        labeled_toks.append(START)
+                                    labeled_toks.append(t["word"])
+                                    if t["index"] == maxt:
+                                        labeled_toks.append(END) 
+                                _["tokens"] = labeled_toks 
+                                of.write(json.dumps(_) + "\n")
 
 save_split('preproc/lstm_train.jsonl', train)
 
