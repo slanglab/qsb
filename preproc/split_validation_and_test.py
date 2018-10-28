@@ -13,6 +13,7 @@ from code.log import logger
 from unidecode import unidecode
 from ilp2013.fillipova_altun_supporting_code import get_tok
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
+from code.utils import get_ner_spans_in_compression
 
 random.seed(1)
 
@@ -26,6 +27,11 @@ def load_dataset():
         with open(source, "r") as inf:
             for ln in inf:
                 ln = json.loads(ln)
+                q = [i for _ in get_ner_spans_in_compression(ln) for i in _]
+                r = len(" ".join([i["word"] for i in s["tokens"] if
+                        i['index'] in s["compression_indexes"]]))
+                ln["r"] = r
+                ln["q"] = q
                 sources.append(ln)
     return sources
 
@@ -33,6 +39,7 @@ def load_dataset():
 if __name__ == "__main__":
     data = load_dataset()
     random.shuffle(data)
+    data = [d for d in data if len(d["q"]) > 0]
     print "[*] dataset loaded"
 
     # this is for validation. note: no tree transform.

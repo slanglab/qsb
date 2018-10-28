@@ -23,6 +23,7 @@ PUNCT.remove("%")
 PUNCT.append("''")
 PUNCT.append('``')
 
+
 def get_oracle_r(source_jdoc):
     '''
     Get the oracle compression length, in chars
