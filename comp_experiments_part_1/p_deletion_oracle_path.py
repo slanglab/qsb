@@ -1,15 +1,11 @@
 import json
-import re
 import csv
 
-from sklearn.metrics import f1_score
-from code.treeops import dfs
-from code.treeops import prune
-from code.printers import pretty_print_conl
 from singleop.predictors import FigureEightPredictor
 
-
 mini_validation_set = []
+
+predictor = FigureEightPredictor(cache="cache/")
 
 with open("preproc/training.jsonl", "r") as inf:
     for vno, _ in enumerate(inf):
@@ -33,6 +29,7 @@ def p_endorsement(jdoc):
                                              worker_id=0
                                              )
     return out
+
 
 cats = []
 for wno, w in enumerate(mini_validation_set):
