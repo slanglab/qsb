@@ -4,11 +4,16 @@ import json
 
 import random
 
+from code.treeops import dfs
+
 c = 0
 
 PCT_TRAIN = .95
 
-CORPUS = 'create_data/vox_preprocessing/processed/real_fake.jsonl'
+CORPUS = 'preproc/training.jsonl'
+
+START = "OOVSTART"
+END = "OOVEND"
 
 with open(CORPUS, 'r') as inf:
     for _ in inf:
@@ -27,6 +32,7 @@ val_ix = int((1 - PCT_TRAIN) * len(train))
 val = train[0:val_ix]
 train = train[val_ix:]
 
+
 def save_split(fn, data):
     '''note, avoiding pulling a whole big corpus into memory so this can scale up'''
     with open(CORPUS, 'r') as inf:
@@ -41,11 +47,14 @@ def save_split(fn, data):
                         del _["enhancedDependencies"]
                         del _["enhancedPlusPlusDependencies"]
                         toks = [i["word"] for i in _["tokens"]]
-                        _["tokens"] = toks 
-                        of.write(json.dumps(_) + "\n")
-        
-save_split('create_data/vox_preprocessing/processed/train.jsonl', train)
-        
-save_split('create_data/vox_preprocessing/processed/validation.jsonl', val)
- 
-save_split('create_data/vox_preprocessing/processed/test.jsonl', test)
+                        for vertex in _["tokens"]:
+                            oracle = _["oracle"][str(vertex)]
+                            _['label'] = oracle
+                            cut = dfs(g=_, hop_s = v, D=[])
+                            print cut
+                            #_["tokens"] = toks
+                            #of.write(json.dumps(_) + "\n")
+
+save_split('preproc/lstm_train.jsonl', train)
+
+save_split('preproc/lstm_validation.jsonl', val)
