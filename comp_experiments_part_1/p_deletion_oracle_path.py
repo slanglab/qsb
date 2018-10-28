@@ -37,7 +37,7 @@ for wno, w in enumerate(mini_validation_set):
     w["p_endorsement"] = probs_endorse
     for v in probs_endorse:
         p_yes = probs_endorse[v]
-        oracle = w["oracle"][v]
+        oracle = w["oracle"][str(v)]
         cats.append((oracle, str(p_yes)))
 
 with open('output/probs_oracles.csv', "w") as of:
