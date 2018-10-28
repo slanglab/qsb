@@ -1,1 +1,1 @@
-from lib.models.academic_paper_classifier import AcademicPaperClassifier
+from nn.models.academic_paper_classifier import AcademicPaperClassifier
