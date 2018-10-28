@@ -9,6 +9,7 @@ import pickle
 import random
 import json
 import glob
+import copy
 
 from code.log import logger
 from unidecode import unidecode
@@ -59,6 +60,7 @@ def load_dataset():
                 ln["q"] = q
                 trees = find_maximal_subtrees(copy.deepcopy(ln), ln["compression_indexes"])
                 oracle = get_oracle(copy.deepcopy(ln), ln["compression_indexes"], trees)
+                ln["oracle"] = oracle
                 sources.append(ln)
     return sources
 
