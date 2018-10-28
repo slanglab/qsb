@@ -65,7 +65,7 @@ def save_split(fn, data, cap=None):
                                 if t["index"] == maxt:
                                     labeled_toks.append(END) 
                             _["tokens"] = labeled_toks 
-                            tmp = {k:v for k,v in _.items() if k in ["tokens", "label", "original", "compression_indexes"]}
+                            tmp = {k:v for k,v in _.items() if k in ["tokens", "label", "compression_indexes"]}
                             of.write(json.dumps(tmp) + "\n")
                             total_so_far += 1 
 
