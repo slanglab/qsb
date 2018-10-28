@@ -33,36 +33,40 @@ val = train[0:val_ix]
 train = train[val_ix:]
 
 
-def save_split(fn, data):
+def save_split(fn, data, cap=None):
     '''note, avoiding pulling a whole big corpus into memory so this can scale up'''
+    total_so_far = 0
     with open(CORPUS, 'r') as inf:
         with open(fn, 'w') as of:
             for ino, _ in enumerate(inf):
-                    if ino in data:
-                        _ = json.loads(_) 
-                        del _["index"]
-                        del _["enhancedDependencies"]
-                        del _["enhancedPlusPlusDependencies"]
-                        toks = [i for i in _["tokens"]]
-                        for vertex in _["tokens"]:
-                            oracle = _["oracle"][str(vertex["index"])]
-                            _['label'] = oracle
-                            cut = dfs(g=_, hop_s = vertex["index"], D=[])
-                            cut.sort()
-                            mint = min(cut)
-                            maxt = max(cut)
-                            assert len(cut) == len(range(mint, maxt + 1))
-                            labeled_toks = []
-                            if len(cut) < len(toks): 
-                                for counter, t in enumerate(toks):  
-                                    if t["index"] == mint:
-                                        labeled_toks.append(START)
-                                    labeled_toks.append(t["word"])
-                                    if t["index"] == maxt:
-                                        labeled_toks.append(END) 
-                                _["tokens"] = labeled_toks 
-                                of.write(json.dumps(_) + "\n")
+                if cap is not None and total_so_far > cap:
+                    break # early stopping
+                if ino in data:
+                    _ = json.loads(_) 
+                    del _["index"]
+                    del _["enhancedDependencies"]
+                    del _["enhancedPlusPlusDependencies"]
+                    toks = [i for i in _["tokens"]]
+                    for vertex in _["tokens"]:
+                        oracle = _["oracle"][str(vertex["index"])]
+                        _['label'] = oracle
+                        cut = dfs(g=_, hop_s = vertex["index"], D=[])
+                        cut.sort()
+                        mint = min(cut)
+                        maxt = max(cut)
+                        assert len(cut) == len(range(mint, maxt + 1))
+                        labeled_toks = []
+                        if len(cut) < len(toks): 
+                            for counter, t in enumerate(toks):  
+                                if t["index"] == mint:
+                                    labeled_toks.append(START)
+                                labeled_toks.append(t["word"])
+                                if t["index"] == maxt:
+                                    labeled_toks.append(END) 
+                            _["tokens"] = labeled_toks 
+                            of.write(json.dumps(_) + "\n")
+                            total_so_far += 1 
 
-save_split('preproc/lstm_train.jsonl', train)
+save_split('preproc/lstm_train.jsonl', train, 1000)
 
-save_split('preproc/lstm_validation.jsonl', val)
+save_split('preproc/lstm_validation.jsonl', val, 100)
