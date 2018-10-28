@@ -1,1 +1,1 @@
-from lib.predictors.paper_classifier_predictor import PaperClassifierPredictor
+from nn.predictors.paper_classifier_predictor import PaperClassifierPredictor
