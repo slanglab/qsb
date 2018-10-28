@@ -1,5 +1,7 @@
 import json
 import re
+
+from sklearn.metrics import f1_score
 from code.treeops import dfs
 from code.treeops import prune
 from code.printers import pretty_print_conl
@@ -102,18 +104,19 @@ for s in validation_set:
     q = [i for _ in get_ner_spans_in_compression(s) for i in _]
     r = len(" ".join([i["word"] for i in s["tokens"] if
                       i['index'] in s["compression_indexes"]]))
-    QSRs.append((set(q), s, r))
+    if len(q) > 0:
+        QSRs.append((set(q), s, r))
 
 
 def p_endorsement(jdoc):
     out = {}
     for tok in jdoc["tokens"]:
         v = int(tok["index"])
-        dep = [_["dep"] for _ in dt["basicDependencies"]
+        dep = [_["dep"] for _ in jdoc["basicDependencies"]
                if int(_["dependent"]) == int(v)][0]
         # jdoc, op, vertex, dep, worker_id=0
         if dep.lower() != "root":
-            out[v] = predictor.predict_proba(jdoc=dt,
+            out[v] = predictor.predict_proba(jdoc=jdoc,
                                              op="prune",
                                              vertex=v,
                                              dep=dep,
@@ -123,23 +126,33 @@ def p_endorsement(jdoc):
 
 
 def len_s(jdoc):
-    return len(" ".join(" ".join([_["word"] for _ in jdoc["tokens"]])))
+    return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 
 
 def deletes_q(v, q, jdoc):
-    children = set(dfs(g=jdoc, hop_s=v["index"], D=[]))
+    '''if you were to prune this vertex, would you remove any v \in q?'''
+    children = set(dfs(g=jdoc, hop_s=v, D=[]))
     return len(q & children) > 0
 
 
 def greedy_humans(qsr):
-    q, s, r = qsr
-    len_c = " ".join(" ".join([_["word"] for _ in s]))
+    q, s, r = qsr 
+    orig_toks = [_["index"] for _ in s["tokens"]]
+    y_true = [_ in s['compression_indexes'] for _ in orig_toks] 
+    
     while len_s(s) > r:
-        probs = [(k, v) for k, v in p_endorsement(jdoc).items()
-                 if not deletes_q(v, q, s)]
+        probs = [(vertex, prob) for vertex, prob in p_endorsement(jdoc=s).items()
+                 if not deletes_q(v=vertex, q=q, jdoc=s)]
         probs.sort(key=lambda x: x[0], reverse=True)
-        best_k, best_v = probs[0]
-        prune(s, v=best_v)
+        if len(probs) == 0:
+            print "unable to compress"
+            break
+        best_v, best_p = probs[0]
+        prune(g=s, v=best_v)
+    c_ix = [_["index"] for _ in s['tokens']]
+    y_pred = [_ in c_ix for _ in orig_toks]
+    print f1_score(y_true, y_pred)
 
-for w in QSRs:
+for wno, w in enumerate(QSRs):
+    print wno
     greedy_humans(w)
