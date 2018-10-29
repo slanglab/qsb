@@ -47,14 +47,21 @@ def get_root(w):
     return [_["dependent"] for _ in w["basicDependencies"]
             if _["dep"].lower() == "root"][0]
 
+T = .333
+from code.treeops import prune
 
 for w in tqdm(mini_validation_set):
     d, pi, c = bfs(g=w, hop_s=get_root(w))
     nodes_depths = d.items()
     nodes_depths.sort(key=lambda x:x[1])
+    nops = 0
     for node, depth in nodes_depths:
-        if depth > 0:
-            print node
-            print "*"
-            pe = get_p_endorsement_v(node, jdoc=w)
-            print pe
+        vertexes_remaining = [_["index"] for _ in w["tokens"]] 
+        len_ = len(" ".join([_["word"] for _ in w["tokens"]]))
+        if node in vertexes_remaining and len_ > w['r']:
+            if depth > 0:
+                nops += 1
+                pe = get_p_endorsement_v(node, jdoc=w)
+                if pe > T:
+                    prune(g=w, v=node)
+    print len_ < w["r"], len_, w["r"], nops
