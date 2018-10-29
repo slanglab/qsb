@@ -1,5 +1,4 @@
 from typing import Dict, Optional
-
 import numpy
 from overrides import overrides
 import torch
@@ -12,6 +11,7 @@ from allennlp.modules import FeedForward, Seq2VecEncoder, Seq2SeqEncoder, TextFi
 from allennlp.models.model import Model
 from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn import util
+import numpy as np
 from allennlp.training.metrics import CategoricalAccuracy
 
 
@@ -52,9 +52,7 @@ class AcademicPaperClassifier(Model):
 
         self.text_field_embedder = text_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
-        with open("/tmp/huh", "w") as of:
-            import json
-            of.write(json.dumps(self.vocab.get_index_to_token_vocabulary("labels")))
+        self.labelv = self.vocab.get_index_to_token_vocabulary("labels")
         self.abstract_encoder = abstract_encoder
         self.classifier_feedforward = classifier_feedforward
 
@@ -66,7 +64,31 @@ class AcademicPaperClassifier(Model):
         self.metrics = {
                 "accuracy": CategoricalAccuracy()
         }
-        self.loss = torch.nn.CrossEntropyLoss()
+
+        # {"0": "NA", "1": "p", "2": "e"} => self.labelv
+        
+        '''
+        (allennlp) [ahandler@gypsum qsr]$ cat /mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train.jsonl | grep 'label": "NA"'  | wc -l
+        2046320
+        (allennlp) [ahandler@gypsum qsr]$ cat /mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train.jsonl | grep 'label": "p"'  | wc -l
+        433352
+        (allennlp) [ahandler@gypsum qsr]$ cat /mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train.jsonl | grep 'label": "e"'  | wc -l
+        39987
+       
+        n_samples = 2519659
+        n_classes = 3 
+        '''
+       
+        # http://scikit-learn.org/dev/modules/generated/sklearn.utils.class_weight.compute_sample_weight.html
+        # The balanced mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data: n_samples / (n_classes * np.bincount(y))
+ 
+        n_samples = 2519659
+        a = np.zeros(3, dtype=np.float32)
+        a[0] = n_samples / (2046320 * 3)
+        a[1] = n_samples / (433352 * 3)  
+        a[2] = n_samples / (39987 * 3) 
+        a = torch.from_numpy(a)
+        self.loss = torch.nn.CrossEntropyLoss(weight=a)
 
         initializer(self)
 
@@ -102,6 +124,8 @@ class AcademicPaperClassifier(Model):
         values, indices = torch.max(encoded_abstract, 1) 
 
         logits2 = self.classifier_feedforward(values)
+       
+
         
         output_dict = {'logits': logits2}
         if label is not None:
