@@ -4,6 +4,7 @@ import json
 
 import random
 
+from code.treeops import prune
 from code.treeops import dfs
 from code.treeops import bfs
 
@@ -69,21 +70,23 @@ def save_split(fn, data, cap=None):
 
                     for node, depth in nodes_depths:
                         if depth > 0:
-                            oracle = _["oracle"][node]
-                            print oracle
-                            #prune(g=_, v=node)
-                            cut = dfs(g=_, hop_s=node, D=[])
-                            cut.sort()
-                            mint = min(cut)
-                            maxt = max(cut)
-                            assert len(cut) == len(range(mint, maxt + 1))
-                            labeled_toks = get_labeled_toks(mint, maxt, toks)
-                            _["tokens"] = labeled_toks
-                            _["label"] = oracle
-                            tmp = {k: v for k, v in _.items() if k in
-                                   ["tokens", "label", "compression_indexes"]}
-                            of.write(json.dumps(tmp) + "\n")
-                            total_so_far += 1
+                            toks_remaining = [i["index"] for i in _["tokens"]]
+                            if node in toks_remaining:
+                                oracle = _["oracle"][str(node)]
+                                cut = dfs(g=_, hop_s=node, D=[])
+                                cut.sort()
+                                mint = min(cut)
+                                maxt = max(cut)
+                                assert len(cut) == len(range(mint, maxt + 1))
+                                labeled_toks = get_labeled_toks(mint, maxt, toks)
+                                tmp = {k: v for k, v in _.items() if k in
+                                       ["tokens", "label", "compression_indexes"]}
+                                tmp["tokens"] = labeled_toks
+                                tmp["label"] = oracle
+                                of.write(json.dumps(tmp) + "\n")
+                                total_so_far += 1
+                                if oracle == "p":
+                                    prune(g=_, v=node)
 
 save_split('preproc/lstm_train.jsonl', train)
 
