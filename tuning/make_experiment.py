@@ -5,7 +5,7 @@ import random
 
 def make_rando():
 
-    with open("experiments/venue_classifier.json", "r") as inf:
+    with open("nn/op_classifier.json", "r") as inf:
         dt = json.load(inf)
 
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(10, 2000)
@@ -25,7 +25,7 @@ def make_rando():
 
     uuid_ex = str(uuid.uuid1())[0:8]
 
-    with open("/mnt/nfs/scratch1/ahandler/experiments/{}.json".format(uuid_ex), "w") as of:
+    with open("/mnt/nfs/scratch1/ahandler/experiments/qsr/{}.json".format(uuid_ex), "w") as of:
         json.dump(dt, of)
 
 for i in range(100):
