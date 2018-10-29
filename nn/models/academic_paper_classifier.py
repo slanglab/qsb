@@ -52,6 +52,9 @@ class AcademicPaperClassifier(Model):
 
         self.text_field_embedder = text_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
+        with open("/tmp/huh", "w") as of:
+            import json
+            of.write(json.dumps(self.vocab.get_index_to_token_vocabulary("labels")))
         self.abstract_encoder = abstract_encoder
         self.classifier_feedforward = classifier_feedforward
 
