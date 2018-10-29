@@ -15,6 +15,7 @@ r = random.random()
 # A subtree rooted at root s.t. if you do prune ops at pruned u get compression
 Subtree = collections.namedtuple('Subtree', 'root pruned')
 
+
 def has_dep(deps, kind):
     '''is there a dep of type kind?'''
     return any(d["dep"] == kind for d in deps)
@@ -215,10 +216,9 @@ def walk_tree(d):
     return [o[0] for o in vertexes_and_depts if o[1] > -1]
 
 
-
 def bfs(g, hop_s):
     '''
-    depth first search
+    breadth first search
 
     Args:
         g: a graph
@@ -255,11 +255,12 @@ def bfs(g, hop_s):
 
     return d, pi, c
 
+
 def adj(g, ix):
     return [o["dependent"] for o in g[DEPS] if o["governor"] == ix]
 
 
-def dfs(g, hop_s, D = []):
+def dfs(g, hop_s, D=[]):
     '''
     depth first search
 
