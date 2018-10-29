@@ -13,11 +13,11 @@ def make_rando():
     dt["model"]['classifier_feedforward']["dropout"] = random.uniform(0, .5)
     dt["model"]['classifier_feedforward']["input_dim"] = dt['model']["abstract_encoder"]["hidden_size"] * 2
 
-    x = random.uniform(3, 8)
+    x = random.uniform(1, 8)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1,10)
 
-    x = random.uniform(3, 8)
+    x = random.uniform(1, 8)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
