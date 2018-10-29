@@ -5,6 +5,7 @@ import json
 import random
 
 from code.treeops import dfs
+from code.treeops import bfs
 
 c = 0
 
@@ -33,6 +34,21 @@ val = train[0:val_ix]
 train = train[val_ix:]
 
 
+def get_root(w):
+    return [_["dependent"] for _ in w["basicDependencies"]
+            if _["dep"].lower() == "root"][0]
+
+
+def get_labeled_toks(mint, maxt, toks):
+    labeled_toks = []
+    for counter, t in enumerate(toks):
+        if t["index"] == mint:
+            labeled_toks.append(START)
+        labeled_toks.append(t["word"])
+        if t["index"] == maxt:
+            labeled_toks.append(END)
+    return labeled_toks
+
 def save_split(fn, data, cap=None):
     '''note, avoiding pulling a whole big corpus into memory so this can scale up'''
     total_so_far = 0
@@ -40,34 +56,34 @@ def save_split(fn, data, cap=None):
         with open(fn, 'w') as of:
             for ino, _ in enumerate(inf):
                 if cap is not None and total_so_far > cap:
-                    break # early stopping
+                    break  # early stopping
                 if ino in data:
-                    _ = json.loads(_) 
-                    
+                    _ = json.loads(_)
                     del _["index"]
                     del _["enhancedDependencies"]
                     del _["enhancedPlusPlusDependencies"]
                     toks = [i for i in _["tokens"]]
-                    for vertex in _["tokens"]:
-                        oracle = _["oracle"][str(vertex["index"])]
-                        _['label'] = oracle
-                        cut = dfs(g=_, hop_s = vertex["index"], D=[])
-                        cut.sort()
-                        mint = min(cut)
-                        maxt = max(cut)
-                        assert len(cut) == len(range(mint, maxt + 1))
-                        labeled_toks = []
-                        if len(cut) < len(toks): 
-                            for counter, t in enumerate(toks):  
-                                if t["index"] == mint:
-                                    labeled_toks.append(START)
-                                labeled_toks.append(t["word"])
-                                if t["index"] == maxt:
-                                    labeled_toks.append(END) 
-                            _["tokens"] = labeled_toks 
-                            tmp = {k:v for k,v in _.items() if k in ["tokens", "label", "compression_indexes"]}
+                    d, pi, c = bfs(g=_, hop_s=get_root(_))
+                    nodes_depths = d.items()
+                    nodes_depths.sort(key=lambda x: x[1])
+
+                    for node, depth in nodes_depths:
+                        if depth > 0:
+                            oracle = _["oracle"][node]
+                            print oracle
+                            #prune(g=_, v=node)
+                            cut = dfs(g=_, hop_s=node, D=[])
+                            cut.sort()
+                            mint = min(cut)
+                            maxt = max(cut)
+                            assert len(cut) == len(range(mint, maxt + 1))
+                            labeled_toks = get_labeled_toks(mint, maxt, toks)
+                            _["tokens"] = labeled_toks
+                            _["label"] = oracle
+                            tmp = {k: v for k, v in _.items() if k in
+                                   ["tokens", "label", "compression_indexes"]}
                             of.write(json.dumps(tmp) + "\n")
-                            total_so_far += 1 
+                            total_so_far += 1
 
 save_split('preproc/lstm_train.jsonl', train)
 
