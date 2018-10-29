@@ -16,6 +16,16 @@ with open("preproc/training.jsonl", "r") as inf:
             break
 
 
+def get_p_endorsement_v(v, jdoc):
+    dep = [_["dep"] for _ in jdoc["basicDependencies"]
+          if int(_["dependent"]) == int(v)][0]
+    return predictor.predict_proba(jdoc=jdoc,
+                                   op="prune",
+                                   vertex=int(v),
+                                   dep=dep,
+                                   worker_id=0
+                                   )
+
 def p_endorsement(jdoc):
     out = {}
     for tok in jdoc["tokens"]:
@@ -42,4 +52,9 @@ for w in tqdm(mini_validation_set):
     d, pi, c = bfs(g=w, hop_s=get_root(w))
     nodes_depths = d.items()
     nodes_depths.sort(key=lambda x:x[1])
-    print nodes_depths
+    for node, depth in nodes_depths:
+        if depth > 0:
+            print node
+            print "*"
+            pe = get_p_endorsement_v(node, jdoc=w)
+            print pe
