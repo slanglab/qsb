@@ -31,7 +31,8 @@ class NeuralNetworkTransitionGreedy:
         according to transition-based nn model
         '''
         return {_["index"]: self.predict_proba(jdoc, _["index"])
-                for _ in jdoc["tokens"] if not prune_deletes_q(_["index"], _)}
+                for _ in jdoc["tokens"] }
+                #if not prune_deletes_q(_["index"], _)}
 
     def get_char_length(self, jdoc):
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
