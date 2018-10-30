@@ -9,6 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-sentence", type=int)
     parser.add_argument("-model", type=str)
+    parser.add_argument("-archive_loc", type=str, default="tests/fixtures/633320059/model.tar.gz")
     args = parser.parse_args()
 
     with open("preproc/validation.jsonl", "r") as inf:
@@ -18,5 +19,5 @@ if __name__ == "__main__":
                 break
 
     if True: # args.model
-        model = NeuralNetworkTransitionGreedy()
+        model = NeuralNetworkTransitionGreedy(args.archive_loc)
         preds = model.predict.predict(sentence)
