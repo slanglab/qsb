@@ -1,9 +1,10 @@
+
 '''
 Various tree operations ...
 '''
 import copy
 import random
-import Queue
+from queue import Queue
 import collections
 
 DEPS = "basicDependencies"
@@ -106,7 +107,6 @@ def trigram_made_by_cut(jdoc_sent, indexes_cut):
         try:
             wn0 = get_tok_by_ix(jdoc_sent, end_cut + 1)['word']
         except:
-            print "ding"
             return "EOS"
         return " ".join([wn2, wn1, wn0])
 

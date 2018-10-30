@@ -3,7 +3,7 @@ import csv
 import argparse
 
 from sklearn.metrics import f1_score
-from code.comp_experiments_f1 import NeuralNetworkTransitionGreedy
+from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
