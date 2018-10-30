@@ -8,8 +8,10 @@ from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-sentence", type=int)
-    parser.add_argument("-model", type=str)
+    parser.add_argument("-model", type=str, default="nn")
     parser.add_argument("-archive_loc", type=str, default="tests/fixtures/633320059/model.tar.gz")
+    parser.add_argument("-results_dir", type=str, default="comp_experiments_f1/output/{}-{}".format(args.sentence,
+                                                                                                    args.model))
     args = parser.parse_args()
 
     assert args.sentence is not None
@@ -22,4 +24,7 @@ if __name__ == "__main__":
 
     if True: # args.model
         model = NeuralNetworkTransitionGreedy(args.archive_loc)
-        preds = model.predict(sentence)
+        y_preds = model.predict(sentence)
+        y_true = [_["index"] in sentence["compression_indexes"]
+                  for _ in sentence["tokens"]]
+        f1_score(y_true=y_true, y_preds=y_preds)
