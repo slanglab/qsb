@@ -20,4 +20,4 @@ if __name__ == "__main__":
 
     if True: # args.model
         model = NeuralNetworkTransitionGreedy(args.archive_loc)
-        preds = model.predict.predict(sentence)
+        preds = model.predict(sentence)
