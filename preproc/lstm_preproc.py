@@ -60,10 +60,10 @@ def get_labeled_toks(node, jdoc):
 
 
 def is_prune_only(jdoc):
-    one_extract = Counter(_["oracle"].values())["e"] == 1
-    extract_v = int([k for k, v in _["oracle"].items()
+    one_extract = Counter(jdoc["oracle"].values())["e"] == 1
+    extract_v = int([k for k, v in jdoc["oracle"].items()
                     if v == "e"][0])
-    gov = [i["governor"] for i in _["basicDependencies"] if
+    gov = [i["governor"] for i in jdoc["basicDependencies"] if
            i["dependent"] == extract_v][0]
     return gov == 0 and one_extract
 
@@ -85,12 +85,10 @@ def save_split(fn, data, cap=None):
                 if ino in data:
                     _ = json.loads(_)
                     if is_prune_only(jdoc=_):
-                        walk = [(node, depth) for node, depth in
-                                get_walk_from_root(_) if depth > 0]
-                        for node, depth in walk:
+                        walk = get_walk_from_root(_)
+                        for node in walk: 
                             toks_remaining = [i["index"] for i in _["tokens"]]
                             oracle_label = _["oracle"][str(node)]
-
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -98,18 +96,18 @@ def save_split(fn, data, cap=None):
                             ## the decision is "attach" or "finish". That might
                             ## be an easier way to unify prune and extract
                             if oracle_label == "e":
-                                oracle_label == "NA"
+                                oracle_label = "NA"
                             if node in toks_remaining:
                                 tmp = {
                                     "compression_indexes": _["compression_indexes"],
-                                    "label": _["oracle"][str(node)],
+                                    "label": oracle_label, 
                                     "tokens": get_labeled_toks(node, _)
                                 }
                                 of.write(json.dumps(tmp) + "\n")
                                 total_so_far += 1
                                 if tmp["label"] == "p":
                                     prune(g=_, v=node)
-
-save_split('preproc/lstm_train.jsonl', train)
+ 
+save_split('preproc/lstm_train.jsonl', train, 100000)
 
 save_split('preproc/lstm_validation.jsonl', val, 10000)

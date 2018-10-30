@@ -304,5 +304,7 @@ def get_walk_from_root(jdoc):
     '''
     just a convenience method that returns a walk from root, breath-first
     '''
-    d, pi, c = bfs(g, 0)
-    return walk_tree(d)
+    d, pi, c = bfs(jdoc, 0)
+    vertexes_and_depts = [(vertex,depth) for vertex,depth in d.items()]
+    vertexes_and_depts.sort(key=lambda x:x[1])
+    return [vertex for vertex, depth in vertexes_and_depts if depth > 0]
