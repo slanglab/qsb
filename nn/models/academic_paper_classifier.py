@@ -65,28 +65,21 @@ class AcademicPaperClassifier(Model):
                 "accuracy": CategoricalAccuracy()
         }
 
-        # {"0": "NA", "1": "p", "2": "e"} => self.labelv
+        # {"0": "NA", "1": "p"} self.labelv 
         
         '''
-        (allennlp) [ahandler@gypsum qsr]$ cat /mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train.jsonl | grep 'label": "NA"'  | wc -l
-        2046320
-        (allennlp) [ahandler@gypsum qsr]$ cat /mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train.jsonl | grep 'label": "p"'  | wc -l
-        433352
-        (allennlp) [ahandler@gypsum qsr]$ cat /mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train.jsonl | grep 'label": "e"'  | wc -l
-        39987
-       
         n_samples = 2519659
-        n_classes = 3 
+        n_classes = 2 
         '''
        
         # http://scikit-learn.org/dev/modules/generated/sklearn.utils.class_weight.compute_sample_weight.html
         # The balanced mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data: n_samples / (n_classes * np.bincount(y))
  
-        n_samples = 2519659
-        a = np.zeros(3, dtype=np.float32)
-        a[0] = n_samples / (2046320 * 3)
-        a[1] = n_samples / (433352 * 3)  
-        a[2] = n_samples / (39987 * 3) 
+        n_samples = 100010 
+        n_classes = 2
+        a = np.zeros(2, dtype=np.float32)
+        a[0] = n_samples / (66404 * n_classes)
+        a[1] = n_samples / (33606 * n_classes)  
         a = torch.from_numpy(a)
         self.loss = torch.nn.CrossEntropyLoss(weight=a)
 
