@@ -12,6 +12,8 @@ if __name__ == "__main__":
     parser.add_argument("-archive_loc", type=str, default="tests/fixtures/633320059/model.tar.gz")
     args = parser.parse_args()
 
+    assert args.sentence is not None
+
     with open("preproc/validation.jsonl", "r") as inf:
         for vno, _ in enumerate(inf):
             if vno == args.sentence:
