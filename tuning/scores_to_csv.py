@@ -3,19 +3,29 @@ import csv
 import glob
 scores = {}
 best_epochs = {}
-for fn in glob.glob("experiments/*/*metrics.json"):
-    run = fn.split("/")[1]
+
+OUT = "/mnt/nfs/scratch1/ahandler/experiments/qsr/compressor/*/*metrics.json"
+
+config = "/mnt/nfs/scratch1/ahandler/experiments/qsr/compressor/*/*config.json"
+
+for fn in glob.glob(OUT):
+    run = fn.split("/")[-2]
+    print(fn)
     with open(fn, "r") as inf:
-        scores[run] = json.load(inf)["best_validation_accuracy"]
-        best_epochs[run] = json.load(inf)["best_epoch"]
+        dt = json.load(inf)
+        scores[run] = dt["best_validation_accuracy"]
+        best_epochs[run] = dt["best_epoch"]
 
 configs = {}
 
-for _ in glob.glob("experiments/*/config.json"):
+for _ in glob.glob(config):
+    #print(_)
     with open(_, "r") as inf:
         try:
             dt = json.load(inf)
-            configs[_.split("/")[1]] = dt
+            #print(_)
+            #print(configs.keys())
+            configs[_.split("/")[-2]] = dt
         except:
             pass
 
