@@ -23,10 +23,10 @@ if __name__ == "__main__":
 
     if True: # args.model
         model = NeuralNetworkTransitionGreedy(args.archive_loc)
-        y_preds = model.predict(sentence)
+        y_pred = model.predict(sentence)
         y_true = [_["index"] in sentence["compression_indexes"]
                   for _ in sentence["tokens"]]
-        f1 = f1_score(y_true=y_true, y_preds=y_preds)
+        f1 = f1_score(y_true=y_true, y_pred=y_pred)
         out_ = args.results_dir + "/{}-{}".format(args.sentence,
                                                   args.model)
         with open(out_, "w") as of:
