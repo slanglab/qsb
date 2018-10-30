@@ -7,6 +7,8 @@ each other.
 Buffer == a list of tokens
 Extract == add this token and all of its children to the buffer
 Prune == remove this token and all of its children from the buffer
+
+You need to do it BFS
 '''
 
 import json
