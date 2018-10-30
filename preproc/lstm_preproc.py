@@ -5,58 +5,14 @@ import json
 import random
 
 from code.treeops import prune
-from code.treeops import dfs
-from code.treeops import bfs
 from code.treeops import get_walk_from_root
 from collections import Counter
-
-c = 0
-
-PCT_TRAIN = .95
-
-CORPUS = 'preproc/training.jsonl'
-
-START = "OOVSTART"
-END = "OOVEND"
-
-with open(CORPUS, 'r') as inf:
-    for _ in inf:
-        c += 1
-
-c = range(c)
-random.shuffle(c)
-
-split_ix = int(len(c) * PCT_TRAIN)
-
-train = c[0:split_ix]
-test = c[split_ix:]
-
-val_ix = int((1 - PCT_TRAIN) * len(train))
-
-val = train[0:val_ix]
-train = train[val_ix:]
+from code.utils import get_labeled_toks
 
 
 def get_root(w):
     return [_["dependent"] for _ in w["basicDependencies"]
             if _["dep"].lower() == "root"][0]
-
-
-def get_labeled_toks(node, jdoc):
-    toks = [i for i in jdoc["tokens"]]
-    cut = dfs(g=jdoc, hop_s=node, D=[])
-    cut.sort()
-    mint = min(cut)
-    maxt = max(cut)
-    assert len(cut) == len(range(mint, maxt + 1))
-    labeled_toks = []
-    for counter, t in enumerate(toks):
-        if t["index"] == mint:
-            labeled_toks.append(START)
-        labeled_toks.append(t["word"])
-        if t["index"] == maxt:
-            labeled_toks.append(END)
-    return labeled_toks
 
 
 def is_prune_only(jdoc):
@@ -107,7 +63,33 @@ def save_split(fn, data, cap=None):
                                 total_so_far += 1
                                 if tmp["label"] == "p":
                                     prune(g=_, v=node)
- 
-save_split('preproc/lstm_train.jsonl', train, 100000)
 
-save_split('preproc/lstm_validation.jsonl', val, 10000)
+
+if __name__ == "__main__":
+
+    c = 0
+
+    PCT_TRAIN = .95
+
+    CORPUS = 'preproc/training.jsonl'
+
+    with open(CORPUS, 'r') as inf:
+        for _ in inf:
+            c += 1
+
+    c = range(c)
+    random.shuffle(c)
+
+    split_ix = int(len(c) * PCT_TRAIN)
+
+    train = c[0:split_ix]
+    test = c[split_ix:]
+
+    val_ix = int((1 - PCT_TRAIN) * len(train))
+
+    val = train[0:val_ix]
+    train = train[val_ix:]
+
+    save_split('preproc/lstm_train.jsonl', train, 100000)
+
+    save_split('preproc/lstm_validation.jsonl', val, 10000)

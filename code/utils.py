@@ -1,5 +1,6 @@
 import re
-
+from code.treeops import dfs
+from code.treeops import bfs
 
 def ner_to_s(tok):
     if tok["ner"] == "PERSON":
@@ -55,3 +56,22 @@ def get_NER_query(jdoc):
             for j in ner_toks:
                 out.append(int(j))
     return out
+
+
+def get_labeled_toks(node, jdoc):
+    START = "OOVSTART"
+    END = "OOVEND"
+    toks = [i for i in jdoc["tokens"]]
+    cut = dfs(g=jdoc, hop_s=node, D=[])
+    cut.sort()
+    mint = min(cut)
+    maxt = max(cut)
+    assert len(cut) == len(range(mint, maxt + 1))
+    labeled_toks = []
+    for counter, t in enumerate(toks):
+        if t["index"] == mint:
+            labeled_toks.append(START)
+        labeled_toks.append(t["word"])
+        if t["index"] == maxt:
+            labeled_toks.append(END)
+    return labeled_toks
