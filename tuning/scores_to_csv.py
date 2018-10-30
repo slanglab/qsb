@@ -46,6 +46,9 @@ for _ in scores:
         stats.append(scores[_])
         if not type(stats[2]) == list:
             out.append(stats)
+            print("***")
+            print(_)
+            print(scores[_])
     except KeyError:
         print(_)
 
