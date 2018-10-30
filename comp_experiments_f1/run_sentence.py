@@ -26,8 +26,6 @@ if __name__ == "__main__":
         orig_ix = [_["index"] for _ in sentence["tokens"]]
         y_true = [_ in sentence["compression_indexes"] for _ in orig_ix]
         y_pred = model.predict(sentence)
-        print(y_true)
-        print(y_pred)
         f1 = f1_score(y_true=y_true, y_pred=y_pred)
         out_ = args.results_dir + "/{}-{}".format(args.sentence,
                                                   args.model)
