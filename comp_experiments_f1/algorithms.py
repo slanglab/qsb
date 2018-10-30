@@ -51,7 +51,7 @@ class NeuralNetworkTransitionGreedy:
             prev_length = length
             length = self.get_char_length(jdoc)
         length = self.get_char_length(jdoc)
-        if length < "r":
+        if length < jdoc["r"]:
             remaining_toks = [_["index"] for _ in jdoc["tokens"]]
             return [_ in remaining_toks for _ in orig_toks]
         else:
