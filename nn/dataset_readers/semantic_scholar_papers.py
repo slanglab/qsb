@@ -54,9 +54,6 @@ class SemanticScholarDatasetReader(DatasetReader):
     @overrides
     def _read(self, file_path):
 
-        import string
-        PUNCT = [_ for _ in string.punctuation]
-
         with open(cached_path(file_path), "r") as data_file:
             logger.info("Reading instances from lines in file at: %s", file_path)
             for line in data_file:
@@ -65,7 +62,7 @@ class SemanticScholarDatasetReader(DatasetReader):
                     continue
                 paper_json = json.loads(line)
                 sentence = " ".join([_ for _ in
-                                    paper_json["tokens"] if _ not in PUNCT])
+                                    paper_json["tokens"]])
                 label = paper_json['label']
                 yield self.text_to_instance(sentence, label)
 

@@ -75,3 +75,10 @@ def get_labeled_toks(node, jdoc):
         if t["index"] == maxt:
             labeled_toks.append(END)
     return labeled_toks
+
+
+def prune_deletes_q(vertex, jdoc):
+    '''would pruning this vertex delete any query items?'''
+    q = jdoc["q"]
+    pruned = bfs(g=jdoc, v=vertex)
+    return len(set(pruned) & set(q)) > 0

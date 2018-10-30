@@ -1,11 +1,13 @@
 from allennlp.predictors.predictor import Predictor
 from allennlp.models.archival import load_archive
 from code.utils import get_labeled_toks
+from code.treeops import prune
+from code.utils import prune_deletes_q
 import nn.models
 import json
 
 
-class NeuralNetworkTransitionBasedBFS:
+class NeuralNetworkTransitionGreedy:
     def __init__(self, archive_loc):
         assert type(archive_loc) == str
         archive = load_archive(archive_file=archive_loc)
@@ -22,3 +24,36 @@ class NeuralNetworkTransitionBasedBFS:
                                                                    label)
         pred = self.predictor.predict_instance(instance)
         return pred["class_proabilities"][1]
+
+    def predict_vertexes(self, jdoc):
+        '''
+        what is probability that this vertex is prunable,
+        according to transition-based nn model
+        '''
+        return {_["index"]: self.predict_proba(jdoc, _["index"])
+                for _ in jdoc["tokens"] if not prune_deletes_q(_["index"], _)}
+
+    def get_char_length(self, jdoc):
+        return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
+
+    def predict(self, jdoc):
+        '''
+        return a compression that preserves q and respects r
+        '''
+        prev_length = 0
+        length = self.get_char_length(jdoc)
+        orig_toks = [_["index"] for _ in jdoc]
+        while length != prev_length and length < jdoc["r"]:
+            vertexes = self.predict_vertexes(jdoc).items()
+            vertexes.sort(key=lambda x: x[1], reverse=True)
+            vertex, prob = vertexes[0]
+            prune(g=jdoc, v=vertex)
+            prev_length = length
+            length = self.get_char_length(jdoc)
+        length = self.get_char_length(jdoc)
+        if length < "r":
+            remaining_toks = [_["index"] for _ in jdoc["tokens"]]
+            return [_ in remaining_toks for _ in orig_toks]
+        else:
+            return "could not find a compression"
+

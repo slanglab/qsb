@@ -19,7 +19,7 @@ with open("preproc/training.jsonl", "r") as inf:
 
 def get_p_endorsement_v(v, jdoc):
     dep = [_["dep"] for _ in jdoc["basicDependencies"]
-          if int(_["dependent"]) == int(v)][0]
+           if int(_["dependent"]) == int(v)][0]
     return predictor.predict_proba(jdoc=jdoc,
                                    op="prune",
                                    vertex=int(v),
