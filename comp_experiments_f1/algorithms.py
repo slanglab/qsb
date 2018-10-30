@@ -46,7 +46,7 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(jdoc)
         orig_toks = [_["index"] for _ in jdoc["tokens"]]
         while length != prev_length and length > int(jdoc["r"]):
-            vertexes = self.predict_vertexes(jdoc).items()
+            vertexes = list(self.predict_vertexes(jdoc).items())
             vertexes.sort(key=lambda x: x[1], reverse=True)
             vertex, prob = vertexes[0]
             prune(g=jdoc, v=vertex)
