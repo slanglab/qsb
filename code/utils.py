@@ -66,7 +66,9 @@ def get_labeled_toks(node, jdoc):
     cut.sort()
     mint = min(cut)
     maxt = max(cut)
-    assert len(cut) == len(range(mint, maxt + 1))
+    # This assertion is false in cases where you greedily prune in the middle of 
+    # trees. it is true if you only only prune a whole branch 
+    #assert len(cut) == len(range(mint, maxt + 1))
     labeled_toks = []
     for counter, t in enumerate(toks):
         if t["index"] == mint:
