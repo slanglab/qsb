@@ -32,8 +32,7 @@ class NeuralNetworkTransitionGreedy:
         according to transition-based nn model
         '''
         return {_["index"]: self.predict_proba(jdoc, _["index"])
-                for _ in jdoc["tokens"] }
-                #if not prune_deletes_q(_["index"], _)}
+                for _ in jdoc["tokens"]}  # TODO if not prune_deletes_q(_["index"], _)}
 
     def get_char_length(self, jdoc):
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
@@ -52,11 +51,9 @@ class NeuralNetworkTransitionGreedy:
             prune(g=jdoc, v=vertex)
             prev_length = length
             length = self.get_char_length(jdoc)
-            print(length)
         length = self.get_char_length(jdoc)
         if length < int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in jdoc["tokens"]]
             return [_ in remaining_toks for _ in orig_toks]
         else:
             return "could not find a compression"
-

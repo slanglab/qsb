@@ -30,4 +30,4 @@ if __name__ == "__main__":
         out_ = args.results_dir + "/{}-{}".format(args.sentence,
                                                   args.model)
         with open(out_, "w") as of:
-            of.write(json.dumps(f1))
+            of.write(f1)
