@@ -298,3 +298,11 @@ def extract(g, v):
     D = dfs(g, v, D =[])
     g["tokens"] = [t for t in g["tokens"] if t["index"] in D]
     g[DEPS] = [d for d in g[DEPS] if d["governor"] in D and d["dependent"] in D]
+
+
+def get_walk_from_root(jdoc):
+    '''
+    just a convenience method that returns a walk from root, breath-first
+    '''
+    d, pi, c = bfs(g, 0)
+    return walk_tree(d)
