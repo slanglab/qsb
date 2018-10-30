@@ -3,6 +3,7 @@ import csv
 import argparse
 
 from sklearn.metrics import f1_score
+from code.comp_experiments_f1 import NeuralNetworkTransitionGreedy
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -16,3 +17,6 @@ if __name__ == "__main__":
                 sentence = json.loads(_)
                 break
 
+    if True: # args.model
+        model = NeuralNetworkTransitionGreedy()
+        preds = model.predict.predict(sentence)
