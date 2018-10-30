@@ -23,7 +23,6 @@ class NeuralNetworkTransitionGreedy:
         instance = self.predictor._dataset_reader.text_to_instance(sentence,
                                                                    label)
         pred = self.predictor.predict_instance(instance)
-        print(pred)
         return pred["class_probabilities"][1]
 
     def predict_vertexes(self, jdoc):
