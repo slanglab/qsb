@@ -7,6 +7,7 @@ import random
 from code.treeops import prune
 from code.treeops import dfs
 from code.treeops import bfs
+from collections import Counter
 
 c = 0
 
@@ -60,33 +61,39 @@ def save_split(fn, data, cap=None):
                     break  # early stopping
                 if ino in data:
                     _ = json.loads(_)
-                    del _["index"]
-                    del _["enhancedDependencies"]
-                    del _["enhancedPlusPlusDependencies"]
-                    toks = [i for i in _["tokens"]]
-                    d, pi, c = bfs(g=_, hop_s=get_root(_))
-                    nodes_depths = d.items()
-                    nodes_depths.sort(key=lambda x: x[1])
+                    oracle = _["oracle"]
+                    one_extract = Counter(oracle.values())["e"] == 1 
+                    if one_extract:
+                        extract_v = int([k for k,v in _["oracle"].items() if v == "e"][0])
+                        gov = [i["governor"] for i in _["basicDependencies"] if i["dependent"] == extract_v][0]
+                         
+                        del _["index"]
+                        del _["enhancedDependencies"]
+                        del _["enhancedPlusPlusDependencies"]
+                        toks = [i for i in _["tokens"]]
+                        d, pi, c = bfs(g=_, hop_s=get_root(_))
+                        nodes_depths = d.items()
+                        nodes_depths.sort(key=lambda x: x[1])
 
-                    for node, depth in nodes_depths:
-                        if depth > 0:
-                            toks_remaining = [i["index"] for i in _["tokens"]]
-                            if node in toks_remaining:
-                                oracle = _["oracle"][str(node)]
-                                cut = dfs(g=_, hop_s=node, D=[])
-                                cut.sort()
-                                mint = min(cut)
-                                maxt = max(cut)
-                                assert len(cut) == len(range(mint, maxt + 1))
-                                labeled_toks = get_labeled_toks(mint, maxt, toks)
-                                tmp = {k: v for k, v in _.items() if k in
-                                       ["tokens", "label", "compression_indexes"]}
-                                tmp["tokens"] = labeled_toks
-                                tmp["label"] = oracle
-                                of.write(json.dumps(tmp) + "\n")
-                                total_so_far += 1
-                                if oracle == "p":
-                                    prune(g=_, v=node)
+                        for node, depth in nodes_depths:
+                            if depth > 0:
+                                toks_remaining = [i["index"] for i in _["tokens"]]
+                                if node in toks_remaining:
+                                    oracle = _["oracle"][str(node)]
+                                    cut = dfs(g=_, hop_s=node, D=[])
+                                    cut.sort()
+                                    mint = min(cut)
+                                    maxt = max(cut)
+                                    assert len(cut) == len(range(mint, maxt + 1))
+                                    labeled_toks = get_labeled_toks(mint, maxt, toks)
+                                    tmp = {k: v for k, v in _.items() if k in
+                                           ["tokens", "label", "compression_indexes"]}
+                                    tmp["tokens"] = labeled_toks
+                                    tmp["label"] = oracle
+                                    of.write(json.dumps(tmp) + "\n")
+                                    total_so_far += 1
+                                    if oracle == "p":
+                                        prune(g=_, v=node)
 
 save_split('preproc/lstm_train.jsonl', train)
 
