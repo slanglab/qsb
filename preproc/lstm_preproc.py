@@ -42,9 +42,11 @@ def save_split(fn, data, cap=None):
                     _ = json.loads(_)
                     if is_prune_only(jdoc=_):
                         walk = get_walk_from_root(_)
-                        for node in walk: 
+                        for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
                             oracle_label = _["oracle"][str(node)]
+                            dep = [ii["dep"] for ii in _["basicDependencies"]
+                                   if _["dependent"] == node][0]
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -53,10 +55,12 @@ def save_split(fn, data, cap=None):
                             ## be an easier way to unify prune and extract
                             if oracle_label == "e":
                                 oracle_label = "NA"
+
                             if node in toks_remaining:
                                 tmp = {
                                     "compression_indexes": _["compression_indexes"],
-                                    "label": oracle_label, 
+                                    "label": oracle_label,
+                                    "dep": dep,
                                     "tokens": get_labeled_toks(node, _)
                                 }
                                 of.write(json.dumps(tmp) + "\n")
