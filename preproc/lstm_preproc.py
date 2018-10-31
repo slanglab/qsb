@@ -41,6 +41,9 @@ def save_split(fn, data, cap=None):
                     break  # early stopping
                 if ino in data:
                     _ = json.loads(_)
+                    orig_ix = [i["index"] for i in _["tokens"]]
+                    r = " ".join([i["word"] for i in _["tokens"] if i["index"] in _["compression_indexes"]])
+                    r = len(r)
                     if is_prune_only(jdoc=_):
                         walk = get_walk_from_root(_)
                         for node in walk:
@@ -63,7 +66,9 @@ def save_split(fn, data, cap=None):
                                     "label": oracle_label,
                                     "dep": dep,
                                     "tokens": get_labeled_toks(node, _),
-                                    "q": _['q']
+                                    "q": _['q'],
+                                    "r": r,
+                                    "original_ix": orig_ix
                                 }
                                 of.write(json.dumps(tmp) + "\n")
                                 total_so_far += 1

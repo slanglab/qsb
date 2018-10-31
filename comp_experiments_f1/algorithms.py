@@ -34,7 +34,8 @@ class NeuralNetworkTransitionGreedy:
                 for _ in jdoc["tokens"] if not prune_deletes_q(_["index"], _)}
 
     def get_char_length(self, jdoc):
-        return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
+        assert type(jdoc["tokens"][0]) == str
+        return len(" ".join([_ for _ in jdoc["tokens"]]))
 
     def predict(self, jdoc):
         '''
@@ -42,7 +43,7 @@ class NeuralNetworkTransitionGreedy:
         '''
         prev_length = 0
         length = self.get_char_length(jdoc)
-        orig_toks = [_["index"] for _ in jdoc["tokens"]]
+        orig_toks = jdoc["original_ix"] 
         while length != prev_length and length > int(jdoc["r"]):
             vertexes = list(self.predict_vertexes(jdoc).items())
             vertexes.sort(key=lambda x: x[1], reverse=True)
