@@ -82,5 +82,5 @@ def get_labeled_toks(node, jdoc):
 def prune_deletes_q(vertex, jdoc):
     '''would pruning this vertex delete any query items?'''
     q = jdoc["q"]
-    pruned = bfs(g=jdoc, v=vertex)
+    pruned = dfs(g=jdoc, hop_s=vertex, D=[])
     return len(set(pruned) & set(q)) > 0

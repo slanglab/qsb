@@ -19,7 +19,7 @@ class NeuralNetworkTransitionGreedy:
         according to transition-based nn model
         '''
         label = "NA"
-        sentence = " ".join(get_labeled_toks(vertex, jdoc))
+        sentence = " ".join([_["word"] for _ in get_labeled_toks(vertex, jdoc)])
         instance = self.predictor._dataset_reader.text_to_instance(sentence,
                                                                    label)
         pred = self.predictor.predict_instance(instance)
@@ -31,11 +31,11 @@ class NeuralNetworkTransitionGreedy:
         according to transition-based nn model
         '''
         return {_["index"]: self.predict_proba(jdoc, _["index"])
-                for _ in jdoc["tokens"] if not prune_deletes_q(_["index"], _)}
+                for _ in jdoc["tokens"] if not prune_deletes_q(_["index"], jdoc)}
 
     def get_char_length(self, jdoc):
-        assert type(jdoc["tokens"][0]) == str
-        return len(" ".join([_ for _ in jdoc["tokens"]]))
+        assert type(jdoc["tokens"][0]["word"]) == str
+        return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 
     def predict(self, jdoc):
         '''
