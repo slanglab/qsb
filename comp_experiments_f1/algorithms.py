@@ -4,6 +4,7 @@ from code.utils import get_labeled_toks
 from code.treeops import prune
 from code.treeops import bfs
 from code.utils import prune_deletes_q
+from code.treeops import get_walk_from_root
 import nn.models
 import json
 
@@ -91,7 +92,7 @@ class NeuralNetworkTransitionBFS:
         orig_toks = jdoc["original_ix"]
         T = .5
         while length > int(jdoc["r"]):
-            for vertex in bfs(g=jdoc, hop_s=0):
+            for vertex in get_walk_from_root(jdoc):
                 if not prune_deletes_q(vertex, jdoc):
                     if length > int(jdoc["r"]):
                         p = self.predict_proba(jdoc=jdoc, vertex=vertex)
