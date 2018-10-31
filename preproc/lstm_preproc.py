@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import json
-
+import copy
 import random
 
 from code.treeops import prune
@@ -44,6 +44,7 @@ def save_split(fn, data, cap=None):
                     orig_ix = [i["index"] for i in _["tokens"]]
                     r = " ".join([i["word"] for i in _["tokens"] if i["index"] in _["compression_indexes"]])
                     r = len(r)
+                    deps = copy.deepcopy(_["basicDependencies"])
                     if is_prune_only(jdoc=_):
                         walk = get_walk_from_root(_)
                         for node in walk:
@@ -68,7 +69,8 @@ def save_split(fn, data, cap=None):
                                     "tokens": get_labeled_toks(node, _),
                                     "q": _['q'],
                                     "r": r,
-                                    "original_ix": orig_ix
+                                    "original_ix": orig_ix,
+                                    "basicDependencies": deps
                                 }
                                 of.write(json.dumps(tmp) + "\n")
                                 total_so_far += 1
