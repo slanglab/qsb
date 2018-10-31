@@ -72,10 +72,10 @@ def get_labeled_toks(node, jdoc):
     labeled_toks = []
     for counter, t in enumerate(toks):
         if t["index"] == mint:
-            labeled_toks.append(START)
-        labeled_toks.append(t["word"])
+            labeled_toks.append({"word": START, "index": t["index"]})
+        labeled_toks.append({"word": t["word"], "index": t["index"]})
         if t["index"] == maxt:
-            labeled_toks.append(END)
+            labeled_toks.append({"word": END, "index": t["index"]})
     return labeled_toks
 
 

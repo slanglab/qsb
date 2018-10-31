@@ -61,7 +61,7 @@ class SemanticScholarDatasetReader(DatasetReader):
                 if not line:
                     continue
                 paper_json = json.loads(line)
-                sentence = " ".join([_ for _ in
+                sentence = " ".join([_["word"] for _ in
                                     paper_json["tokens"]])
                 label = paper_json['label']
                 yield self.text_to_instance(sentence, label)
