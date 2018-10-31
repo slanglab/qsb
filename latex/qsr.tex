@@ -50,13 +50,21 @@
 \maketitle
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under  constraints, using both classical ILP-based methods and modern neural network techniques.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under  constraints, using both classical ILP-based methods and modern neural network techniques. We introduce a new compression method which can accomodate such constraints.
 \end{abstract}
 
 \section{Introduction}
-Traditional approaches within natural language processing view textual summarization as a sentence selection problem. Traditionally, the task of extractive sentence compression seeks to further shorten such summaries by deleting ``unimportant" words. However, effective sentence compression is also crucial in user-facing search systems, such as traditional search engines, concept map browsers and new forms of exploratory textual interfaces. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} 
+Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in the a user interface; and (often) they must contain a user's query term. An example of such compressions is shown in figure \ahcomment{TODO}.
 
-These settings violate the traditional assumptions of the sentence compression problem. In place of the traditional goal of retaining the most ``important'' from source sentences for display in a summary, in such query-focused settings compression systems must instead $(i)$ contain a users' query term $(ii)$ remain readable or coherent and  $(iii)$ fit in the space allotted on screen.
+This study examines sentence compression under such constraints. While older, ILP-based methods could easily accommodate hard length and lexical requirements, recent work has focused on neural network methods which do not give practitioners such control. This makes such methods unsuitable for 
+engines, concept map browsers and new forms of exploratory textual interfaces, where length and lexical constraints are paramount. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} Compression methods which achieve high predictive accuracy on gold training data are not useful to practitioners who must include query terms in shortened sentences; or scale compressions to desktop interface or a mobile phone.
+
+This work presents a new, transition-based method which leverages the predictive power of neural networks, while accommodating length and lexical requirements. We compare our method, \textbf{iterative deletion} to traditional ILP-based methods, which also give a user such control.
+
+%Traditional study of extractive sentence compression seeks to create shorter versions of source sentences, which retain the most ``important'' information from the source. Recent work 
+%\ahcomment{blah blah NN great but lose .}
+
+%In such settings, extractive sentence compression seeks to further shorten selected sentences by deleting ``unimportant" words. However, in user-facing search systems, such as traditional search engines, concept map browsers and new forms of exploratory textual interfaces. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} 
 
 In this study, we examine 
 
