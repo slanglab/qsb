@@ -8,6 +8,7 @@ from code.treeops import prune
 from code.treeops import get_walk_from_root
 from collections import Counter
 from code.utils import get_labeled_toks
+from code.printers import pretty_print_conl
 
 
 def get_root(w):
@@ -44,9 +45,7 @@ def save_split(fn, data, cap=None):
                         walk = get_walk_from_root(_)
                         for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
-                            oracle_label = _["oracle"][str(node)]
-                            dep = [ii["dep"] for ii in _["basicDependencies"]
-                                   if _["dependent"] == node][0]
+                            oracle_label = _["oracle"][str(node)] 
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -56,7 +55,9 @@ def save_split(fn, data, cap=None):
                             if oracle_label == "e":
                                 oracle_label = "NA"
 
-                            if node in toks_remaining:
+                            if node in toks_remaining: 
+                                dep = [ii["dep"] for ii in _["basicDependencies"]
+                                       if ii["dependent"] == node][0]
                                 tmp = {
                                     "compression_indexes": _["compression_indexes"],
                                     "label": oracle_label,

@@ -229,7 +229,7 @@ def bfs(g, hop_s):
         - list of nodes and predecessor, pi (predecessor == parent if tree)
         - list of depths, d
     '''
-    q = Queue.Queue()
+    q = Queue()
 
     # ancestors
     pi = {i["dependent"]: None for i in g[DEPS]}
