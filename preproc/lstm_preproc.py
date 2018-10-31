@@ -82,6 +82,7 @@ if __name__ == "__main__":
         for _ in inf:
             c += 1
 
+    print c
     c = range(c)
     random.shuffle(c)
 
