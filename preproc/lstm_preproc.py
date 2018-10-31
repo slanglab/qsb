@@ -55,14 +55,15 @@ def save_split(fn, data, cap=None):
                             if oracle_label == "e":
                                 oracle_label = "NA"
 
-                            if node in toks_remaining: 
+                            if node in toks_remaining:
                                 dep = [ii["dep"] for ii in _["basicDependencies"]
                                        if ii["dependent"] == node][0]
                                 tmp = {
                                     "compression_indexes": _["compression_indexes"],
                                     "label": oracle_label,
                                     "dep": dep,
-                                    "tokens": get_labeled_toks(node, _)
+                                    "tokens": get_labeled_toks(node, _),
+                                    "q": _['q']
                                 }
                                 of.write(json.dumps(tmp) + "\n")
                                 total_so_far += 1
