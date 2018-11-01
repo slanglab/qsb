@@ -62,17 +62,29 @@ This study examines sentence compression under strict lexical and length constra
 
 \section{Compression under constraints}
 
-In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our method, \textbf{iterative deletion} to traditional \textbf{ILP-based techniques}, which also give a user such control.
+In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our method, \textbf{iterative deletion} to traditional \textbf{ILP-based techniques}, which also give a user such control and to baseline \textbf{LSTM taggers} which cannot accommodate such constraints.
 
 \subsection{Constrained compression with ILPs}
 
-One common approach for compressing sentences formulates compression as an integer linear programming (ILP) task. ILP-based methods assign binary variables to each token or nested subtree in a dependency parse, indicating if a word or subtree should be included in a compression. Each span, word or subtree in compression is also assigned a local weight, indicating its worthiness for inclusion in a shortened sentence.\footnote{Local weights are either learned via structured perceptron techniques; or inferred from corpus statistics, tf-idf scores or language models.}
+One common approach for shortening sentences formulates compression as an integer linear programming (ILP) task. ILP-based methods assign binary variables to each token in a sentence or nested subtree in a dependency parse. These variables indicate if a word or subtree should be included in a compression. Each such sentence component is also assigned a local weight, indicating its worthiness for inclusion in a shortened sentence.\footnote{Local weights are either learned via structured perceptron techniques; or inferred from corpus statistics, tf-idf scores or language models.}
 
 ILP methods represent the overall quality of a compression by summing the local weights of sentence components to compute a global objective score. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among the exponential possible configurations of binary variables. 
 
-The integer linear programming approach easily accommodates constrained optimization. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some character budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
+This integer linear programming approach easily accommodates constrained compression. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some character budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
 
-\subsection{Iterative deletion}
+\subsection{Constrained compression with iterative deletion}
+
+In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our method, iterative deletion, shortens a sentence over $M$ time steps, by pruning $M$ subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem, which also removed components of sentences. \ahcomment{CITE: K and M, Jing  and McKowen} 
+
+Like ILP-based methods, iterative deletion approaches can trivially accommodate lexical and length constraints: subtrees which contain query terms are never deleted, and pruning stops only when a compression satisfies a given character budget. 
+
+There are two free parameters in the iterative deletion approach: (1) how to decide if a particular subtree may be deleted and (2) what order should subtrees be considered for deletion. In this study, we consider each of these two questions in depth.
+
+
+
+\subsection{Unconstrained compression with LSTM taggers}
+
+follows in a tradition of sentence compression approaches which
 
 \ahcomment{Details of what we implement}
 
