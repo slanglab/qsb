@@ -59,8 +59,9 @@ def get_NER_query(jdoc):
 
 
 def get_labeled_toks(node, jdoc):
-    START = "OOVSTART"
-    END = "OOVEND"
+    dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
+    START = "OOVSTART" + dep
+    END = "OOVEND" + dep
     toks = [i for i in jdoc["tokens"]]
     cut = dfs(g=jdoc, hop_s=node, D=[])
     cut.sort()

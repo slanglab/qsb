@@ -65,13 +65,13 @@ class AcademicPaperClassifier(Model):
                 "accuracy": CategoricalAccuracy()
         }
 
-        # {"0": "NA", "1": "p"} self.labelv 
-        
+        # {"0": "NA", "1": "p"} self.labelv
+
         '''
         n_samples = 2519659
-        n_classes = 2 
+        n_classes = 2
         '''
-       
+
         # http://scikit-learn.org/dev/modules/generated/sklearn.utils.class_weight.compute_sample_weight.html
         # The balanced mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data: n_samples / (n_classes * np.bincount(y))
  
