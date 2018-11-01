@@ -96,7 +96,7 @@ In section \S\ahcomment{TODO} we also examine how the order of subtree deletion 
 
 \subsection{Unconstrained compression with LSTMs}
 
-We contrast iterative deletion and integer programming approaches with LSTM taggers for the compression task. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that tag tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence. However, at this time, LSTM taggers are unsuitable for query-focused applications because methods cannot enforce lexical or length constraints. This could be examined in future research.
+We contrast iterative deletion and integer programming approaches with LSTM taggers for the compression task. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence. However, at this time, LSTM taggers are unsuitable for query-focused applications because methods cannot enforce lexical or length requirements. This could be examined in future research.
 
 \ahcomment{Details of what we implement}
 
