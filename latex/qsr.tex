@@ -50,24 +50,50 @@
 \maketitle
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under  constraints, using both classical ILP-based methods and modern neural network techniques. We introduce a new compression method which can accomodate such constraints.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under  constraints, using both classical ILP-based methods and modern neural network techniques. We introduce a new neural compression method which can accommodate length and lexical requirements.
 \end{abstract}
 
 \section{Introduction}
-Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) compressions must contain a user's query term. An example of such compressions is shown in figure \ahcomment{TODO}.
+Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) compressions must contain a user's query term. An example of such a compression system is shown in figure \ahcomment{TODO}.
 
-This study examines sentence compression under such constraints. While older, ILP-based methods could easily accommodate hard length and lexical requirements, recent work has focused on neural network methods which do not give practitioners such control. This makes such methods unsuitable for 
-search engines, concept map browsers and new forms of exploratory textual interfaces, where length and lexical constraints are paramount. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} Compression methods which achieve high predictive accuracy on gold training data are simply not useful for practitioners who must include query terms in shortened sentences; or scale compressions to a desktop interface or mobile phone.
+This study examines sentence compression under strict lexical and length constraints, in which a compression must be shorter than a given character budget and must include particular words. While older compression methods based on integer linear programming could trivially accommodate length and lexical restrictions, recent work has focused on neural network techniques which do not give practitioners such control. This makes existing neural methods unsuitable for search engines, concept map browsers and new forms of exploratory textual interfaces, where length and lexical constraints are paramount. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} Systems that can sometimes recreate gold training data are simply not useful for practitioners who must include query terms in shortened sentences; or scale compressions to a desktop interface or mobile phone.
 
-This work presents a new, transition-based method which leverages the predictive power of neural methods, while accommodating length and lexical requirements. We compare our method, \textbf{iterative deletion} to traditional ILP-based techniques, which also give a user such control.
+\ahcomment{sign posting}
 
-%Traditional study of extractive sentence compression seeks to create shorter versions of source sentences, which retain the most ``important'' information from the source. Recent work 
-%\ahcomment{blah blah NN great but lose .}
+\section{Compression under constraints}
 
-%In such settings, extractive sentence compression seeks to further shorten selected sentences by deleting ``unimportant" words. However, in user-facing search systems, such as traditional search engines, concept map browsers and new forms of exploratory textual interfaces. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} 
+In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our method, \textbf{iterative deletion} to traditional \textbf{ILP-based techniques}, which also give a user such control.
 
-In this study, we examine 
+\subsection{Constrained compression with ILPs}
 
+One common approach for compressing sentences formulates compression as an integer linear programming (ILP) task. ILP-based methods assign binary variables to each token or nested subtree in a dependency parse, indicating if a word or subtree should be included in a compression. Each span, word or subtree in compression is also assigned a local weight, indicating its worthiness for inclusion in a shortened sentence.\footnote{Local weights are either learned via structured perceptron techniques; or inferred from corpus statistics, tf-idf scores or language models.}
+
+ILP methods represent the overall quality of a compression by summing the local weights of sentence components to compute a global objective score. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among the exponential possible configurations of binary variables. 
+
+The integer linear programming approach easily accommodates constrained optimization. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some character budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
+
+\subsection{Iterative deletion}
+
+\ahcomment{Details of what we implement}
+
+\section{Outline}
+\begin{enumerate}
+\item{How do you do it? ILPs, neural net taggers, iterative deletion supervised w/ people or w/ gold data? (\S\ref{s:method}).}
+\item{Why iterative deletion is good. Description of current system for making deletion decisions w/ human supervision. Possibly make this system better too}
+\end{enumerate}
+
+\section{Why iterative deletion is good}\label{s:method}
+\begin{enumerate}
+\item{Historical reasons}
+\item{grammatical bias + syntax bias + linguistically-motivated? Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
+\item{budget and query are trivial}
+\item{linear (taggers) vs. quadratic (this work) vs. ILPs (exponential). }
+\item{single op supervision can be used}
+\item{avoid computational waste w/ grammar! HUGE divergence between mathematical properties of compression problem (exponential) and ways you can actually compress a sentence.}
+\item{One thought: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a pointer network style softmax over trees? This sounds hard to implement.}
+\end{enumerate}
+
+\ahcomment{Here by nov 1 EOD}
 
 \section{Outline}
 \begin{enumerate}
@@ -80,18 +106,6 @@ In this study, we examine
 \end{enumerate}
 
 
-
-
-\section{Why iterative deletion is good}\label{s:method}
-\begin{enumerate}
-\item{Historical reasons}
-\item{grammatical bias + syntax bias + linguistically-motivated? Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
-\item{budget and query are trivial}
-\item{linear (taggers) vs. quadratic (this work) vs. ILPs (exponential). }
-\item{single op supervision can be used}
-\item{avoid computational waste w/ grammar! HUGE divergence between mathematical properties of compression problem (exponential) and ways you can actually compress a sentence.}
-\item{One thought: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a pointer network style softmax over trees? This sounds hard to implement.}
-\end{enumerate}
 
 \subsection{Preprocessing with extract}
 Extract preprocessing. Make up a few simple rules. They will help a bunch. Only like 6 dependency types work at all for extract. This is in realfake/createdata/extract at the moment.
