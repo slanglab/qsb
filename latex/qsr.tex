@@ -60,9 +60,19 @@ This study examines sentence compression under strict lexical and length constra
 
 \ahcomment{sign posting}
 
-\section{Compression under constraints}
+\section{Compression and constraints}
 
 In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our method, \textbf{iterative deletion} to traditional \textbf{ILP-based techniques}, which also give a user such control and to baseline \textbf{LSTM taggers} which cannot accommodate such constraints.
+
+
+\begin{table}[htb!]
+\begin{tabular}{lll}
+\textbf{Approach} & \textbf{Complexity} & \textbf{Constrained} \\
+This work         & Quadratic           & Yes                     \\
+ILPs              & Exponential         & Yes                     \\
+LSTM taggers      & Linear              & No                     
+\end{tabular}
+\end{table}
 
 \subsection{Constrained compression with ILPs}
 
@@ -72,38 +82,30 @@ ILP methods represent the overall quality of a compression by summing the local 
 
 This integer linear programming approach easily accommodates constrained compression. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some character budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
 
-\subsection{Constrained compression with iterative deletion}
+\subsection{Constrained compression with pruning}
 
 In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our method, iterative deletion, shortens a sentence over $M$ time steps, by pruning $M$ subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem, which also removed components of sentences. \ahcomment{CITE: K and M, Jing  and McKowen} 
 
 Like ILP-based methods, iterative deletion approaches can trivially accommodate lexical and length constraints: subtrees which contain query terms are never deleted, and pruning stops only when a compression satisfies a given character budget. 
 
-There are two free parameters in the iterative deletion approach: (1) how to decide if a particular subtree may be deleted and (2) what order should subtrees be considered for deletion. In this study, we consider each of these two questions in depth.
+There are two free parameters in the iterative deletion approach: (1) how to decide if a particular subtree may be deleted and (2) what order should subtrees be considered for deletion. In this study, we consider varying answers to each of these two questions.
 
 
-
-\subsection{Unconstrained compression with LSTM taggers}
-
-follows in a tradition of sentence compression approaches which
-
-\ahcomment{Details of what we implement}
-
-\section{Outline}
-\begin{enumerate}
-\item{How do you do it? ILPs, neural net taggers, iterative deletion supervised w/ people or w/ gold data? (\S\ref{s:method}).}
-\item{Why iterative deletion is good. Description of current system for making deletion decisions w/ human supervision. Possibly make this system better too}
-\end{enumerate}
 
 \section{Why iterative deletion is good}\label{s:method}
 \begin{enumerate}
 \item{Historical reasons}
 \item{grammatical bias + syntax bias + linguistically-motivated? Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
-\item{budget and query are trivial}
-\item{linear (taggers) vs. quadratic (this work) vs. ILPs (exponential). }
 \item{single op supervision can be used}
 \item{avoid computational waste w/ grammar! HUGE divergence between mathematical properties of compression problem (exponential) and ways you can actually compress a sentence.}
-\item{One thought: you could do a neural system that decides when/what to delete, using F and A as supervision? Each tree gets an encoding and you do a pointer network style softmax over trees? This sounds hard to implement.}
 \end{enumerate}
+
+\subsection{Unconstrained compression with LSTMs}
+
+follows in a tradition of sentence compression approaches which
+
+\ahcomment{Details of what we implement}
+
 
 \ahcomment{Here by nov 1 EOD}
 
