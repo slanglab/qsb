@@ -80,24 +80,21 @@ One common approach for shortening sentences formulates compression as an intege
 
 ILP methods represent the overall quality of a compression by summing the local weights of sentence components to compute a global objective score. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among the exponential possible configurations of binary variables. The problem of identifying the best possible solution fo an integer programming compression objective is exponential in the number of tokens or number of subtrees in the input, as each corresponding binary variable may be set to 0 or 1.
 
-This integer linear programming approach easily accommodates constrained compression. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some character budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
+This integer linear programming approach easily accommodates constrained compression. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some charascter budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
 
 \subsection{Constrained compression with pruning}
 
-In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our method, iterative deletion, shortens a sentence over $M$ time steps, by pruning $M$ subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem, which also removed components of sentences. \ahcomment{CITE: K and M, Jing  and McKowen} 
+In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our iterative deletion technique shortens a sentence over $M$ time steps, by pruning $M$ subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem, which also removed components of sentences. \ahcomment{CITE: K and M, Jing  and McKowen} \ahcomment{argue for coverage w/ F and A at some point}
 
-The benefits of iterative deletion include (1) easily making use of new and existing forms of supervision for the sentence compression task (2) easily acc
+Like ILP-based methods, iterative deletion approaches can easily accommodate lexical and length constraints: subtrees which contain query terms are never deleted, and pruning stops only when a compression satisfies a given character budget. 
 
-Like ILP-based methods, iterative deletion approaches can trivially accommodate lexical and length constraints: subtrees which contain query terms are never deleted, and pruning stops only when a compression satisfies a given character budget. 
+However, iterative deletion methods incur much smaller computational costs than integer programming techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $M$ timesteps. (In this case, the algorithm would prune one singleton vertex per time step, starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep as pruning proceeds, then the iterative deletion method rrequires at most $\sum_{i = 0}^M V - i = O(V^2)$ operations.
 
-The chief benefit of iterative deletion is that it occurs lower computational costs than ILPs, while making use of the 
+This worst case represents the theoretical upper bound of iterative deletion techniques. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of a prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human acceptability judgements for extractive sentence compression can reduce the empirical computational complexity of the iterative deletion algorithm.
 
-In this work, we say that iterative deletion methods incur one unit of computational cost each time they evaluate a subtree for deletion. If a dependency parse contains $V$ vertexes and each is evaluated for possible deletion, this incurs a cost of $V$ units. In the worst case, an iterative deletion method prunes $V$ singleton subtrees, consisting of single vertexes, starting from the leaves of the original dependency parse and proceeding to the root of the original dependency parse. If all vertexes are evaluated at all time steps, then pruning the tree requires at most $\sum_{i = 0}^M V - i = O(V^2)$ operations. 
+Moreover, the order in which 
 
-
-There are two free parameters in the iterative deletion approach: (1) how to decide if a particular subtree may be deleted and (2) what order should subtrees be considered for deletion. In this study, we consider varying answers to each of these two questions.
-
-
+%The benefits of iterative deletion include (1) easily making use of new and existing forms of supervision for the sentence compression task (2) easily acc
 
 \section{Why iterative deletion is good}\label{s:method}
 \begin{enumerate}
