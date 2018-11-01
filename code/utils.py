@@ -70,14 +70,14 @@ def get_labeled_toks(node, jdoc):
     # This assertion is false in cases where you greedily prune in the middle of 
     # trees. it is true if you only only prune a whole branch 
     #assert len(cut) == len(range(mint, maxt + 1))
-    labeled_toks = []
+    labeled_toks = [{"word": "SOS"}]
     for counter, t in enumerate(toks):
         if t["index"] == mint:
             labeled_toks.append({"word": START, "index": t["index"]})
         labeled_toks.append({"word": t["word"], "index": t["index"]})
         if t["index"] == maxt:
             labeled_toks.append({"word": END, "index": t["index"]})
-    return labeled_toks
+    return labeled_toks + [{"word": "EOS"}]
 
 
 def prune_deletes_q(vertex, jdoc):
