@@ -90,19 +90,7 @@ Like ILP-based methods, iterative deletion approaches can easily accommodate lex
 
 However, iterative deletion methods incur much smaller computational costs than integer programming techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $M$ timesteps. (In this case, the algorithm would prune one singleton vertex per time step, starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep as pruning proceeds, then the iterative deletion method rrequires at most $\sum_{i = 0}^M V - i = O(V^2)$ operations.
 
-This worst case represents the theoretical upper bound of iterative deletion techniques. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of a prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human acceptability judgements for extractive sentence compression can reduce the empirical computational complexity of the iterative deletion algorithm.
-
-Moreover, the order in which 
-
-%The benefits of iterative deletion include (1) easily making use of new and existing forms of supervision for the sentence compression task (2) easily acc
-
-\section{Why iterative deletion is good}\label{s:method}
-\begin{enumerate}
-\item{Historical reasons}
-\item{grammatical bias + syntax bias + linguistically-motivated? Leverages a lot that is know from linguistics: e.g. adjuncts, transitive bias, function words.}
-\item{single op supervision can be used}
-\item{avoid computational waste w/ grammar! HUGE divergence between mathematical properties of compression problem (exponential) and ways you can actually compress a sentence.}
-\end{enumerate}
+This worst case represents the theoretical upper bound of iterative deletion techniques. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of a prepositional phrase. Iterative deletion methods easily accommodate such information about the structure of English. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm. We also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
 
 \subsection{Unconstrained compression with LSTMs}
 
