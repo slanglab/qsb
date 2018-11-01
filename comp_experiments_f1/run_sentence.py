@@ -17,12 +17,12 @@ if __name__ == "__main__":
 
     range_ = range(args.sentence * 100, args.sentence * 100 + 100)
 
-    with open("preproc/validation.jsonl", "r") as inf:
+    with open("preproc/lstm_validation.jsonl", "r") as inf:
         for vno, _ in enumerate(inf):
             if vno in range_:
                 sentence = json.loads(_)
                 model = NeuralNetworkTransitionGreedy(args.archive_loc)
-                orig_ix = [_["index"] for _ in sentence["tokens"]]
+                orig_ix = sentence["original_ix"]
                 y_true = [_ in sentence["compression_indexes"] for _ in orig_ix]
                 y_pred = model.predict(sentence)
                 f1 = f1_score(y_true=y_true, y_pred=y_pred)

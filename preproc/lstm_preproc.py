@@ -1,13 +1,14 @@
 # coding: utf-8
 
 import json
-
+import copy
 import random
 
 from code.treeops import prune
 from code.treeops import get_walk_from_root
 from collections import Counter
 from code.utils import get_labeled_toks
+from code.printers import pretty_print_conl
 
 
 def get_root(w):
@@ -40,11 +41,15 @@ def save_split(fn, data, cap=None):
                     break  # early stopping
                 if ino in data:
                     _ = json.loads(_)
+                    orig_ix = [i["index"] for i in _["tokens"]]
+                    r = " ".join([i["word"] for i in _["tokens"] if i["index"] in _["compression_indexes"]])
+                    r = len(r)
+                    deps = copy.deepcopy(_["basicDependencies"])
                     if is_prune_only(jdoc=_):
                         walk = get_walk_from_root(_)
-                        for node in walk: 
+                        for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
-                            oracle_label = _["oracle"][str(node)]
+                            oracle_label = _["oracle"][str(node)] 
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -53,11 +58,19 @@ def save_split(fn, data, cap=None):
                             ## be an easier way to unify prune and extract
                             if oracle_label == "e":
                                 oracle_label = "NA"
+
                             if node in toks_remaining:
+                                dep = [ii["dep"] for ii in _["basicDependencies"]
+                                       if ii["dependent"] == node][0]
                                 tmp = {
                                     "compression_indexes": _["compression_indexes"],
-                                    "label": oracle_label, 
-                                    "tokens": get_labeled_toks(node, _)
+                                    "label": oracle_label,
+                                    "dep": dep,
+                                    "tokens": get_labeled_toks(node, _),
+                                    "q": _['q'],
+                                    "r": r,
+                                    "original_ix": orig_ix,
+                                    "basicDependencies": deps
                                 }
                                 of.write(json.dumps(tmp) + "\n")
                                 total_so_far += 1
@@ -77,6 +90,7 @@ if __name__ == "__main__":
         for _ in inf:
             c += 1
 
+    print c
     c = range(c)
     random.shuffle(c)
 

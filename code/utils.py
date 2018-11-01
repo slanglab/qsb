@@ -59,8 +59,9 @@ def get_NER_query(jdoc):
 
 
 def get_labeled_toks(node, jdoc):
-    START = "OOVSTART"
-    END = "OOVEND"
+    dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
+    START = "OOVSTART" + dep
+    END = "OOVEND" + dep
     toks = [i for i in jdoc["tokens"]]
     cut = dfs(g=jdoc, hop_s=node, D=[])
     cut.sort()
@@ -72,15 +73,15 @@ def get_labeled_toks(node, jdoc):
     labeled_toks = []
     for counter, t in enumerate(toks):
         if t["index"] == mint:
-            labeled_toks.append(START)
-        labeled_toks.append(t["word"])
+            labeled_toks.append({"word": START, "index": t["index"]})
+        labeled_toks.append({"word": t["word"], "index": t["index"]})
         if t["index"] == maxt:
-            labeled_toks.append(END)
+            labeled_toks.append({"word": END, "index": t["index"]})
     return labeled_toks
 
 
 def prune_deletes_q(vertex, jdoc):
     '''would pruning this vertex delete any query items?'''
     q = jdoc["q"]
-    pruned = bfs(g=jdoc, v=vertex)
+    pruned = dfs(g=jdoc, hop_s=vertex, D=[])
     return len(set(pruned) & set(q)) > 0

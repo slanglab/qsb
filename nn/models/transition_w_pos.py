@@ -113,13 +113,11 @@ class AcademicPaperClassifier(Model):
         embedded_abstract = self.text_field_embedder(sentence)
         abstract_mask = util.get_text_field_mask(sentence)
         encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
-        
-        values, indices = torch.max(encoded_abstract, 1) 
+
+        values, indices = torch.max(encoded_abstract, 1)
 
         logits2 = self.classifier_feedforward(values)
-       
 
-        
         output_dict = {'logits': logits2}
         if label is not None:
             loss = self.loss(logits2, label)

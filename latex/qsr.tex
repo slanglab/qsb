@@ -50,11 +50,26 @@
 \maketitle
 
 \begin{abstract}
-TODO
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under  constraints, using both classical ILP-based methods and modern neural network techniques. We introduce a new compression method which can accomodate such constraints.
 \end{abstract}
 
-\section{Outline}
+\section{Introduction}
+Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) compressions must contain a user's query term. An example of such compressions is shown in figure \ahcomment{TODO}.
 
+This study examines sentence compression under such constraints. While older, ILP-based methods could easily accommodate hard length and lexical requirements, recent work has focused on neural network methods which do not give practitioners such control. This makes such methods unsuitable for 
+search engines, concept map browsers and new forms of exploratory textual interfaces, where length and lexical constraints are paramount. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} Compression methods which achieve high predictive accuracy on gold training data are simply not useful for practitioners who must include query terms in shortened sentences; or scale compressions to a desktop interface or mobile phone.
+
+This work presents a new, transition-based method which leverages the predictive power of neural methods, while accommodating length and lexical requirements. We compare our method, \textbf{iterative deletion} to traditional ILP-based techniques, which also give a user such control.
+
+%Traditional study of extractive sentence compression seeks to create shorter versions of source sentences, which retain the most ``important'' information from the source. Recent work 
+%\ahcomment{blah blah NN great but lose .}
+
+%In such settings, extractive sentence compression seeks to further shorten selected sentences by deleting ``unimportant" words. However, in user-facing search systems, such as traditional search engines, concept map browsers and new forms of exploratory textual interfaces. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} 
+
+In this study, we examine 
+
+
+\section{Outline}
 \begin{enumerate}
 \item{$(q,s,r)$ compression is useful.}
 \item{How do you do it? ILPs, neural net taggers, iterative deletion supervised w/ people or w/ gold data? (\S\ref{s:method}).}
