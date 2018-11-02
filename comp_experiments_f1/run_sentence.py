@@ -42,7 +42,7 @@ if __name__ == "__main__":
                 y_pred = out["y_pred"]
                 ops = out["nops"]
                 f1 = f1_score(y_true=y_true, y_pred=y_pred)
-                config[vno] = out
+                config[vno] = {'f1': f1, "nops": ops}
 
     out_ = config["results_dir"] + "/{}-{}".format(str(args.start),
                                                    config["model"])
