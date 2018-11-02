@@ -1,11 +1,15 @@
 from __future__ import division
 import json
 import random
+import sys
+
+
+experiment = sys.argv[1] 
 
 
 def make_rando():
 
-    with open("nn/op_classifier.json", "r") as inf:
+    with open(experiment, "r") as inf:
         dt = json.load(inf)
 
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(10, 2000)
