@@ -99,7 +99,7 @@ class AcademicPaperClassifier(Model):
         n_samples = sum(dt.values())
         a = np.zeros(n_classes, dtype=np.float32)
         for i in range(n_classes):
-            a[i] = n_samples / (dt[self.labelv[str(i)]] * n_classes)
+            a[i] = n_samples / (dt[self.labelv[i]] * n_classes)
         with open("wut", "w") as of:
             of.write(np.array_str(a)) 
         a = torch.from_numpy(a)
