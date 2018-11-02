@@ -108,17 +108,17 @@ We contrast iterative deletion and integer programming approaches with LSTM tagg
 
 \section{Transition-based sentence compression}
 
-We define a neural, transition-based sentence compression system, inspired by recent successes in transition-based dependency parsing \cite{D14-1082}. At each timestep during compression, our system has a state, ${(V_c,E_c)}$: a graph which represents a compression of a sentence. ${(V_c,E_c)}$ may not be a valid tree. Our system also references ${(V_s,E_s)}$, the original, unchanging dependency parse tree of a sentence. 
+We define a neural, transition-based sentence compression system, inspired by recent successes in transition-based dependency parsing \cite{D14-1082}. At each timestep during compression, our system has a state, ${(V_c,E_c)}$: a graph which represents a compression of a sentence. ${(V_c,E_c)}$ may not be a valid tree; in some cases the graph will not be fully-connected. Our system also references ${(V_s,E_s)}$, the original, unchanging dependency parse tree of a sentence. 
 
 We define two operations on vertexes which modify ${(V_c,E_c)}$. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds the subtree to the compression ${(V_c,E_c)}$. After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence.
 
 We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
 
-We assign an oracle operation to each $v \in V_s$, by walking the original dependency parse, breadth-first. For roughly two thirds of vertexes in the breath-first walk of ${(V_s,E_s)}$, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which oracle leaves ${(V_c,E_c)}$ unmodified.
+We assign an oracle operation to each $v \in V_s$, by walking the dependency parse of the original sentence, breadth-first. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which oracle leaves ${(V_c,E_c)}$ unmodified.
 
 Following \cite{D14-1082}, we then create a training set of tuples: ${((V_c,E_c)_i, y_i)}$, where $(V_c,E_c)_i)$ is the state of the system at step $i$ along the oracle path and $y_i$ is the oracle operation $\in \{\textsc{Prune}(v_c), \textsc{Insert}(v_s),  \textsc{Nop}\}$.
 
-\ahcomment{Details of what we implement}
+We then train a standard LSTM classifier to predict the oracle operation $y_i$ given the state, $(V_c,E_c)_i)$.
 
 
 \ahcomment{Here by nov 1 EOD}
