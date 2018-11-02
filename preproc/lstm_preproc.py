@@ -72,24 +72,29 @@ def save_split(fn, data, threeway=False, cap=None):
                             if (oracle_label == "e") or (node in vc):
                                 dep = [ii["dep"] for ii in _["basicDependencies"]
                                        if ii["dependent"] == node][0]
+                                if oracle_label == "s":
+                                    encoded_tokens = get_labeled_toks(node, state)
+
+                                if tmp["label"] == "e":
+                                    subtree = extract_for_state(g=se_ve, v=node)
+                                    state["tokens"] = state["tokens"] + subtree["tokens"]
+                                    state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
+
                                 tmp = {
                                     "compression_indexes": _["compression_indexes"],
                                     "label": oracle_label,
                                     "dep": dep,
-                                    "tokens": get_labeled_toks(node, state),
                                     "q": _['q'],
                                     "r": r,
                                     "original_ix": orig_ix,
                                     "basicDependencies": deps
                                 }
+
+                                tmp["tokens"] = encoded_tokens,
                                 of.write(json.dumps(tmp) + "\n")
                                 total_so_far += 1
                                 if tmp["label"] == "p":
                                     prune(g=state, v=node)
-                                if tmp["label"] == "e":
-                                    subtree = extract_for_state(g=se_ve, v=node)
-                                    state["tokens"] = state["tokens"] + subtree["tokens"]
-                                    state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
 
 if __name__ == "__main__":
 
