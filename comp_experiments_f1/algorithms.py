@@ -46,8 +46,10 @@ class NeuralNetworkTransitionGreedy:
         prev_length = 0
         length = self.get_char_length(jdoc)
         orig_toks = jdoc["original_ix"]
+        nops = 0
         while length != prev_length and length > int(jdoc["r"]):
             vertexes = list(self.predict_vertexes(jdoc).items())
+            nops += len(vertexes)
             vertexes.sort(key=lambda x: x[1], reverse=True)
             vertex, prob = vertexes[0]
             prune(g=jdoc, v=vertex)
@@ -56,9 +58,13 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(jdoc)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in jdoc["tokens"]]
-            return [_ in remaining_toks for _ in orig_toks]
+            {"y_pred":[_ in remaining_toks for _ in orig_toks],
+            "nops": nops
+            }
         else:
-            return "could not find a compression"
+            return {"y_pred": "could not find a compression",
+                    "nops": nops 
+                    }
 
 
 class NeuralNetworkTransitionBFS:
