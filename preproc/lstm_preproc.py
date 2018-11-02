@@ -25,13 +25,14 @@ def is_prune_only(jdoc):
     return gov == 0 and one_extract
 
 
-def save_split(fn, data, cap=None):
+def save_split(fn, data, threeway=False, cap=None):
     '''
     note, avoiding pulling a whole big corpus into memory so this can scale up
     inputs:
         fn (str): output file
         data (list<int>): a list of lines that are included in training set
         cap (int): maximum number of examples to generate
+        threeway (bool): do 3-way classification?
     '''
     total_so_far = 0
     with open(CORPUS, 'r') as inf:
@@ -56,7 +57,7 @@ def save_split(fn, data, cap=None):
                             ## the buffer. Another view of this is bottom up where
                             ## the decision is "attach" or "finish". That might
                             ## be an easier way to unify prune and extract
-                            if oracle_label == "e":
+                            if oracle_label == "e" and not threeway:
                                 oracle_label = "NA"
 
                             if node in toks_remaining:
@@ -90,7 +91,6 @@ if __name__ == "__main__":
         for _ in inf:
             c += 1
 
-    print c
     c = range(c)
     random.shuffle(c)
 
@@ -104,6 +104,10 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    save_split('preproc/lstm_train.jsonl', train, 500000)
+    N = 1000000
 
+    save_split('preproc/lstm_train.jsonl', train, N)
     save_split('preproc/lstm_validation.jsonl', val, 10000)
+
+    save_split('preproc/lstm_train_3way.jsonl', train, N)
+    save_split('preproc/lstm_validation_3way.jsonl', val, 10000)
