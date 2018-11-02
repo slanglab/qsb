@@ -29,7 +29,6 @@ if __name__ == "__main__":
                 orig_ix = sentence["original_ix"]
                 y_true = [_ in sentence["compression_indexes"] for _ in orig_ix]
                 out = model.predict(sentence)
-                print(out)
                 y_pred = out["y_pred"]
                 ops = out["nops"]        
                 f1 = f1_score(y_true=y_true, y_pred=y_pred)
