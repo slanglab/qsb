@@ -42,8 +42,8 @@ if __name__ == "__main__":
                 y_pred = out["y_pred"]
                 ops = out["nops"]
                 f1 = f1_score(y_true=y_true, y_pred=y_pred)
-                out_ = config.results_dir + "/{}-{}".format(vno,
-                                                            config.model)
+                out_ = config["results_dir"] + "/{}-{}".format(vno,
+                                                            config["model"])
                 config[sentence] = out_
 
     with open(out_, "w") as of:
