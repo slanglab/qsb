@@ -10,15 +10,16 @@ def strip_tags(tokens):
             not in _["word"] and "OOV" not in _["word"]]
 
 
-def get_model(model):
-    if model == "nn-greedy-query":
-        return NeuralNetworkTransitionGreedy(config.archive_loc)
+def get_model(config):
+    if config["model"] == "nn-greedy-query":
+        return NeuralNetworkTransitionGreedy(config["archive_loc"])
+    assert "unknown" == "model"
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-start", type=int)
-    parser.add_argument("-config", type=int)
+    parser.add_argument("-config", type=str)
     args = parser.parse_args()
 
     with open(args.config, "r") as inf:
@@ -33,7 +34,7 @@ if __name__ == "__main__":
             if vno in range_:
                 sentence = json.loads(_)
                 sentence["tokens"] = strip_tags(sentence["tokens"])
-                model = get_model(config["model"])
+                model = get_model(config)
                 orig_ix = sentence["original_ix"]
                 y_true = [_ in sentence["compression_indexes"] for
                           _ in orig_ix]

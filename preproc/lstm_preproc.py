@@ -104,6 +104,6 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    save_split('preproc/lstm_train.jsonl', train, 100000)
+    save_split('preproc/lstm_train.jsonl', train, 500000)
 
     save_split('preproc/lstm_validation.jsonl', val, 10000)
