@@ -14,6 +14,7 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[hyperref]{naaclhlt2019}
 \usepackage{times}
+\usepackage{graphicx}
 \usepackage{latexsym}
 
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
@@ -56,9 +57,16 @@ Traditional approaches to extractive sentence compression seek to reduce the len
 \section{Introduction}
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) compressions must contain a user's query term. An example of such a compression system is shown in figure \ahcomment{TODO}.
 
+
 This study examines sentence compression under strict lexical and length constraints, in which a compression must be shorter than a given character budget and must include particular words. While older compression methods based on integer linear programming could trivially accommodate length and lexical restrictions, recent work has focused on neural network techniques which do not give practitioners such control. This makes existing neural methods unsuitable for search engines, concept map browsers and new forms of exploratory textual interfaces, where length and lexical constraints are paramount. \ahcomment{Cite hearst, IR book, falke, marchioni. examples.} Systems that can sometimes recreate gold training data are simply not useful for practitioners who must include query terms in shortened sentences; or scale compressions to a desktop interface or mobile phone.
 
 \ahcomment{sign posting}
+
+\begin{figure}[htb!]
+\includegraphics[width=9cm]{qf.pdf}
+\caption{Search interfaces often require compressions with length and lexical constraints. In this case, the user has queried for ``Pemex contracts"; a system returns a related link and query-biased snipped.}
+\end{figure}
+
 
 \section{Compression and constraints}
 
