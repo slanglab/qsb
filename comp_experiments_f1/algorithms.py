@@ -58,9 +58,9 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(jdoc)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in jdoc["tokens"]]
-            {"y_pred":[_ in remaining_toks for _ in orig_toks],
-            "nops": nops
-            }
+            return {"y_pred":[_ in remaining_toks for _ in orig_toks],
+                    "nops": nops
+                    }
         else:
             return {"y_pred": "could not find a compression",
                     "nops": nops 
