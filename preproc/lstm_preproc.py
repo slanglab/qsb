@@ -50,7 +50,7 @@ def save_split(fn, data, threeway=False, cap=None):
                     deps = copy.deepcopy(_["basicDependencies"])
                     if threeway or (not threeway and is_prune_only(jdoc=_)):
                         walk = get_walk_from_root(_)
-                        state = {}
+                        state = {"tokens": [], "basicDependencies": []}
                         for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
                             oracle_label = _["oracle"][str(node)]
