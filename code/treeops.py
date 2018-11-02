@@ -306,9 +306,17 @@ def extract_for_state(g, v):
     - pass by reference
     '''
     D = dfs(g, v, D=[])
-    return {"tokens": [t for t in g["tokens"] if t["index"] in D],
-            "basicDependencies": [d for d in g[DEPS] if
-                     d["governor"] in D and d["dependent"] in D]}
+    out = {"tokens": [t for t in g["tokens"] if t["index"] in D],
+           "basicDependencies": [d for d in g[DEPS] if
+                                 d["govesrnor"] in D and d["dependent"] in D]}
+
+    # you need to add an edge from root to v.
+    # this is just for labeling tokens for LSTM encoding => does not affect comrpession
+    dep = {u'dep': u'ROOT', u'dependent': v, u'governor': 0}
+
+    out["basicDependencies"].append(dep)
+
+    return out
 
 
 def get_walk_from_root(jdoc):

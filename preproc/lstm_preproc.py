@@ -55,7 +55,6 @@ def save_split(fn, data, threeway=False, cap=None):
                         walk = get_walk_from_root(_)
                         state = {"tokens": [], "basicDependencies": []}
                         for node in walk:
-                            toks_remaining = [i["index"] for i in _["tokens"]]
                             oracle_label = _["oracle"][str(node)]
                             print(oracle_label)
                             ## for now, let's just do binary classification
@@ -88,6 +87,7 @@ def save_split(fn, data, threeway=False, cap=None):
 
                                 if encoding["label"] == "e":
                                     subtree = extract_for_state(g=se_ve, v=node)
+                                    print(subtree)
                                     state["tokens"] = state["tokens"] + subtree["tokens"]
                                     state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
                                     encoded_tokens = get_labeled_toks(node, state)
