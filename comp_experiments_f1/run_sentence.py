@@ -12,7 +12,10 @@ def strip_tags(tokens):
 
 def get_model(config):
     if config["model"] == "nn-greedy-query":
-        return NeuralNetworkTransitionGreedy(config["archive_loc"])
+        query_focused = config["query"]
+        print(query_focused)
+        return NeuralNetworkTransitionGreedy(config["archive_loc"],
+                                             query_focused)
     assert "unknown" == "model"
 
 

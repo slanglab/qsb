@@ -10,9 +10,10 @@ import json
 
 
 class NeuralNetworkTransitionGreedy:
-    def __init__(self, archive_loc):
+    def __init__(self, archive_loc, query_focused=True):
         assert type(archive_loc) == str
         archive = load_archive(archive_file=archive_loc)
+        self.query_focused = query_focused
         self.predictor = Predictor.from_archive(archive, "paper-classifier")
 
     def predict_proba(self, jdoc, vertex):
@@ -32,8 +33,13 @@ class NeuralNetworkTransitionGreedy:
         what is probability that this vertex is prunable,
         according to transition-based nn model
         '''
-        return {_["index"]: self.predict_proba(jdoc, _["index"])
-                for _ in jdoc["tokens"] if not prune_deletes_q(_["index"], jdoc)}
+        if self.query_focused:
+            return {_["index"]: self.predict_proba(jdoc, _["index"])
+                    for _ in jdoc["tokens"] if not prune_deletes_q(_["index"],
+                                                                   jdoc)}
+        else:
+            return {_["index"]: self.predict_proba(jdoc, _["index"])
+                    for _ in jdoc["tokens"]}
 
     def get_char_length(self, jdoc):
         assert type(jdoc["tokens"][0]["word"]) == str
@@ -58,12 +64,12 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(jdoc)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in jdoc["tokens"]]
-            return {"y_pred":[_ in remaining_toks for _ in orig_toks],
+            return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                     "nops": nops
                     }
         else:
             return {"y_pred": "could not find a compression",
-                    "nops": nops 
+                    "nops": nops
                     }
 
 

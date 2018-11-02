@@ -15,6 +15,6 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
             if "sentence" in k:
                 results[dt["model"]]["f1"].append(v["f1"])
                 results[dt["model"]]["nops"].append(v["nops"])
-    
+
 print np.mean(results["nn-greedy-query"]["f1"])
 print np.mean(results["nn-greedy-query"]["nops"])
