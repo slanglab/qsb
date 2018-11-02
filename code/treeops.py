@@ -307,7 +307,7 @@ def extract_for_state(g, v):
     '''
     D = dfs(g, v, D=[])
     return {"tokens": [t for t in g["tokens"] if t["index"] in D],
-            "deps": [d for d in g[DEPS] if
+            "basicDependencies": [d for d in g[DEPS] if
                      d["governor"] in D and d["dependent"] in D]}
 
 

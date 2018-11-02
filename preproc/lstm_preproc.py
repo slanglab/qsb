@@ -42,7 +42,10 @@ def save_split(fn, data, threeway=False, cap=None):
                 if cap is not None and total_so_far > cap:
                     break  # early stopping
                 if ino in data:
+                    print("***")
+                    print(ino)
                     _ = json.loads(_)
+                    se_ve = copy.deepcopy(_)
                     orig_ix = [i["index"] for i in _["tokens"]]
                     r = " ".join([i["word"] for i in _["tokens"] if i["index"]
                                   in _["compression_indexes"]])
@@ -54,6 +57,7 @@ def save_split(fn, data, threeway=False, cap=None):
                         for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
                             oracle_label = _["oracle"][str(node)]
+                            print(oracle_label)
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -81,7 +85,7 @@ def save_split(fn, data, threeway=False, cap=None):
                                 if tmp["label"] == "p":
                                     prune(g=state, v=node)
                                 if tmp["label"] == "e":
-                                    subtree = extract_for_state(g=state, v=node)
+                                    subtree = extract_for_state(g=se_ve, v=node)
                                     state["tokens"] = state["tokens"] + subtree["tokens"]
                                     state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
 

@@ -59,6 +59,12 @@ def get_NER_query(jdoc):
 
 
 def get_labeled_toks(node, jdoc):
+    if len(jdoc["tokens"]) == 0:
+        labeled_toks = [{"word": "SOS"},{"word": "EOS"}]
+        return labeled_toks
+    from code.printers import pretty_print_conl
+    print(node)
+    pretty_print_conl(jdoc) 
     dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
     START = "OOVSTART" + dep
     END = "OOVEND" + dep
