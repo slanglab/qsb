@@ -87,12 +87,21 @@ class AcademicPaperClassifier(Model):
             dt2 = inf.read().split("\n")
             dt2 = [_.strip().split() for _ in dt2 if len(_) > 0]
             dt2 = {v.strip('"'):int(k) for k,v in dt2}
- 
-        n_samples = 100010 
-        n_classes = 2
-        a = np.zeros(2, dtype=np.float32)
-        a[0] = n_samples / (66404 * n_classes)
-        a[1] = n_samples / (33606 * n_classes)  
+  
+        n_classes = len(self.labelv)
+        if n_classes == 2:
+            dt = dt2
+        elif n_classes == 3:
+            dt = dt3 
+        else:
+            assert "bad" == "thing" 
+        
+        n_samples = sum(dt.values())
+        a = np.zeros(n_classes, dtype=np.float32)
+        for i in range(n_classes):
+            a[i] = n_samples / (dt[self.labelv[str(i)]] * n_classes)
+        with open("wut", "w") as of:
+            of.write(np.array_str(a)) 
         a = torch.from_numpy(a)
         self.loss = torch.nn.CrossEntropyLoss(weight=a)
 
