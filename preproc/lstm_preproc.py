@@ -67,7 +67,9 @@ def save_split(fn, data, threeway=False, cap=None):
                             if oracle_label == "e" and not threeway:
                                 oracle_label = "NA"
 
-                            if node in toks_remaining:
+                            # current vertexes in compression
+                            vc = [t["index"] for t in state]
+                            if (oracle_label == "e") or (node in vc):
                                 dep = [ii["dep"] for ii in _["basicDependencies"]
                                        if ii["dependent"] == node][0]
                                 tmp = {
