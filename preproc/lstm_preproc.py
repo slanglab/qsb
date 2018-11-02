@@ -46,7 +46,7 @@ def save_split(fn, data, threeway=False, cap=None):
                     r = " ".join([i["word"] for i in _["tokens"] if i["index"] in _["compression_indexes"]])
                     r = len(r)
                     deps = copy.deepcopy(_["basicDependencies"])
-                    if is_prune_only(jdoc=_):
+                    if True:#is_prune_only(jdoc=_):
                         walk = get_walk_from_root(_)
                         for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
@@ -73,10 +73,14 @@ def save_split(fn, data, threeway=False, cap=None):
                                     "original_ix": orig_ix,
                                     "basicDependencies": deps
                                 }
-                                of.write(json.dumps(tmp) + "\n")
-                                total_so_far += 1
-                                if tmp["label"] == "p":
-                                    prune(g=_, v=node)
+                                if dep != "ROOT":
+                                    of.write(json.dumps(tmp) + "\n")
+                                    total_so_far += 1
+                                    print total_so_far
+                                    if tmp["label"] == "p":
+                                        prune(g=_, v=node)
+                                    if tmp["label"] == "e":
+                                        import ipdb;ipdb.set_trace()
 
 
 if __name__ == "__main__":
@@ -106,8 +110,10 @@ if __name__ == "__main__":
 
     N = 1000000
 
-    save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
-    save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)
 
     save_split('preproc/lstm_train_3way.jsonl', train, cap=N, threeway=True)
     save_split('preproc/lstm_validation_3way.jsonl', val, cap=10000, threeway=True)
+
+
+    save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
+    save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)
