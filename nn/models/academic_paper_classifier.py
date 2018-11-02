@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 import numpy
 from overrides import overrides
+import json
 import torch
 import torch.nn.functional as F
 
@@ -74,6 +75,18 @@ class AcademicPaperClassifier(Model):
 
         # http://scikit-learn.org/dev/modules/generated/sklearn.utils.class_weight.compute_sample_weight.html
         # The balanced mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data: n_samples / (n_classes * np.bincount(y))
+
+
+        with open("/mnt/nfs/work1/brenocon/ahandler/qsr/3way_counts.txt", "r") as inf:
+            dt3 = inf.read().split("\n")
+            dt3 = [_.strip().split() for _ in dt3 if len(_) > 0]
+            dt3 = {v.strip('"'):int(k) for k,v in dt3}
+
+
+        with open("/mnt/nfs/work1/brenocon/ahandler/qsr/2way_counts.txt", "r") as inf:
+            dt2 = inf.read().split("\n")
+            dt2 = [_.strip().split() for _ in dt2 if len(_) > 0]
+            dt2 = {v.strip('"'):int(k) for k,v in dt2}
  
         n_samples = 100010 
         n_classes = 2
