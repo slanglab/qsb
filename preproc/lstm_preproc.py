@@ -42,8 +42,6 @@ def save_split(fn, data, threeway=False, cap=None):
                 if cap is not None and total_so_far > cap:
                     break  # early stopping
                 if ino in data:
-                    print("***")
-                    print(ino)
                     _ = json.loads(_)
                     se_ve = copy.deepcopy(_)
                     orig_ix = [i["index"] for i in _["tokens"]]
@@ -56,7 +54,6 @@ def save_split(fn, data, threeway=False, cap=None):
                         state = {"tokens": [], "basicDependencies": []}
                         for node in walk:
                             oracle_label = _["oracle"][str(node)]
-                            print(oracle_label)
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -87,7 +84,6 @@ def save_split(fn, data, threeway=False, cap=None):
 
                                 if encoding["label"] == "e":
                                     subtree = extract_for_state(g=se_ve, v=node)
-                                    print(subtree)
                                     state["tokens"] = state["tokens"] + subtree["tokens"]
                                     state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
                                     encoded_tokens = get_labeled_toks(node, state)
