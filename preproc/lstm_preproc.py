@@ -68,7 +68,7 @@ def save_split(fn, data, threeway=False, cap=None):
                                 oracle_label = "NA"
 
                             # current vertexes in compression
-                            vc = [t["index"] for t in state]
+                            vc = [t["index"] for t in state["tokens"]]
                             if (oracle_label == "e") or (node in vc):
                                 dep = [ii["dep"] for ii in _["basicDependencies"]
                                        if ii["dependent"] == node][0]
