@@ -312,7 +312,9 @@ def extract_for_state(g, v):
 
     # you need to add an edge from root to v.
     # this is just for labeling tokens for LSTM encoding => does not affect comrpession
-    dep = {u'dep': u'ROOT', u'dependent': v, u'governor': 0}
+    dep_gloss = [j["word"] for j in g["tokens"] if j["index"] == v][0]
+    dep = {u'dep': u'ROOT', u'dependent': v, 'dependentGloss': dep_gloss,
+           u'governor': 0, 'governorGloss': "ROOT"}
 
     out["basicDependencies"].append(dep)
 
@@ -324,6 +326,6 @@ def get_walk_from_root(jdoc):
     just a convenience method that returns a walk from root, breath-first
     '''
     d, pi, c = bfs(jdoc, 0)
-    vertexes_and_depts = [(vertex,depth) for vertex,depth in d.items()]
-    vertexes_and_depts.sort(key=lambda x:x[1])
+    vertexes_and_depts = [(vertex, depth) for vertex, depth in d.items()]
+    vertexes_and_depts.sort(key=lambda x: x[1])
     return [vertex for vertex, depth in vertexes_and_depts if depth > 0]
