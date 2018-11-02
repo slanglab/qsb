@@ -1,17 +1,20 @@
 import glob
+import json
 import numpy as np
+from collections import defaultdict
 
-models = ["nn"]
+results = defaultdict(lambda: defaultdict(list))
+
 
 for fn in glob.glob("comp_experiments_f1/output/*"):
     with open(fn, "r") as inf:
-        dt = inf.read()
+        dt = json.load(inf)
         f1s = []
         nops = []
         for k, v in dt.items():
             if "sentence" in k:
-                f1s.append(float(v["f1"]))
-                nops.append(float(v["nops"]))
-        f1s = np.mean(f1s)
-        ops = np.mean(nops)
-        print f1s, nops
+                results[dt["model"]]["f1"].append(v["f1"])
+                results[dt["model"]]["nops"].append(v["nops"])
+    
+print np.mean(results["nn-greedy-query"]["f1"])
+print np.mean(results["nn-greedy-query"]["nops"])
