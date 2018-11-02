@@ -300,6 +300,17 @@ def extract(g, v):
     g[DEPS] = [d for d in g[DEPS] if d["governor"] in D and d["dependent"] in D]
 
 
+def extract_for_state(g, v):
+    '''
+    get the subtree rooted at D
+    - pass by reference
+    '''
+    D = dfs(g, v, D=[])
+    return {"tokens": [t for t in g["tokens"] if t["index"] in D],
+            "deps": [d for d in g[DEPS] if
+                     d["governor"] in D and d["dependent"] in D]}
+
+
 def get_walk_from_root(jdoc):
     '''
     just a convenience method that returns a walk from root, breath-first

@@ -108,9 +108,11 @@ We contrast iterative deletion and integer programming approaches with LSTM tagg
 
 \section{Transition-based sentence compression}
 
-We define a neural, transition-based sentence compression system, inspired by recent successes in transition-based dependency parsing \cite{D14-1082}. At each timestep during compression, our system has a state, ${(V_c,E_c)}$: a graph which represents a compression of a sentence. ${(V_c,E_c)}$ may not be a valid tree; in some cases the graph will not be fully-connected. Our system also references ${(V_s,E_s)}$, the original, unchanging dependency parse tree of a sentence. 
+We define a neural, transition-based sentence compression system, inspired by recent successes in transition-based dependency parsing \cite{D14-1082}. At each timestep during compression, our system has a state, ${(V_c,E_c)}$: a graph which represents a compression of a sentence. ${(V_c,E_c)}$ may not be a valid tree; in some cases the graph will not be fully-connected. Our system also references ${(V_s,E_s)}$, the original, unchanging dependency parse tree of a sentence. ${(V_c,E_c)}$ is always a subgraph of ${(V_s,E_s)}$.
 
-We define two operations on vertexes which modify ${(V_c,E_c)}$. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds the subtree to the compression ${(V_c,E_c)}$. After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence.
+We define two operations on vertexes which modify ${(V_c,E_c)}$. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds the subtree to the compression ${(V_c,E_c)}$. 
+
+${(V_c,E_c)}$ is initialized to ${(V_s,E_s)}$. After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence.
 
 We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
 

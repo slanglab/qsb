@@ -6,6 +6,7 @@ import random
 
 from code.treeops import prune
 from code.treeops import get_walk_from_root
+from code.treeops import extract_for_state
 from collections import Counter
 from code.utils import get_labeled_toks
 from code.printers import pretty_print_conl
@@ -43,14 +44,16 @@ def save_split(fn, data, threeway=False, cap=None):
                 if ino in data:
                     _ = json.loads(_)
                     orig_ix = [i["index"] for i in _["tokens"]]
-                    r = " ".join([i["word"] for i in _["tokens"] if i["index"] in _["compression_indexes"]])
+                    r = " ".join([i["word"] for i in _["tokens"] if i["index"]
+                                  in _["compression_indexes"]])
                     r = len(r)
                     deps = copy.deepcopy(_["basicDependencies"])
-                    if True:#is_prune_only(jdoc=_):
+                    if threeway or (not threeway and is_prune_only(jdoc=_)):
                         walk = get_walk_from_root(_)
+                        state = {}
                         for node in walk:
                             toks_remaining = [i["index"] for i in _["tokens"]]
-                            oracle_label = _["oracle"][str(node)] 
+                            oracle_label = _["oracle"][str(node)]
                             ## for now, let's just do binary classification
                             ## This extract op does not work in obvious ways
                             ## w/ iterative deletion as extract adds tokens to
@@ -67,21 +70,20 @@ def save_split(fn, data, threeway=False, cap=None):
                                     "compression_indexes": _["compression_indexes"],
                                     "label": oracle_label,
                                     "dep": dep,
-                                    "tokens": get_labeled_toks(node, _),
+                                    "tokens": get_labeled_toks(node, state),
                                     "q": _['q'],
                                     "r": r,
                                     "original_ix": orig_ix,
                                     "basicDependencies": deps
                                 }
-                                if dep != "ROOT":
-                                    of.write(json.dumps(tmp) + "\n")
-                                    total_so_far += 1
-                                    print total_so_far
-                                    if tmp["label"] == "p":
-                                        prune(g=_, v=node)
-                                    if tmp["label"] == "e":
-                                        import ipdb;ipdb.set_trace()
-
+                                of.write(json.dumps(tmp) + "\n")
+                                total_so_far += 1
+                                if tmp["label"] == "p":
+                                    prune(g=state, v=node)
+                                if tmp["label"] == "e":
+                                    subtree = extract_for_state(g=state, v=node)
+                                    state["tokens"] = state["tokens"] + subtree["tokens"]
+                                    state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
 
 if __name__ == "__main__":
 
@@ -110,10 +112,8 @@ if __name__ == "__main__":
 
     N = 1000000
 
-
     save_split('preproc/lstm_train_3way.jsonl', train, cap=N, threeway=True)
     save_split('preproc/lstm_validation_3way.jsonl', val, cap=10000, threeway=True)
-
 
     save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
     save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)
