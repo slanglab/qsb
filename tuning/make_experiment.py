@@ -2,10 +2,13 @@ from __future__ import division
 import json
 import random
 import sys
-
+import os
+import glob
 
 experiment = sys.argv[1] 
 
+for fn in glob.glob("/mnt/nfs/scratch1/ahandler/experiments/qsr/*json"):
+    os.remove(fn)
 
 def make_rando():
 
