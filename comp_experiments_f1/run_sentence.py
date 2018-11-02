@@ -44,7 +44,7 @@ if __name__ == "__main__":
                 f1 = f1_score(y_true=y_true, y_pred=y_pred)
                 out_ = config["results_dir"] + "/{}-{}".format(vno,
                                                             config["model"])
-                config[sentence] = out_
+                config[vno] = out_
 
     with open(out_, "w") as of:
         json.dump(config, of)
