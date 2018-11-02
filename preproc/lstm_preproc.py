@@ -106,8 +106,8 @@ if __name__ == "__main__":
 
     N = 1000000
 
-    save_split('preproc/lstm_train.jsonl', train, N)
-    save_split('preproc/lstm_validation.jsonl', val, 10000)
+    save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
+    save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)
 
-    save_split('preproc/lstm_train_3way.jsonl', train, N)
-    save_split('preproc/lstm_validation_3way.jsonl', val, 10000)
+    save_split('preproc/lstm_train_3way.jsonl', train, cap=N, threeway=True)
+    save_split('preproc/lstm_validation_3way.jsonl', val, cap=10000, threeway=True)
