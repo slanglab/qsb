@@ -60,7 +60,7 @@ def get_NER_query(jdoc):
 
 def get_labeled_toks(node, jdoc):
     if len(jdoc["tokens"]) == 0:
-        labeled_toks = [{"word": "SOS"},{"word": "EOS"}]
+        labeled_toks = [{"word": "SOS", "index": -1000},{"word": "EOS", "index":1000}]
         return labeled_toks
     dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
     START = "OOVSTART" + dep
@@ -75,14 +75,14 @@ def get_labeled_toks(node, jdoc):
     #assert len(cut) == len(range(mint, maxt + 1))
 
     # the indexes are added w/ +.5 and -.5 so toks get sorted in right order downstream
-    labeled_toks = [{"word": "SOS"}]
+    labeled_toks = [{"word": "SOS", "index": -1000}]
     for counter, t in enumerate(toks):
         if t["index"] == mint:
             labeled_toks.append({"word": START, "index": t["index"] - .5})
         labeled_toks.append({"word": t["word"], "index": t["index"]})
         if t["index"] == maxt:
             labeled_toks.append({"word": END, "index": t["index"] + .5})
-    return labeled_toks + [{"word": "EOS"}]
+    return labeled_toks + [{"word": "EOS", "index": 1000}]
 
 
 def prune_deletes_q(vertex, jdoc):
