@@ -22,6 +22,7 @@ def download():
 
 def lstm_preproc():
     local("python preproc/lstm_preproc.py")
+    local("cat preproc/lstm_train_3way.jsonl | jq .label | sort | uniq -c > preproc/3way_counts.txt")
     local("./scripts/send_to_gpu.sh")
 
 def computational_experiments_1():
