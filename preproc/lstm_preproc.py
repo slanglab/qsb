@@ -94,8 +94,8 @@ def save_split(fn, data, threeway=False, cap=None):
                                 total_so_far += 1
                                 if encoding["label"] == "p":
                                     prune(g=state, v=node)
-                    print([o["index"] for o in state["tokens"]])
-                    print(_["compression_indexes"])
+                    transition = [o["index"] for o in state["tokens"]]
+                    assert set(transition) == set(_["compression_indexes"])
 
 if __name__ == "__main__":
 
