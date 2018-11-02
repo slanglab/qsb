@@ -50,7 +50,7 @@
 \maketitle
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under  constraints, using both classical ILP-based methods and modern neural network techniques. We introduce a new neural compression method which can accommodate length and lexical requirements.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study examines extractive sentence compression under such constraints, using both classical ILP-based methods and modern neural network techniques. We introduce a new neural compression method which can accommodate length and lexical requirements.
 \end{abstract}
 
 \section{Introduction}
@@ -97,6 +97,12 @@ In section \S\ahcomment{TODO} we also examine how the order of subtree deletion 
 \subsection{Unconstrained compression with LSTMs}
 
 We contrast iterative deletion and integer programming approaches with LSTM taggers for the compression task. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence. However, at this time, LSTM taggers are unsuitable for query-focused applications because methods cannot enforce lexical or length requirements. This could be examined in future research.
+
+\section{Transition-based sentence compression}
+
+We define a transition-based sentence compression system. The state of our compression system is a buffer of tokens, $B$. Our system also makes reference to a dependency tree, $(V, E)$. We define two operations on vertexes, $v \in V$. \textsc{Remove}($v$) removes $v$ and all its descendants from the buffer;  \textsc{Add}$(v)$ places $v$ and all its its descendants to $B$. After a string of $\textsc{Add}$ and $\textsc{Remove}$ operations, all tokens in the buffer are linearized in their original order.
+
+We defined this system via empirical experiment. We find that for all compressions in the F and A corpus, there exists an oracle path, $O=[o_1, o_2 ... o_{|V|}]$ where $o_j \in \{$ \textsc{Prune}, \textsc{Extract}, \textsc{Pass} $\}$ that recreates all tokens. You must go BF. 
 
 \ahcomment{Details of what we implement}
 
