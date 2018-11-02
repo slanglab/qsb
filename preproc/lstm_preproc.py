@@ -88,6 +88,7 @@ def save_split(fn, data, threeway=False, cap=None):
                                     state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
                                     encoded_tokens = get_labeled_toks(node, state)
 
+                                encoded_tokens.sort(key=lambda x:float(x["index"]))
                                 encoding["tokens"] = encoded_tokens
 
                                 of.write(json.dumps(encoding) + "\n")
