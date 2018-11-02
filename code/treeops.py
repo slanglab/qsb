@@ -308,7 +308,7 @@ def extract_for_state(g, v):
     D = dfs(g, v, D=[])
     out = {"tokens": [t for t in g["tokens"] if t["index"] in D],
            "basicDependencies": [d for d in g[DEPS] if
-                                 d["govesrnor"] in D and d["dependent"] in D]}
+                                 d["governor"] in D and d["dependent"] in D]}
 
     # you need to add an edge from root to v.
     # this is just for labeling tokens for LSTM encoding => does not affect comrpession
