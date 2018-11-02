@@ -72,10 +72,8 @@ def save_split(fn, data, threeway=False, cap=None):
                             if (oracle_label == "e") or (node in vc):
                                 dep = [ii["dep"] for ii in _["basicDependencies"]
                                        if ii["dependent"] == node][0]
-                                if oracle_label == "s":
-                                    encoded_tokens = get_labeled_toks(node, state)
 
-                                tmp = {
+                                encoding = {
                                     "compression_indexes": _["compression_indexes"],
                                     "label": oracle_label,
                                     "dep": dep,
@@ -85,15 +83,20 @@ def save_split(fn, data, threeway=False, cap=None):
                                     "basicDependencies": deps
                                 }
 
-                                if tmp["label"] == "e":
+                                if oracle_label == "s":
+                                    encoded_tokens = get_labeled_toks(node, state)
+
+                                if encoding["label"] == "e":
                                     subtree = extract_for_state(g=se_ve, v=node)
                                     state["tokens"] = state["tokens"] + subtree["tokens"]
                                     state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
+                                    encoded_tokens = get_labeled_toks(node, state)
 
-                                tmp["tokens"] = encoded_tokens,
-                                of.write(json.dumps(tmp) + "\n")
+                                encoding["tokens"] = encoded_tokens
+
+                                of.write(json.dumps(encoding) + "\n")
                                 total_so_far += 1
-                                if tmp["label"] == "p":
+                                if encoding["label"] == "p":
                                     prune(g=state, v=node)
 
 if __name__ == "__main__":
