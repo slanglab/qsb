@@ -313,7 +313,8 @@ def extract_for_state(g, v):
     # you need to add an edge from root to v.
     # this is just for labeling tokens for LSTM encoding => does not affect comrpession
     dep_gloss = [j["word"] for j in g["tokens"] if j["index"] == v][0]
-    dep = {u'dep': u'ROOT', u'dependent': v, 'dependentGloss': dep_gloss,
+    dep_kind = [j["dep"] for j in g["basicDependencies"] if j["dependent"] == v][0]
+    dep = {u'dep': dep_kind, u'dependent': v, 'dependentGloss': dep_gloss,
            u'governor': 0, 'governorGloss': "ROOT"}
 
     out["basicDependencies"].append(dep)
