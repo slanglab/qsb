@@ -20,6 +20,8 @@ if __name__ == "__main__":
 
     range_ = range(args.sentence * 100, args.sentence * 100 + 100)
 
+    print(range_)
+
     with open("preproc/lstm_validation.jsonl", "r") as inf:
         for vno, _ in enumerate(inf):
             if vno in range_:
