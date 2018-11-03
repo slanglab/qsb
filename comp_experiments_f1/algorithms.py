@@ -117,15 +117,13 @@ class NeuralNetworkTransitionBFS:
         for vertex in get_walk_from_root(original_s):
             if in_compression(vertex, state):
                 proposed = PP
+                provisional_label = "p"
             else:
                 proposed = PE
+                provisional_label = "e"
 
-            # get_encoded_tokens(instance, state, original_s, node)
-            original_s["oracle"] = proposed
-
-            instance = get_instance(original_s, vertex, state)
-
-            toks = get_encoded_tokens(instance, state, original_s, vertex)
+            toks = get_encoded_tokens(provisional_label, state,
+                                      original_s, vertex)
 
             txt = " ".join([_["word"] for _ in toks])
 

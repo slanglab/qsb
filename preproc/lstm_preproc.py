@@ -74,10 +74,10 @@ def get_proposed(original_s, node, state):
     return proposed
 
 
-def get_encoded_tokens(instance, state, original_s, node):
-    if instance["label"] in ["p", "np"]:
+def get_encoded_tokens(label, state, original_s, node):
+    if label in ["p", "np"]:
         encoded_tokens = get_labeled_toks(node, state, PP)
-    elif instance["label"] in ["e", "ne"]:
+    elif label in ["e", "ne"]:
         proposed = get_proposed(original_s, node, state)
         encoded_tokens = get_labeled_toks(node, proposed, PE)
     else:
@@ -105,7 +105,7 @@ def save_split_3way(fn, data, cap=None):
                     state = {"tokens": [], "basicDependencies": []}
                     for node in walk:
                         instance = get_instance(original_s, node, state)
-                        instance["tokens"] = get_encoded_tokens(instance,
+                        instance["tokens"] = get_encoded_tokens(instance["label"],
                                                                 state,
                                                                 original_s,
                                                                 node)
