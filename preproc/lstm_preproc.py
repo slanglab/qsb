@@ -49,9 +49,13 @@ def get_governing_dep(original_s, node):
             if ii["dependent"] == node][0]
 
 
-def get_instance(original_s, node, state):
+def get_instance(original_s, node, state, oracle_label="unkown"):
+    '''
+    unknown oracle label is for test time
+    '''
     orig_ix = [i["index"] for i in original_s["tokens"]]
-    oracle_label = get_oracle_label(original_s, node, state)
+    if not oracle_label == "unkown":
+        oracle_label = get_oracle_label(original_s, node, state)
     encoding = {
                 "compression_indexes": original_s["compression_indexes"],
                 "label": oracle_label,
@@ -118,7 +122,6 @@ def save_split_3way(fn, data, cap=None):
                         total_so_far += 1
 
                     transition = [o["index"] for o in state["tokens"]]
-                        
                     assert set(transition) == set(original_s["compression_indexes"])
 
 

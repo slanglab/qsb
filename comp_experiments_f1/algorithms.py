@@ -6,6 +6,8 @@ from code.utils import prune_deletes_q
 from code.treeops import get_walk_from_root
 from preproc.lstm_preproc import get_instance
 from preproc.lstm_preproc import get_encoded_tokens
+from preproc.lstm_preproc import PP
+from preproc.lstm_preproc import PE
 import nn.models
 
 
@@ -110,14 +112,14 @@ class NeuralNetworkTransitionBFS:
             return vertex in [i["index"] for i in state_["tokens"]]
 
         for vertex in get_walk_from_root(original_s):
-            instance = get_instance(original_s, vertex, state)
+            instance = get_instance(original_s, vertex, state, oracle_label="unknown")
             if in_compression(vertex, state):
-                proposed = "p"
+                proposed = PP
             else:
-                proposed = "e"
+                proposed = PE
             instance = get_encoded_tokens(instance, state, original_s,
                                           vertex, proposed)
             instance = self.predictor._dataset_reader.text_to_instance(instance,
-                                                                       "e")
+                                                                       "unknown")
             pred = self.predictor.predict_instance(instance)
             import ipdb;ipdb.set_trace()
