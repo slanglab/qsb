@@ -26,14 +26,13 @@ def is_prune_only(jdoc):
     return gov == 0 and one_extract
 
 
-def save_split(fn, data, threeway=False, cap=None):
+def save_split_3way(fn, data, cap=None):
     '''
     note, avoiding pulling a whole big corpus into memory so this can scale up
     inputs:
         fn (str): output file
         data (list<int>): a list of lines that are included in training set
         cap (int): maximum number of examples to generate
-        threeway (bool): do 3-way classification?
     '''
     total_so_far = 0
     with open(CORPUS, 'r') as inf:
@@ -45,58 +44,53 @@ def save_split(fn, data, threeway=False, cap=None):
                     _ = json.loads(_)
                     se_ve = copy.deepcopy(_)
                     orig_ix = [i["index"] for i in _["tokens"]]
-                    r = " ".join([i["word"] for i in _["tokens"] if i["index"]
-                                  in _["compression_indexes"]])
-                    r = len(r)
-                    deps = copy.deepcopy(_["basicDependencies"])
-                    if threeway or (not threeway and is_prune_only(jdoc=_)):
-                        walk = get_walk_from_root(_)
-                        state = {"tokens": [], "basicDependencies": []}
-                        for node in walk:
-                            oracle_label = _["oracle"][str(node)]
-                            ## for now, let's just do binary classification
-                            ## This extract op does not work in obvious ways
-                            ## w/ iterative deletion as extract adds tokens to
-                            ## the buffer. Another view of this is bottom up where
-                            ## the decision is "attach" or "finish". That might
-                            ## be an easier way to unify prune and extract
-                            if oracle_label == "e" and not threeway:
-                                oracle_label = "NA"
+                    r = len(" ".join([i["word"] for i in _["tokens"] if i["index"]
+                                     in _["compression_indexes"]]))
+                    walk = get_walk_from_root(_)
+                    state = {"tokens": [], "basicDependencies": []}
+                    for node in walk:
+                        oracle_label = _["oracle"][str(node)]
+                        if oracle_label == "NA":
+                            if node in walk:
+                                oracle_label = "np"  # no prune
+                            else:
+                                oracle_label = "ne"  # no extract
 
-                            # current vertexes in compression
-                            vc = [t["index"] for t in state["tokens"]]
-                            if (oracle_label == "e") or (node in vc):
-                                dep = [ii["dep"] for ii in _["basicDependencies"]
-                                       if ii["dependent"] == node][0]
+                        dep = [ii["dep"] for ii in _["basicDependencies"]
+                               if ii["dependent"] == node][0]
 
-                                encoding = {
-                                    "compression_indexes": _["compression_indexes"],
-                                    "label": oracle_label,
-                                    "dep": dep,
-                                    "q": _['q'],
-                                    "r": r,
-                                    "original_ix": orig_ix,
-                                    "basicDependencies": deps
-                                }
+                        encoding = {
+                            "compression_indexes": _["compression_indexes"],
+                            "label": oracle_label,
+                            "dep": dep,
+                            "q": _['q'],
+                            "r": r,
+                            "original_ix": orig_ix,
+                            "basicDependencies": se_ve["basicDependencies"]
+                        }
 
-                                if oracle_label == "s":
-                                    encoded_tokens = get_labeled_toks(node, state)
+                        if oracle_label in ["p", "np"]:
+                            encoded_tokens = get_labeled_toks(node, state, "p")
+                        elif oracle_label in ["e", "ne"]:
+                            proposed = extract_for_state(g=se_ve, v=node)
+                            proposed["tokens"] = state["tokens"] + proposed["tokens"]
+                            proposed["basicDependencies"] = state["basicDependencies"] + proposed["basicDependencies"]
+                            encoded_tokens = get_labeled_toks(node, proposed, "e")
+                        else:
+                            assert "bad" == "thing"
 
-                                if encoding["label"] == "e":
-                                    subtree = extract_for_state(g=se_ve, v=node)
-                                    state["tokens"] = state["tokens"] + subtree["tokens"]
-                                    state["basicDependencies"] = state["basicDependencies"] + subtree["basicDependencies"]
-                                    encoded_tokens = get_labeled_toks(node, state)
+                        encoded_tokens.sort(key=lambda x: float(x["index"]))
+                        encoding["tokens"] = encoded_tokens
 
-                                encoded_tokens.sort(key=lambda x:float(x["index"]))
-                                encoding["tokens"] = encoded_tokens
-
-                                of.write(json.dumps(encoding) + "\n")
-                                total_so_far += 1
-                                if encoding["label"] == "p":
-                                    prune(g=state, v=node)
-                    transition = [o["index"] for o in state["tokens"]]
-                    assert set(transition) == set(_["compression_indexes"])
+                        of.write(json.dumps(encoding) + "\n")
+                        total_so_far += 1
+                        if encoding["label"] == "p":
+                            prune(g=state, v=node)
+                        if encoding["label"] == "e":
+                            state["tokens"] = proposed["tokens"]
+                            state["basicDependencies"] = proposed["basicDependencies"]
+                transition = [o["index"] for o in state["tokens"]]
+                assert set(transition) == set(_["compression_indexes"])
 
 if __name__ == "__main__":
 
@@ -125,8 +119,8 @@ if __name__ == "__main__":
 
     N = 1000000
 
-    save_split('preproc/lstm_train_3way.jsonl', train, cap=N, threeway=True)
-    save_split('preproc/lstm_validation_3way.jsonl', val, cap=10000, threeway=True)
+    save_split_3way('preproc/lstm_train_3way.jsonl', train, cap=N)
+    save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)
 
-    save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
-    save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)
+    #save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
+    #save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)

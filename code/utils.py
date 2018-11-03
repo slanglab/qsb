@@ -58,13 +58,13 @@ def get_NER_query(jdoc):
     return out
 
 
-def get_labeled_toks(node, jdoc):
+def get_labeled_toks(node, jdoc, op_proposed):
     if len(jdoc["tokens"]) == 0:
         labeled_toks = [{"word": "SOS", "index": -1000},{"word": "EOS", "index":1000}]
         return labeled_toks
     dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
-    START = "OOVSTART" + dep
-    END = "OOVEND" + dep
+    START = "OOVSTART" + dep + op_proposed
+    END = "OOVEND" + dep + op_proposed
     toks = [i for i in jdoc["tokens"]]
     cut = dfs(g=jdoc, hop_s=node, D=[])
     cut.sort()
