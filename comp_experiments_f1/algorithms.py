@@ -84,6 +84,7 @@ class NeuralNetworkTransitionBFS:
         archive = load_archive(archive_file=archive_loc)
         self.query_focused = query_focused
         self.predictor = Predictor.from_archive(archive, "paper-classifier")
+        self.archive = archive
 
     def predict_proba(self, jdoc, vertex):
         '''
@@ -120,6 +121,6 @@ class NeuralNetworkTransitionBFS:
             toks = get_labeled_toks(vertex, state, proposed)
             txt = " ".join([_["word"] for _ in toks])
             instance = self.predictor._dataset_reader.text_to_instance(txt,
-                                                                       "unknown")
+                                                                       "e")
             pred = self.predictor.predict_instance(instance)
             import ipdb;ipdb.set_trace()
