@@ -112,14 +112,14 @@ class NeuralNetworkTransitionBFS:
             return vertex in [i["index"] for i in state_["tokens"]]
 
         for vertex in get_walk_from_root(original_s):
-            instance = get_instance(original_s, vertex, state, oracle_label="unknown")
             if in_compression(vertex, state):
                 proposed = PP
             else:
                 proposed = PE
             # get_encoded_tokens(instance, state, original_s, node)
-            instance["tokens"] = get_labeled_toks(vertex, state, proposed)
-            instance = self.predictor._dataset_reader.text_to_instance(instance,
+            toks = get_labeled_toks(vertex, state, proposed)
+            txt = " ".join([_["word"] for _ in toks])
+            instance = self.predictor._dataset_reader.text_to_instance(txt,
                                                                        "unknown")
             pred = self.predictor.predict_instance(instance)
             import ipdb;ipdb.set_trace()

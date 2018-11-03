@@ -49,13 +49,12 @@ def get_governing_dep(original_s, node):
             if ii["dependent"] == node][0]
 
 
-def get_instance(original_s, node, state, oracle_label="unknown"):
+def get_instance(original_s, node, state):
     '''
     unknown oracle label is for test time
     '''
     orig_ix = [i["index"] for i in original_s["tokens"]]
-    if not oracle_label == "unknown":
-        oracle_label = get_oracle_label(original_s, node, state)
+    oracle_label = get_oracle_label(original_s, node, state)
     encoding = {
                 "compression_indexes": original_s["compression_indexes"],
                 "label": oracle_label,
