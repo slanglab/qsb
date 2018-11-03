@@ -3,6 +3,7 @@ import argparse
 
 from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
+from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
 
 
 def strip_tags(tokens):
@@ -16,6 +17,10 @@ def get_model(config):
         print(query_focused)
         return NeuralNetworkTransitionGreedy(config["archive_loc"],
                                              query_focused)
+    if config["model"] == "nn-transition-based":
+        query_focused = config["query"]
+        return NeuralNetworkTransitionBFS(config["archive_loc"],
+                                          query_focused)
     assert "unknown" == "model"
 
 
