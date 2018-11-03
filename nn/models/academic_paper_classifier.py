@@ -77,10 +77,10 @@ class AcademicPaperClassifier(Model):
         # The balanced mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data: n_samples / (n_classes * np.bincount(y))
 
 
-        with open("/mnt/nfs/work1/brenocon/ahandler/qsr/3way_counts.txt", "r") as inf:
-            dt3 = inf.read().split("\n")
-            dt3 = [_.strip().split() for _ in dt3 if len(_) > 0]
-            dt3 = {v.strip('"'):int(k) for k,v in dt3}
+        with open("/mnt/nfs/work1/brenocon/ahandler/qsr/full_counts.txt", "r") as inf:
+            dt4 = inf.read().split("\n")
+            dt4 = [_.strip().split() for _ in dt4 if len(_) > 0]
+            dt4 = {v.strip('"'):int(k) for k,v in dt4}
 
 
         with open("/mnt/nfs/work1/brenocon/ahandler/qsr/2way_counts.txt", "r") as inf:
@@ -91,8 +91,8 @@ class AcademicPaperClassifier(Model):
         n_classes = len(self.labelv)
         if n_classes == 2:
             dt = dt2
-        elif n_classes == 3:
-            dt = dt3 
+        elif n_classes == 4:
+            dt = dt4 
         else:
             assert "bad" == "thing" 
         

@@ -42,7 +42,7 @@ def get_oracle_label(jdoc, node, state):
             oracle_label = "np"  # no prune
         else:
             oracle_label = "ne"  # no extract
-    return vc
+    return oracle_label 
 
 
 def get_governing_dep(original_s, node):
@@ -51,13 +51,13 @@ def get_governing_dep(original_s, node):
 
 
 def get_instance(original_s, node, state):
-    orig_ix = [i["index"] for i in _["tokens"]]
+    orig_ix = [i["index"] for i in original_s["tokens"]]
     oracle_label = get_oracle_label(original_s, node, state)
     encoding = {
-                "compression_indexes": _["compression_indexes"],
+                "compression_indexes": original_s["compression_indexes"],
                 "label": oracle_label,
                 "dep": get_governing_dep(original_s, node),
-                "q": _['q'],
+                "q": original_s['q'],
                 "r": get_r(original_s),
                 "original_ix": orig_ix,
                 "basicDependencies": original_s["basicDependencies"]
@@ -73,9 +73,9 @@ def get_proposed(original_s, node, state):
 
 
 def get_encoded_tokens(instance, state, original_s, node):
-    if instance["oracle_label"] in ["p", "np"]:
+    if instance["label"] in ["p", "np"]:
         encoded_tokens = get_labeled_toks(node, state, PP)
-    elif instance["oracle_label"] in ["e", "ne"]:
+    elif instance["label"] in ["e", "ne"]:
         proposed = get_proposed(original_s, node, state)
         encoded_tokens = get_labeled_toks(node, proposed, PE)
     else:
@@ -94,13 +94,12 @@ def save_split_3way(fn, data, cap=None):
     total_so_far = 0
     with open(CORPUS, 'r') as inf:
         with open(fn, 'w') as of:
-            for ino, _ in enumerate(inf):
+            for ino, original_s in enumerate(inf):
                 if cap is not None and total_so_far > cap:
                     break  # early stopping
                 if ino in data:
-                    _ = json.loads(_)
-                    original_s = copy.deepcopy(_)
-                    walk = get_walk_from_root(_)
+                    original_s = json.loads(original_s)
+                    walk = get_walk_from_root(original_s)
                     state = {"tokens": [], "basicDependencies": []}
                     for node in walk:
                         instance = get_instance(original_s, node, state)
@@ -119,8 +118,9 @@ def save_split_3way(fn, data, cap=None):
                             state["basicDependencies"] = proposed["basicDependencies"]
                         total_so_far += 1
 
-                transition = [o["index"] for o in state["tokens"]]
-                assert set(transition) == set(_["compression_indexes"])
+                    transition = [o["index"] for o in state["tokens"]]
+                        
+                    assert set(transition) == set(original_s["compression_indexes"])
 
 
 if __name__ == "__main__":
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    N = 1000000
+    N = 100000
 
     save_split_3way('preproc/lstm_train_3way.jsonl', train, cap=N)
     save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)
