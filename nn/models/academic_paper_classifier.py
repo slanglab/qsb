@@ -81,28 +81,25 @@ class AcademicPaperClassifier(Model):
             DIR = "preproc/"
         else:
             DIR = "/mnt/nfs/work1/brenocon/ahandler/qsr/"
-        
-        
 
         with open(DIR + "full_counts.txt", "r") as inf:
             dt4 = inf.read().split("\n")
             dt4 = [_.strip().split() for _ in dt4 if len(_) > 0]
-            dt4 = {v.strip('"'):int(k) for k,v in dt4}
-
+            dt4 = {v.strip('"'): int(k) for k, v in dt4}
 
         with open(DIR + "/2way_counts.txt", "r") as inf:
             dt2 = inf.read().split("\n")
             dt2 = [_.strip().split() for _ in dt2 if len(_) > 0]
-            dt2 = {v.strip('"'):int(k) for k,v in dt2}
-  
+            dt2 = {v.strip('"'): int(k) for k, v in dt2}
+
         n_classes = len(self.labelv)
         if n_classes == 2:
             dt = dt2
         elif n_classes == 4:
-            dt = dt4 
+            dt = dt4
         else:
-            assert "bad" == "thing" 
-        
+            assert "bad" == "thing"
+
         n_samples = sum(dt.values())
         a = np.zeros(n_classes, dtype=np.float32)
         print(self.labelv)
@@ -143,13 +140,11 @@ class AcademicPaperClassifier(Model):
         embedded_abstract = self.text_field_embedder(sentence)
         abstract_mask = util.get_text_field_mask(sentence)
         encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
-        
-        values, indices = torch.max(encoded_abstract, 1) 
+
+        values, indices = torch.max(encoded_abstract, 1)
 
         logits2 = self.classifier_feedforward(values)
-       
 
-        
         output_dict = {'logits': logits2}
         if label is not None:
             loss = self.loss(logits2, label)
