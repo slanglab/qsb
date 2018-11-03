@@ -114,6 +114,8 @@ class NeuralNetworkTransitionBFS:
         def in_compression(vertex, state_):
             return vertex in [i["index"] for i in state_["tokens"]]
 
+        orig_toks = original_s["original_ix"]
+
         for vertex in get_walk_from_root(original_s):
             if in_compression(vertex, state):
                 proposed = PP
@@ -142,3 +144,9 @@ class NeuralNetworkTransitionBFS:
                 proposed = get_proposed(original_s, vertex, state)
                 state["tokens"] = proposed["tokens"]
                 state["basicDependencies"] = proposed["basicDependencies"]
+
+            remaining_toks = [_["index"] for _ in original_s["tokens"]]
+
+            return {"y_pred": [_ in remaining_toks for _ in orig_toks],
+                    "nops": len(original_s["tokens"])
+                    }
