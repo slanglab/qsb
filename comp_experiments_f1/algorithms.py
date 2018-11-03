@@ -121,6 +121,8 @@ class NeuralNetworkTransitionBFS:
                 proposed = PE
 
             # get_encoded_tokens(instance, state, original_s, node)
+            original_s["oracle"] = proposed
+
             instance = get_instance(original_s, vertex, state)
 
             toks = get_encoded_tokens(instance, state, original_s, vertex)
