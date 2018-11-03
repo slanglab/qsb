@@ -82,7 +82,9 @@ def get_labeled_toks(node, jdoc, op_proposed):
         labeled_toks.append({"word": t["word"], "index": t["index"]})
         if t["index"] == maxt:
             labeled_toks.append({"word": END, "index": t["index"] + .5})
-    return labeled_toks + [{"word": "EOS", "index": 1000}]
+    labeled_toks = labeled_toks + [{"word": "EOS", "index": 1000}]
+    labeled_toks.sort(key=lambda x: float(x["index"]))
+    return labeled_toks
 
 
 def prune_deletes_q(vertex, jdoc):
