@@ -16,5 +16,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
                 results[dt["model"]]["f1"].append(v["f1"])
                 results[dt["model"]]["nops"].append(v["nops"])
 
-print np.mean(results["nn-greedy-query"]["f1"])
-print np.mean(results["nn-greedy-query"]["nops"])
+for model in results:
+    print model
+    print np.mean(results[model]["f1"])
+    print np.mean(results[model]["nops"])
