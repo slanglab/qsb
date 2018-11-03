@@ -108,22 +108,26 @@ We contrast iterative deletion and integer programming approaches with LSTM tagg
 
 \section{Transition-based sentence compression}
 
-We define a neural, transition-based sentence compression system, inspired by recent successes in transition-based dependency parsing \cite{D14-1082}. At each timestep during compression, our system has a state, ${(V_c,E_c)}$: a graph which represents a compression of a sentence. ${(V_c,E_c)}$ may not be a valid tree; in some cases the graph will not be fully-connected. Our system also references ${(V_s,E_s)}$, the original, unchanging dependency parse tree of a sentence. ${(V_c,E_c)}$ is always a subgraph of ${(V_s,E_s)}$.
+We define a neural, transition-based sentence compression system, inspired by recent successes in neural dependency parsing \cite{D14-1082}. Let ${(V_s,E_s)}$ denote the original, unchanging dependency parse of a sentence. At each timestep during compression, our system has a state ${(V_c,E_c)}$, which is some subgraph of ${(V_s,E_s)}$. The compression ${(V_c,E_c)}$ may or may not be fully-connected. 
 
-We define two operations on vertexes which modify ${(V_c,E_c)}$. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds the subtree to the compression ${(V_c,E_c)}$. 
+We define two operations which modify the state. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds it to the compression ${(V_c,E_c)}$. 
 
-${(V_c,E_c)}$ is initialized to ${(V_s,E_s)}$. After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence.
+After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence.
 
 We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
 
-We assign an oracle operation to each $v \in V_s$, by walking the dependency parse of the original sentence, breadth-first. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which oracle leaves ${(V_c,E_c)}$ unmodified.
+We assign an oracle operation to each $v \in V_s$, by walking the dependency parse of the original sentence, breadth-first. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
-Following \cite{D14-1082}, we then create a training set of tuples: ${((V_c,E_c)_i, y_i)}$, where $(V_c,E_c)_i)$ is the state of the system at step $i$ along the oracle path and $y_i$ is the oracle operation $\in \{\textsc{Prune}(v_c), \textsc{Insert}(v_s),  \textsc{Nop}\}$.
+Only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
 
-We then train a standard LSTM classifier to predict the oracle operation $y_i$ given the state, $(V_c,E_c)_i)$.
+Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair either the operation \textsc{Prune} is valid or the operation \textsc{Extract} is valid, but not both. We can therefore refine the $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$; if the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$.
 
+Following \cite{D14-1082}, we then create a training set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $s$ along the oracle path and $y_j$ is the oracle operation $\in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$.
 
-\ahcomment{Here by nov 1 EOD}
+We then train a standard LSTM classifier to predict the oracle operation given the state. 
+
+We execute greedy, breadth first compression to reconstruct sentences. We walk original dependency parse, breadth-first and execute whichever valid operation is assigned the largest probability under the model.
+
 
 \section{Outline}
 \begin{enumerate}
