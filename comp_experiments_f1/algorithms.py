@@ -6,8 +6,10 @@ from code.utils import prune_deletes_q
 from code.treeops import get_walk_from_root
 from preproc.lstm_preproc import get_instance
 from preproc.lstm_preproc import get_encoded_tokens
+from preproc.lstm_preproc import get_proposed
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
+import numpy as np
 import nn.models
 
 
@@ -125,4 +127,12 @@ class NeuralNetworkTransitionBFS:
             pred = self.predictor.predict_instance(instance)
 
             pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
-            import ipdb;ipdb.set_trace()
+
+            move = pred_labels[np.argmax(pred["class_probabilities"])]
+
+            if move == "p":
+                prune(g=state, v=vertex)
+            if move == "e":
+                proposed = get_proposed(original_s, vertex, state)
+                state["tokens"] = proposed["tokens"]
+                state["basicDependencies"] = proposed["basicDependencies"]
