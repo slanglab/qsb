@@ -119,11 +119,17 @@ class NeuralNetworkTransitionBFS:
                 proposed = PP
             else:
                 proposed = PE
+
             # get_encoded_tokens(instance, state, original_s, node)
-            toks = get_labeled_toks(vertex, state, proposed)
+            instance = get_instance(original_s, vertex, state)
+
+            toks = get_encoded_tokens(instance, state, original_s, vertex)
+
             txt = " ".join([_["word"] for _ in toks])
+
             instance = self.predictor._dataset_reader.text_to_instance(txt,
                                                                        "e")
+
             pred = self.predictor.predict_instance(instance)
 
             pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
