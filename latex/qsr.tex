@@ -112,9 +112,15 @@ We define a neural, transition-based sentence compression system, inspired by re
 
 We define two operations which modify the state. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds it to the compression ${(V_c,E_c)}$. 
 
-After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence.
+After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence. We initialize the state with an empty subgraph. 
 
 We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
+
+\begin{figure*}[htb!]
+\centering
+\includegraphics[width=.75\textwidth]{example.pdf}
+\caption{II}
+\end{figure*}
 
 We assign an oracle operation to each $v \in V_s$, by walking the dependency parse of the original sentence, breadth-first. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
