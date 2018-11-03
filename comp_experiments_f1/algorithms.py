@@ -123,4 +123,6 @@ class NeuralNetworkTransitionBFS:
             instance = self.predictor._dataset_reader.text_to_instance(txt,
                                                                        "e")
             pred = self.predictor.predict_instance(instance)
+
+            pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
             import ipdb;ipdb.set_trace()
