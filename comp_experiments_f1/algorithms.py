@@ -118,7 +118,7 @@ class NeuralNetworkTransitionBFS:
             else:
                 proposed = PE
             # get_encoded_tokens(instance, state, original_s, node)
-            instance = get_encoded_tokens(instance, state, original_s, vertex)
+            instance["tokens"] = get_labeled_toks(vertex, state, proposed)
             instance = self.predictor._dataset_reader.text_to_instance(instance,
                                                                        "unknown")
             pred = self.predictor.predict_instance(instance)
