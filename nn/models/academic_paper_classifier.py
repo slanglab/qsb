@@ -76,14 +76,21 @@ class AcademicPaperClassifier(Model):
         # http://scikit-learn.org/dev/modules/generated/sklearn.utils.class_weight.compute_sample_weight.html
         # The balanced mode uses the values of y to automatically adjust weights inversely proportional to class frequencies in the input data: n_samples / (n_classes * np.bincount(y))
 
+        import socket
+        if socket.gethostname() == "hobbes":
+            DIR = "preproc/"
+        else:
+            DIR = "/mnt/nfs/work1/brenocon/ahandler/qsr/"
+        
+        
 
-        with open("/mnt/nfs/work1/brenocon/ahandler/qsr/full_counts.txt", "r") as inf:
+        with open(DIR + "full_counts.txt", "r") as inf:
             dt4 = inf.read().split("\n")
             dt4 = [_.strip().split() for _ in dt4 if len(_) > 0]
             dt4 = {v.strip('"'):int(k) for k,v in dt4}
 
 
-        with open("/mnt/nfs/work1/brenocon/ahandler/qsr/2way_counts.txt", "r") as inf:
+        with open(DIR + "/2way_counts.txt", "r") as inf:
             dt2 = inf.read().split("\n")
             dt2 = [_.strip().split() for _ in dt2 if len(_) > 0]
             dt2 = {v.strip('"'):int(k) for k,v in dt2}
@@ -98,6 +105,7 @@ class AcademicPaperClassifier(Model):
         
         n_samples = sum(dt.values())
         a = np.zeros(n_classes, dtype=np.float32)
+        print(self.labelv)
         for i in range(n_classes):
             a[i] = n_samples / (dt[self.labelv[i]] * n_classes)
         with open("wut", "w") as of:

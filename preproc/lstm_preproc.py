@@ -9,7 +9,6 @@ from code.treeops import get_walk_from_root
 from code.treeops import extract_for_state
 from collections import Counter
 from code.utils import get_labeled_toks
-from code.printers import pretty_print_conl
 
 PP = "proposedprune"
 PE = 'proposedextract'

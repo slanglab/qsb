@@ -75,49 +75,6 @@ class NeuralNetworkTransitionGreedy:
                     }
 
 
-class NeuralNetworkTransitionBFSPruneOnly:
-
-    def __init__(self, archive_loc):
-        assert type(archive_loc) == str
-        archive = load_archive(archive_file=archive_loc)
-        self.predictor = Predictor.from_archive(archive, "paper-classifier")
-
-    def predict_proba(self, jdoc, vertex):
-        '''
-        what is probability that this vertex is prunable,
-        according to transition-based nn model
-        '''
-        label = "NA"
-        sentence = " ".join([_["word"] for _ in get_labeled_toks(vertex, jdoc)])
-        instance = self.predictor._dataset_reader.text_to_instance(sentence,
-                                                                   label)
-        pred = self.predictor.predict_instance(instance)
-        return pred["class_probabilities"][1]
-
-    def get_char_length(self, jdoc):
-        assert type(jdoc["tokens"][0]["word"]) == str
-        return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
-
-    def predict(self, jdoc):
-        '''
-        return a compression that preserves q and respects r
-        '''
-        length = self.get_char_length(jdoc)
-        orig_toks = jdoc["original_ix"]
-        T = .5
-        while length > int(jdoc["r"]):
-            for vertex in get_walk_from_root(jdoc):
-                if not prune_deletes_q(vertex, jdoc):
-                    if length > int(jdoc["r"]):
-                        p = self.predict_proba(jdoc=jdoc, vertex=vertex)
-                        if p > T:
-                            prune(g=jdoc, v=vertex)
-                        length = self.get_char_length(jdoc)
-            T -= .1
-        remaining_toks = [_["index"] for _ in jdoc["tokens"]]
-        return [_ in remaining_toks for _ in orig_toks]
-
-
 class NeuralNetworkTransitionBFS:
 
     def __init__(self, archive_loc, query_focused=True):
@@ -161,5 +118,6 @@ class NeuralNetworkTransitionBFS:
             instance = get_encoded_tokens(instance, state, original_s,
                                           vertex, proposed)
             instance = self.predictor._dataset_reader.text_to_instance(instance,
-                                                                       "NA")
+                                                                       "e")
             pred = self.predictor.predict_instance(instance)
+            import ipdb;ipdb.set_trace()
