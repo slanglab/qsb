@@ -145,8 +145,8 @@ class NeuralNetworkTransitionBFS:
                 state["tokens"] = proposed["tokens"]
                 state["basicDependencies"] = proposed["basicDependencies"]
 
-            remaining_toks = [_["index"] for _ in original_s["tokens"]]
+        remaining_toks = [_["index"] for _ in original_s["tokens"]]
 
-            return {"y_pred": [_ in remaining_toks for _ in orig_toks],
-                    "nops": len(original_s["tokens"])
-                    }
+        return {"y_pred": [_ in remaining_toks for _ in orig_toks],
+                "nops": len(original_s["tokens"])
+                }
