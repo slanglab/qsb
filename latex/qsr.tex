@@ -30,6 +30,8 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
+%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
+
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
 \title{Extractive sentence compression under lexical and length constraints}
@@ -114,23 +116,36 @@ We define two operations which modify the state. The operation \textsc{Prune}($v
 
 After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence. We initialize the state with an empty subgraph. 
 
-We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
+We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in a large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
 
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{II}
+\caption{\ahcomment{TODO}}
+\label{f:example}
 \end{figure*}
 
 We assign an oracle operation to each $v \in V_s$, by walking the dependency parse of the original sentence, breadth-first. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
-Only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
+In our transition-based compressor, we say that only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then we say that $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then we say that $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
 
-Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair either the operation \textsc{Prune} is valid or the operation \textsc{Extract} is valid, but not both. We can therefore refine the $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$; if the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$.
+Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair either the operation \textsc{Prune} is valid or the operation \textsc{Insert} is valid, but not both. We can therefore assign two subtypes of $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$. If the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$.
 
-Following \cite{D14-1082}, we then create a training set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $s$ along the oracle path and $y_j$ is the oracle operation $\in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$.
+\subsection{Modeling compression}
 
-We then train a standard LSTM classifier to predict the oracle operation given the state. 
+Following \citet{D14-1082}, we create a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j$ is the oracle operation $\in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation given the state. 
+
+The input to our classifier is a sequence of embeddings which indicate how an operation would modify the current state. To create the sequence, we linearize all tokens in $V_c$ in their original order, and add out-of-vocabulary SOS and EOS symbols marking the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the sequence; again preserving original token order.
+
+In addition, we also add out-of-vocabulary marker symbols at the beginning and end of the subsequence which would be removed or added by an $\textsc{Insert}$ or $\textsc{Prune}$. These marker symbols are formed by concatenating the type of the proposed operation (i.e. prune or insert) with the typed dependency governing the root of the subtree to be added or removed. Figure \ref{f:example} shows an example of a token sequence. Such marker symbols allow us to easily encode important aspects of the overall tree structure in a standard sequence classifier. 
+
+During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. \ahcomment{details here}
+
+\ahcomment{comment on projectivity}
+\ahcomment{details of embeddings}
+\ahcomment{loss function}
+\ahcomment{tuning}
+
 
 We execute greedy, breadth first compression to reconstruct sentences. We walk original dependency parse, breadth-first and execute whichever valid operation is assigned the largest probability under the model.
 
