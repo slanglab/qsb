@@ -16,7 +16,6 @@ klm/*
 *blg
 *out
 *log
-*bib
 *aux
 .RData
 .Rhistory
