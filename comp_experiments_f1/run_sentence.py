@@ -40,7 +40,7 @@ if __name__ == "__main__":
     from tqdm import tqdm
 
     model = get_model(config)
-    with open("preproc/lstm_validation.jsonl", "r") as inf:
+    with open("preproc/lstm_validation_sentences_3way.jsonl", "r") as inf:
         for vno, _ in tqdm(enumerate(inf)):
             if vno in range_:
                 sentence = json.loads(_)

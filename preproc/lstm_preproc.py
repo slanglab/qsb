@@ -139,7 +139,10 @@ def just_save_sentences(fn, data, cap=None):
                 if cap is not None and total_so_far > cap:
                     break  # early stopping
                 if ino in data:
-                    of.write(original_s)
+                    s = json.loads(original_s)
+                    s["original_ix"] = [i["index"] for i in s['tokens']]
+                    of.write(json.dumps(s)  + "\n")
+                    total_so_far += 1
 
 
 if __name__ == "__main__":
@@ -167,7 +170,7 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    N = 1000000
+    N = 100
 
     save_split_3way('preproc/lstm_train_3way.jsonl', train, cap=N)
     save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)
