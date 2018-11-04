@@ -39,10 +39,10 @@ if __name__ == "__main__":
 
     with open("preproc/lstm_validation.jsonl", "r") as inf:
         for vno, _ in enumerate(inf):
+            model = get_model(config)
             if vno in range_:
                 sentence = json.loads(_)
                 sentence["tokens"] = strip_tags(sentence["tokens"])
-                model = get_model(config)
                 orig_ix = sentence["original_ix"]
                 y_true = [_ in sentence["compression_indexes"] for
                           _ in orig_ix]
