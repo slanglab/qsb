@@ -17,6 +17,6 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
                 results[dt["model"]]["nops"].append(v["nops"])
 
 for model in results:
-    print model
-    print np.mean(results[model]["f1"])
-    print np.mean(results[model]["nops"])
+    print(model)
+    print(np.mean(results[model]["f1"]))
+    print(np.mean(results[model]["nops"]))
