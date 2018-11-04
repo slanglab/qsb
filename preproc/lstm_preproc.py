@@ -149,7 +149,7 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    N = 100000
+    N = 1000000
 
     save_split_3way('preproc/lstm_train_3way.jsonl', train, cap=N)
     save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)

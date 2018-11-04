@@ -37,9 +37,11 @@ if __name__ == "__main__":
 
     range_ = range(args.start * 100, args.start * 100 + 100)
 
+    from tqdm import tqdm
+
+    model = get_model(config)
     with open("preproc/lstm_validation.jsonl", "r") as inf:
-        for vno, _ in enumerate(inf):
-            model = get_model(config)
+        for vno, _ in tqdm(enumerate(inf)):
             if vno in range_:
                 sentence = json.loads(_)
                 sentence["tokens"] = strip_tags(sentence["tokens"])
@@ -50,6 +52,7 @@ if __name__ == "__main__":
                 y_pred = out["y_pred"]
                 ops = out["nops"]
                 f1 = f1_score(y_true=y_true, y_pred=y_pred)
+                print(f1)
                 config["sentence{}".format(vno)] = {'f1': f1, "nops": ops}
 
     out_ = config["results_dir"] + "/{}-{}".format(str(args.start),
