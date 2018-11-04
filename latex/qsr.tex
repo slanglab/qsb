@@ -133,7 +133,7 @@ Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given verte
 
 \subsection{Modeling compression}
 
-Following \citet{D14-1082}, we create a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j$ is the oracle operation $\in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation given the state. 
+Following \citet{D14-1082}, we create a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation given the state. 
 
 The input to our classifier is a sequence of embeddings which indicate how an operation would modify the current state. To create the sequence, we linearize all tokens in $V_c$ in their original order, and add out-of-vocabulary SOS and EOS symbols marking the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the sequence; again preserving original token order.
 
