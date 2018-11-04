@@ -1,5 +1,6 @@
 import json
 import pytest
+from future import print
 
 from ilp2008.util import jdoc_to_constit_list
 from ilp2008.supporting_code import get_verb_ix, get_PPs, to_lists, get_SBARs, get_verb_groups
@@ -32,7 +33,7 @@ def test_verb_indexes():
     if __name__ == "__main__":
         for verb in get_verb_ix(pakistan):
             word = [i for i in pakistan["tokens"] if i["index"] == verb][0]
-            print word["word"]
+            print(word["word"])
 
 
 def test_get_coordination():
@@ -61,7 +62,7 @@ def test_personal_pronouns():
 def test_determiners():
     jdoc = load_sentence(FIXTURE_DIRECTORY + "uganda_example.txt.json")
     determiner_pairs = get_det_mods(jdoc)
-    print len(determiner_pairs)
+    print(len(determiner_pairs))
     assert len(determiner_pairs) == 2, "there are two determiner pairs in this sentence"
     for dep, gov in determiner_pairs:
         t1,t2 = list(filter(lambda x:x["index"] in [dep, gov], jdoc["tokens"]))
@@ -132,7 +133,7 @@ def test_PPs():
     jdoc = load_sentence(FIXTURE_DIRECTORY + "uganda_example.txt.json")
     if __name__ == "__main__":
         for i in get_PPs(jdoc):
-            print [_["word"] for _ in jdoc["tokens"] if _["index"] in i["children"]]
+            print([_["word"] for _ in jdoc["tokens"] if _["index"] in i["children"]])
     assert len(list(get_PPs(jdoc))) == 3
 
 
@@ -209,4 +210,4 @@ def test_sbars():
     assert len(list(get_SBARs(jdoc))) > 0, "there should be a SBAR in the list"
     if __name__ == "__main__":
         for s in get_SBARs(jdoc):
-            print [_["word"] for _ in jdoc["tokens"] if _["index"] in s['children']]
+            print([_["word"] for _ in jdoc["tokens"] if _["index"] in s['children']])
