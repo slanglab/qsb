@@ -124,6 +124,24 @@ def save_split_3way(fn, data, cap=None):
                     assert set(transition) == set(original_s["compression_indexes"])
 
 
+def just_save_sentences(fn, data, cap=None):
+    '''
+    note, avoiding pulling a whole big corpus into memory
+    inputs:
+        fn (str): output file
+        data (list<int>): a list of lines that are included in training set
+        cap (int): maximum number of examples to generate
+    '''
+    total_so_far = 0
+    with open(CORPUS, 'r') as inf:
+        with open(fn, 'w') as of:
+            for ino, original_s in enumerate(inf):
+                if cap is not None and total_so_far > cap:
+                    break  # early stopping
+                if ino in data:
+                    of.write(original_s)
+
+
 if __name__ == "__main__":
 
     c = 0
@@ -153,6 +171,4 @@ if __name__ == "__main__":
 
     save_split_3way('preproc/lstm_train_3way.jsonl', train, cap=N)
     save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)
-
-    #save_split('preproc/lstm_train.jsonl', train, cap=N, threeway=False)
-    #save_split('preproc/lstm_validation.jsonl', val, cap=10000, threeway=False)
+    just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val, cap=10000)
