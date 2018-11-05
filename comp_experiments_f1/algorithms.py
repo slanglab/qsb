@@ -168,9 +168,10 @@ class FA2013Compressor:
     This implements a query query_focused compression w/ F and A
     '''
 
-    def __init__(self, weights, vocab):
+    def __init__(self, weights):
+        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
         self.weights
-        self.vocab
+        self.vocab = get_all_vocabs()
 
     def predict(self, original_s):
         '''

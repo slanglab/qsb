@@ -1,9 +1,14 @@
+'''
+python 3
+'''
 import json
 import argparse
+import _pickle as pickle
 
 from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
+from comp_experiments_f1.algorithms import FA2013Compressor
 
 
 def strip_tags(tokens):
@@ -22,6 +27,11 @@ def get_model(config):
         query_focused = config["query"]
         return NeuralNetworkTransitionBFS(config["archive_loc"],
                                           query_focused)
+    if config["model"] == "ilp":
+        with open(config["weights"], "r") as of:
+            weights = pickle.load(of)
+        return FA2013Compressor(weights=weights)
+
     assert "unknown" == "model"
 
 
