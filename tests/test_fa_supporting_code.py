@@ -142,3 +142,36 @@ def test_in_A_but_not_B():
     B = set([2,3])
     assert len(A_but_not_B(A,B)) == 1
     assert [_ for _ in A_but_not_B(A,B)][0] == 1
+
+def test_queries():
+    import cPickle as pickle
+    from tqdm import tqdm
+    from sklearn.metrics import f1_score
+
+    with open("tests/fixtures/mini_proc", "r") as of:
+        training_data = pickle.load(of)[0:10]
+
+    from ilp2013.fillipova_altun import run_model
+    from ilp2013.fillipova_altun_supporting_code import *
+    from code.utils import get_NER_query,get_gold_y,get_pred_y
+
+    vocab = get_all_vocabs()
+    weights = zero_weights(vocab)
+
+    for jdoc in tqdm(training_data):
+        Q = jdoc["compression_indexes"]
+        y_gold = get_gold_y(jdoc)
+        original_indexes = [_["index"] for _ in jdoc["tokens"]]
+        r = get_oracle_r(jdoc)
+        output = run_model(jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
+        assert (all([o in [_["dependent"] for _ in output["get_Xs"]] for o in Q]))
+        predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+        y_pred = get_pred_y(predicted_compression=predicted_compression,
+                            original_indexes=original_indexes)
+        assert f1_score(y_true=y_gold, y_pred=y_pred) == 1.0
+
+    for jdoc in tqdm(training_data):
+        Q = get_NER_query(jdoc)
+        r = get_oracle_r(jdoc)
+        output = run_model(jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
+        assert (all([o in [_["dependent"] for _ in output["get_Xs"]] for o in Q]))  
