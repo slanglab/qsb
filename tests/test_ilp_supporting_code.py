@@ -1,6 +1,5 @@
 import json
 import pytest
-from future import print
 
 from ilp2008.util import jdoc_to_constit_list
 from ilp2008.supporting_code import get_verb_ix, get_PPs, to_lists, get_SBARs, get_verb_groups
