@@ -36,22 +36,19 @@ class NeuralNetworkTransitionGreedy:
                                                                    "e")
 
         pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
-        print(pred_labels)
+        op2n = {v:k for k,v in pred_labels.items()}
         pred = self.predictor.predict_instance(instance)
-        return pred[1]
+        return pred["class_probabilities"][op2n["p"]]
 
-    def predict_vertexes(self, jdoc):
+    def predict_vertexes(self, jdoc, state):
         '''
         what is probability that this vertex is prunable,
         according to transition-based nn model
         '''
-        if self.query_focused:
-            return {_["index"]: self.predict_proba(jdoc, _["index"])
-                    for _ in jdoc["tokens"] if not prune_deletes_q(_["index"],
-                                                                   jdoc)}
-        else:
-            return {_["index"]: self.predict_proba(jdoc, _["index"])
-                    for _ in jdoc["tokens"]}
+        assert self.query_focused
+        return {_["index"]: self.predict_proba(original_s=jdoc, vertex=_["index"], state=state)
+                for _ in state["tokens"] if not prune_deletes_q(_["index"],
+                                                               jdoc)}
 
     def get_char_length(self, jdoc):
         assert type(jdoc["tokens"][0]["word"]) == str
@@ -65,14 +62,15 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(jdoc)
         orig_toks = jdoc["original_ix"]
         nops = 0
+        state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
         while length != prev_length and length > int(jdoc["r"]):
-            vertexes = list(self.predict_vertexes(jdoc).items())
+            vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops += len(vertexes)
             vertexes.sort(key=lambda x: x[1], reverse=True)
             vertex, prob = vertexes[0]
-            prune(g=jdoc, v=vertex)
+            prune(g=state, v=vertex)
             prev_length = length
-            length = self.get_char_length(jdoc)
+            length = self.get_char_length(state)
         length = self.get_char_length(jdoc)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in jdoc["tokens"]]

@@ -8,7 +8,7 @@ from code.utils import get_min_compression
 
 if __name__ == "__main__":
 
-    with open("preproc/validation.jsonl", "r") as inf:
+    with open("preproc/training.jsonl", "r") as inf:
         for vno, _ in tqdm(enumerate(inf)):
             jdoc = json.loads(_)
             r = int(jdoc["r"])
@@ -19,4 +19,4 @@ if __name__ == "__main__":
             mcl = " ".join([o["word"] for o in
                             jdoc["tokens"] if o["index"] in mc])
             mcl = len(mcl)
-            print(r, po, mcl)
+            print(",".join([str(r), str(po), str(mcl)]))

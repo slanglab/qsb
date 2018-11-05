@@ -12,7 +12,8 @@ def strip_tags(tokens):
 
 
 def get_model(config):
-    if config["model"] == "nn-greedy-query":
+    print(config["model"])
+    if config["model"] == "nn-prune-greedy":
         query_focused = config["query"]
         print(query_focused)
         return NeuralNetworkTransitionGreedy(config["archive_loc"],
@@ -41,6 +42,7 @@ if __name__ == "__main__":
 
     model = get_model(config)
     with open("preproc/lstm_validation_sentences_3way.jsonl", "r") as inf:
+        no_compression = 0
         for vno, _ in tqdm(enumerate(inf)):
             if vno in range_:
                 sentence = json.loads(_)
@@ -51,11 +53,15 @@ if __name__ == "__main__":
                 out = model.predict(sentence)
                 y_pred = out["y_pred"]
                 ops = out["nops"]
-                f1 = f1_score(y_true=y_true, y_pred=y_pred)
-                print(f1)
+                if out["y_pred"] == "could not find a compression":
+                    f1 = 0.0
+                    no_compression += 1
+                else:
+                    f1 = f1_score(y_true=y_true, y_pred=y_pred)
                 config["sentence{}".format(vno)] = {'f1': f1, "nops": ops}
 
     out_ = config["results_dir"] + "/{}-{}".format(str(args.start),
                                                    config["model"])
+    config["no_compression"] = no_compression 
     with open(out_, "w") as of:
         json.dump(config, of)
