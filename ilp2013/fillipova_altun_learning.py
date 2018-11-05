@@ -43,6 +43,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             Q = get_NER_query(source_jdoc)
             #The maximum permitted compression length is set to be the same as the length of the oracle compression
             #print Q
+            #Q = []
             output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
             if output["solved"]:
                 gold.sort()
@@ -58,6 +59,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
                 original_indexes = [_["index"] for _ in source_jdoc["tokens"]]
                 y_gold = get_gold_y(source_jdoc)
                 predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+                print output
                 y_pred = get_pred_y(predicted_compression=predicted_compression,
                             original_indexes=original_indexes)
 
@@ -77,13 +79,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-N', nargs="?", default=None, type=int)
-    parser.add_argument('-epochs', nargs="?", default=20, type=int)
+    parser.add_argument('-epochs', nargs="?", default=100, type=int)
+    parser.add_argument("-file", default="preproc/100k")
     args = parser.parse_args()
     vocab = get_all_vocabs()
-    with open("preproc/100k", "r") as of:
+    with open(args.file, "r") as of:
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs, verbose=False)
+    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs, verbose=True)
     with open("output/{}".format(args.epochs), "w") as of:
         pickle.dump(averaged_weights, of)
