@@ -15,7 +15,7 @@ import argparse
 from code.printers import pretty_print_conl
 from ilp2013.fillipova_altun_supporting_code import *
 from code.utils import get_NER_query
-
+from code.utils import get_gold_y,get_pred_y
 
 random.seed(1)
 
@@ -53,9 +53,16 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
                 avg_weights *= (t - 1)
                 avg_weights += weights
                 avg_weights /= t
-                epoch_scores.append(f1(output["predicted"], gold))
+
+                original_indexes = [_["index"] for _ in source_jdoc["tokens"]]
+                y_gold = get_gold_y(source_jdoc)
+                predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+                y_pred = get_pred_y(predicted_compression=predicted_compression,
+                            original_indexes=original_indexes)
+
+                epoch_scores.append(f1_score(y_true=y_gold, y_pred=y_pred))
             if verbose:
-                print f1(output["predicted"], gold)
+                print f1_score(y_true=y_gold, y_pred=y_pred)
             if (t % 1000 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []
@@ -76,6 +83,6 @@ if __name__ == "__main__":
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs)
+    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs, verbose=True)
     with open("output/{}".format(args.epochs), "w") as of:
         pickle.dump(averaged_weights, of)
