@@ -73,49 +73,42 @@ This study examines sentence compression under strict lexical and length constra
 
 \section{Compression and constraints}
 
-In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our method, \textbf{iterative deletion} to traditional \textbf{ILP-based techniques}, which also give a user such control and to baseline \textbf{LSTM taggers} which cannot accommodate such constraints.
+In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our \textbf{transition-based} method to traditional \textbf{ILP-based techniques}, which also give a user such control and to baseline \textbf{LSTM taggers} which cannot accommodate such constraints.
 
 
 \begin{table*}[htb!]
 \begin{tabular}{cccc}
-\textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows heterogenous supervision} \\ \hline
-LSTM taggers      & Linear              & No     &    No      \\   
-linear programming              & Exponential         & Yes    &    No   \\
-iterative deletion (this work)       & Quadratic*           & Yes    &      Yes   \\
+\textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows supervision} \\ \hline
+LSTM taggers      & Linear              & No     &    Yes      \\   
+linear programming              & Exponential         & Yes    &    Yes   \\
+transition-based (this work)       & Quadratic*           & Yes    &      Yes   \\
 \end{tabular}
+\caption{\ahcomment{Blah blah blah blah}}
 \end{table*}
 
 \subsection{Constrained compression with ILPs}
 
 One common approach for shortening sentences formulates compression as an integer linear programming (ILP) task. ILP-based methods assign binary variables to each token in a sentence or nested subtree in a dependency parse. These variables indicate if a word or subtree should be included in a compression. Each such sentence component is also assigned a local weight, indicating its worthiness for inclusion in a shortened sentence.\footnote{Local weights are either learned via structured perceptron techniques; or inferred from corpus statistics, tf-idf scores or language models.}
 
-ILP methods represent the overall quality of a compression by summing the local weights of sentence components to compute a global objective score. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among the exponential possible configurations of binary variables. The problem of identifying the best possible solution fo an integer programming compression objective is exponential in the number of tokens or number of subtrees in the input, as each corresponding binary variable may be set to 0 or 1.
+ILP methods represent the overall quality of a compression by summing the local weights of sentence components to compute a global objective score.  The problem of identifying the best possible solution fo an integer programming compression objective is exponential in the number of tokens or number of subtrees in the input, as each corresponding binary variable may be set to 0 or 1. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among the exponential possible configurations of binary variables. ILP methods can be joined with structured-perceptron techniques to make use of supervised corpora of sentence--compression pairs \cite{filippova2013overcoming}.
 
-This integer linear programming approach easily accommodates constrained compression. Often, researchers will add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Under such approaches, adding length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some charascter budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
+This integer linear programming approach also easily accommodates constrained compression. When performing ILP-based compression, researchers will already customarily add constraint terms to the ILP objective in order to preserve the meaning of a sentence (e.g. don't remove negations) or to ensure that output forms a valid dependency tree (e.g. each subtree must have a parent vertex). Adding additional length or lexical requirements is trivial: practitioners must specify that optimal solutions must be shorter than some character budget and must specify that binary variables marking inclusion of particular words must be set to 1. 
 
-\subsection{Constrained compression with pruning}
+\subsection{Transition-based constrained compression}
 
-In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our iterative deletion technique compresses a sentence over $M$ time steps, by pruning $M$ subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem, which also removed components of sentences. \ahcomment{CITE: K and M, Jing  and McKowen} \ahcomment{argue for coverage w/ F and A at some point}
+In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $M$ time steps, by adding and removing $M$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. \ahcomment{argue for coverage w/ F and A at some point} We present the formal details in \S\ref{s:system}.
 
-Like ILP-based methods, iterative deletion approaches can easily accommodate lexical and length constraints: subtrees which contain query terms are never deleted, and pruning stops only when a compression satisfies a given character budget. 
-
-However, iterative deletion methods incur much smaller computational costs than integer programming techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $M$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^M V - i = O(V^2)}$ operations.
-
-This worst case represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
-
-In section \S\ahcomment{TODO} we also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. In this work, we show that transition-based methods incur much smaller computational costs than integer programming techniques. We also show that transition-based methods achieve higher token-level F1 scores than ILP-based method on constrained compressions, by making use of large corpora of gold standard sentence--compression pairs.
 
 \subsection{Unconstrained compression with LSTMs}
 
-We contrast iterative deletion and integer programming approaches with LSTM taggers for the compression task. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence. However, at this time, LSTM taggers are unsuitable for query-focused applications because methods cannot enforce lexical or length requirements. This could be examined in future research.
+We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence, and achieves a state-of-the art token-level F1 score. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be examined in future research.
 
-\section{Transition-based sentence compression}
+\section{Transition-based sentence compression}\label{s:system}
 
-We define a neural, transition-based sentence compression system, inspired by recent successes in neural dependency parsing \cite{D14-1082}. Let ${(V_s,E_s)}$ denote the original, unchanging dependency parse of a sentence. At each timestep during compression, our system has a state ${(V_c,E_c)}$, which is some subgraph of ${(V_s,E_s)}$. The compression ${(V_c,E_c)}$ may or may not be fully-connected. 
+In this work, we define a neural, transition-based sentence compression system, inspired by recent successes in neural dependency parsing \cite{D14-1082}. Let ${(V_s,E_s)}$ denote the original, unchanging dependency parse of a sentence. At each timestep during compression, our system has a state ${(V_c,E_c)}$, which is some subgraph of ${(V_s,E_s)}$. The compression ${(V_c,E_c)}$ may or may not be fully-connected. 
 
-We define two operations which modify the state. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds it to the compression ${(V_c,E_c)}$. 
-
-After executing a string of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence. We initialize the state with an empty subgraph. 
+We define two operations which modify the state. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds it to the compression ${(V_c,E_c)}$. After executing a sequence of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence. We initialize the state with an empty subgraph. 
 
 We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in a large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
 
@@ -126,63 +119,17 @@ We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we f
 \label{f:example}
 \end{figure*}
 
-We assign an oracle operation to each $v \in V_s$, by walking the dependency parse of the original sentence, breadth-first. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
+Like \cite{D14-1082}, we use a large supervised corpus to assign an oracle operation to each $v \in V_s$, by walking the dependency parse of an original sentence, breadth-first and identifying the oracle operation performed at each vertex. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
 In our transition-based compressor, we say that only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then we say that $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then we say that $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
 
 Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair either the operation \textsc{Prune} is valid or the operation \textsc{Insert} is valid, but not both. We can therefore assign two subtypes of $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$. If the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$.
 
-\subsection{Modeling compression}
+\section{Experiment 1: constrained compression}
 
-Following \citet{D14-1082}, we create a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation given the state. 
+We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to both train and evaluate different approaches to length and lexically constrained compression. Using the dataset in this matter requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP \cite{corenlp}, we define all NER tokens which lie within the gold compression as the query, $q$.\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} Formally, $Q$ is a list of tokens. We also define the character length of the gold-standard compression as the maximum number of characters for the constrained compression. This interpretation allows us to redefined the corpus of sentence--compression pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints. 
 
-The input to our classifier is a sequence of embeddings which indicate how an operation would modify the current state. To create the sequence, we linearize all tokens in $V_c$ in their original order, and add out-of-vocabulary SOS and EOS symbols marking the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the sequence; again preserving original token order.
-
-In addition, we also add out-of-vocabulary marker symbols at the beginning and end of the subsequence which would be removed or added by an $\textsc{Insert}$ or $\textsc{Prune}$. These marker symbols are formed by concatenating the type of the proposed operation (i.e. prune or insert) with the typed dependency governing the root of the subtree to be added or removed. Figure \ref{f:example} shows an example of a token sequence. Such marker symbols allow us to easily encode important aspects of the overall tree structure in a standard sequence classifier. 
-
-During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. \ahcomment{details here}
-
-\ahcomment{comment on projectivity}
-\ahcomment{details of embeddings}
-\ahcomment{loss function}
-\ahcomment{tuning}
-
-
-We execute greedy, breadth first compression to reconstruct sentences. We walk original dependency parse, breadth-first and execute whichever valid operation is assigned the largest probability under the model.
-
-
-\section{Outline}
-\begin{enumerate}
-\item{$(q,s,r)$ compression is useful.}
-\item{How do you do it? ILPs, neural net taggers, iterative deletion supervised w/ people or w/ gold data? (\S\ref{s:method}).}
-\item{Why iterative deletion is good. Description of current system for making deletion decisions w/ human supervision. Possibly make this system better too}
-\item{Computational experiments (1): Properties of q,s,r compression in English. }
-\item{Computational experiments (2): F and A data, interpreted as q,s,r supervision/data. Enumerate methods and bold the one with the best token-level F1 score.}
-\item{Possible post hoc human experiment? Is our system actually good?}
-\end{enumerate}
-
-
-
-\subsection{Preprocessing with extract}
-Extract preprocessing. Make up a few simple rules. They will help a bunch. Only like 6 dependency types work at all for extract. This is in realfake/createdata/extract at the moment.
-
-\section{Computational experiments part 1: investigating properties of q,s,r compression}
-\begin{enumerate}
-\item{q = a list of 1 to 3 NER}
-\item{r = random}
-\item{What is the size of the minimum compression?}
-\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}
-\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
-\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
-\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
-\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
-\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
-\end{enumerate}
-
-\section{Computational experiments part 2: sentence compression}
-Interpret F and A as Q,S,R supervision/data. Then test methods which do $(q,s,r)$ compression. Measure w/ token level F1.
-
-
+   
 \begin{table}[htb!]
 \begin{tabular}{ll}
 \centering
@@ -202,10 +149,57 @@ Neural subtree deletion methods? &  D    \\
 \ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
  (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
 
-\section{TODO}
+\subsection{Implementation: ILP-based compression}
+
+\subsection{Implementation: transition-based compression}
+
+Identifying oracle compressions defines a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
+
+The input to our classifier is a sequence of embeddings which indicate how an operation would modify the current state. To create the sequence, we linearize all tokens in $V_c$ in their original order, and add out-of-vocabulary SOS and EOS symbols marking the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the input sequence; again preserving original token order.
+
+In addition, we also add out-of-vocabulary marker symbols at the beginning and end of the subsequence which would be removed or added by an $\textsc{Insert}$ or $\textsc{Prune}$. These marker symbols are formed by concatenating the type of the proposed operation (i.e. prune or insert) with the typed dependency governing the root of the subtree to be added or removed. Figure \ref{f:example} shows an example of a token sequence. Such marker symbols allow us to easily encode important aspects of the overall tree structure in a standard sequence classifier. 
+
+During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. \ahcomment{details here}
+
+\ahcomment{comment on projectivity}
+\ahcomment{details of embeddings}
+\ahcomment{loss function}
+\ahcomment{tuning}
+
+We execute greedy, breadth first compression to reconstruct sentences. We walk original dependency parse, breadth-first and execute whichever valid operation is assigned the largest probability under the model. This achieves a token-level F1 score of \ahcomment{TODO}
+
+\subsection{Preprocessing with extract}
+Extract preprocessing. Make up a few simple rules. They will help a bunch. Only like 6 dependency types work at all for extract. This is in realfake/createdata/extract at the moment.
+
+
+
+\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. }
+
+
+\section{Computational experiments part 2: investigating properties of q,s,r compression}
 \begin{enumerate}
-\item{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. }
+\item{q = a list of 1 to 3 NER}
+\item{r = random}
+\item{What is the size of the minimum compression?}
+\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}
+\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
+\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
+\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
+\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
+\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
 \end{enumerate}
+
+\section{computational experiments part 3: computational costs}
+
+\ahcomment{this needs to be rewritten}
+
+In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $M$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^M V - i = O(V^2)}$ operations.
+
+This worst case represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
+
+In section \S\ahcomment{TODO} we also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
+
+
 
 \section{Related work}
 
