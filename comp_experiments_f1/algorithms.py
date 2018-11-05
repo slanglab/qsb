@@ -73,10 +73,10 @@ class NeuralNetworkTransitionGreedy:
             vertex, prob = vertexes[0]
             prune(g=state, v=vertex)
             prev_length = length
-            length = self.get_char_length(state)
-        length = self.get_char_length(jdoc)
+            length = self.get_char_length(state) 
+        length = self.get_char_length(state)
         if length <= int(jdoc["r"]):
-            remaining_toks = [_["index"] for _ in jdoc["tokens"]]
+            remaining_toks = [_["index"] for _ in state["tokens"]]
             return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                     "nops": nops
                     }
