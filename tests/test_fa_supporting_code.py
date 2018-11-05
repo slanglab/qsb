@@ -1,10 +1,9 @@
-import pytest
 import scipy
 import json
 
 from code.printers import *
 from ilp2013.fillipova_altun_supporting_code import *
-
+import cPickle as pickle
 
 def load_sentence(filename):
     with open(filename, "r") as inf:
@@ -14,6 +13,9 @@ def load_sentence(filename):
 all_vocabs = get_all_vocab_quick_for_tests()
 
 namer = FeatureNamer(vocabs=all_vocabs)
+
+with open("tests/fixtures/mini_proc", "r") as of:
+    training_data = pickle.load(of)
 
 def test_get_tok():
     sent = load_sentence("tests/fixtures/basic_verb.txt.json")
@@ -25,8 +27,6 @@ def test_get_siblings():
     e = (2,6)
     deps = [i for i in get_siblings(e, sent)]
     assert len(deps) == 3, "cake has 3 non punctuation siblings"
-
-test_get_siblings()
 
 def test_get_edge_type():
     sent = load_sentence("tests/fixtures/basic_verb.txt.json")
@@ -124,18 +124,12 @@ def test_semantic_names_same_size_as_namer():
     out = semantic((4,3), jdoc, all_vocabs)
     assert len(namer.semantic_names) == len(out)
 
+
 def test_semantic_names_same_size_as_namer():
     jdoc = load_sentence("tests/fixtures/simple_negation2.txt.json")
     out = syntactic((4,3), jdoc, all_vocabs)
     assert len(namer.syntactic_names) == out.shape[1]
 
-
-def test_lexical_names_correctness():
-    jdoc = load_sentence("tests/fixtures/simple_negation2.txt.json")
-    h, n = 4,3
-    lexical_out = lexical(e=(h, n), jdoc=jdoc, vocabs=all_vocabs)
-    lookup_ix = namer.lexical_names.index("lemma_n:" + lemma(jdoc=jdoc, index=n))
-    print "todo"
 
 def test_random_scores_runs():
     jdoc = load_sentence("tests/fixtures/simple_negation2.txt.json")

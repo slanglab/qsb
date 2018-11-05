@@ -2,6 +2,7 @@ import re
 from code.treeops import dfs
 from code.treeops import bfs
 
+
 def ner_to_s(tok):
     if tok["ner"] == "PERSON":
         return "P"
@@ -11,6 +12,12 @@ def ner_to_s(tok):
         return "O"
     return "X"
 
+def get_gold_y(jdoc):
+    return [o["index"] in jdoc["compression_indexes"] for o in jdoc["tokens"]]
+
+def get_pred_y(predicted_compression, original_indexes):
+    assert all(type(o) == int for o in predicted_compression)
+    return [o in predicted_compression for o in original_indexes]
 
 def get_ner_string(jdoc):
     '''make a big string showing NER tag at each position'''
