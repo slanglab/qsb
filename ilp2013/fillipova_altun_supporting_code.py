@@ -184,7 +184,10 @@ def get_tok(index, jdoc):
     if index == 0:
         return {"index":0, 'word':'ROOT', 'ner':'O',
                 'pos': 'ROOT', 'lemma':'ROOT'}
-    return filter(lambda x:x["index"] == index, jdoc["tokens"]).pop()
+    for _ in jdoc["tokens"]:
+        if _["index"] == index:
+            return _
+    assert "unknown" == "token" 
 
 
 def filippova_tree_transform(jdoc):
@@ -341,15 +344,19 @@ def get_siblings(e, jdoc):
         - other children of h that are not e
     '''
     h, n = e
-    sibs = list(filter(lambda x:x["governor"] == h and x["dependent"] != e,
-                jdoc["enhancedDependencies"]))
+    sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != e]
+    #sibs = list(filter(lambda x:x["governor"] == h and x["dependent"] != e,
+    #            jdoc["enhancedDependencies"]))
     return [_['dependent'] for _ in sibs]
 
 
 def get_edge(h, n, jdoc):
     '''A helper method: get edge between h and n'''
-    return filter(lambda x:x["governor"] == h and x["dependent"] == n,
-                  jdoc["enhancedDependencies"]).pop()
+    out = [_ for _ in jdoc["enhancedDependencies"] if _["governor"] == h
+          and _["dependent"] == n]
+    return out.pop()
+    #return filter(lambda x:x["governor"] == h and x["dependent"] == n,
+    #              jdoc["enhancedDependencies"]).pop()
 
 
 def label(h, n, jdoc):
@@ -361,8 +368,9 @@ def get_children(index, jdoc, deps_kind = 'enhancedDependencies'):
     '''
     A helper method: get the children of a given vertex in a parse tree
     '''
-    filtr = filter(lambda x:x["governor"] == index, jdoc[deps_kind])
-    return [_["dependent"] for _ in filtr]
+    filtr = [_["dependent"] for _ in jdoc[deps_kind] if _["governor"] == index]
+    #filtr = filter(lambda x:x["governor"] == index, jdoc[deps_kind])
+    return filtr  #[_["dependent"] for _ in filtr]
 
 
 def is_negated(n, jdoc):
