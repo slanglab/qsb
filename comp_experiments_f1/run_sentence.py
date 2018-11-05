@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     assert args.start is not None
 
-    range_ = range(args.start * 100, args.start * 100 + 1)
+    range_ = range(args.start * 100, args.start * 100 + 100)
 
     from tqdm import tqdm
 
