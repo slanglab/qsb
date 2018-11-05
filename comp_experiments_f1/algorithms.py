@@ -1,15 +1,22 @@
+'''
+All of the algorithms for query-focused compression
+python 3
+'''
+
 from allennlp.predictors.predictor import Predictor
 from allennlp.models.archival import load_archive
-from code.utils import get_labeled_toks
 from code.treeops import prune
 from code.utils import prune_deletes_q
 from code.treeops import get_walk_from_root
-from preproc.lstm_preproc import get_instance
+from code.algorithms import get_pred_y
 from preproc.lstm_preproc import get_encoded_tokens
 from preproc.lstm_preproc import get_proposed
+from ilp2013.fillipova_altun import run_model
+from fillipova_altun_supporting_code import filippova_tree_transform
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
 import numpy as np
+import copy
 import nn.models
 
 
@@ -46,9 +53,11 @@ class NeuralNetworkTransitionGreedy:
         according to transition-based nn model
         '''
         assert self.query_focused
-        return {_["index"]: self.predict_proba(original_s=jdoc, vertex=_["index"], state=state)
+        return {_["index"]: self.predict_proba(original_s=jdoc,
+                                               vertex=_["index"],
+                                               state=state)
                 for _ in state["tokens"] if not prune_deletes_q(_["index"],
-                                                               jdoc)}
+                                                                jdoc)}
 
     def get_char_length(self, jdoc):
         assert type(jdoc["tokens"][0]["word"]) == str
@@ -150,4 +159,38 @@ class NeuralNetworkTransitionBFS:
 
         return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                 "nops": len(original_s["tokens"])
+                }
+
+
+class FA2013Compressor:
+
+    '''
+    This implements a query query_focused compression w/ F and A
+    '''
+
+    def __init__(self, weights, vocab):
+        self.weights
+        self.vocab
+
+    def predict(self, original_s):
+        '''
+        run the ILP
+        '''
+
+        r = int(original_s["r"])
+
+        original_indexes = [_["index"] for _ in original_s["tokens"]]
+
+        transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
+
+        output = run_model(transformed_s,
+                           vocab=self.vocab,
+                           weights=self.weights, r=r)
+
+        predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+        y_pred = get_pred_y(predicted_compression=predicted_compression,
+                            original_indexes=original_indexes)
+
+        return {"y_pred": y_pred,
+                "nops": -19999999  # whut to do here????
                 }

@@ -198,8 +198,8 @@ def filippova_tree_transform(jdoc):
         total_edges_from_root_to_this_v = sum(1 for i in jdoc["enhancedDependencies"] if i['governor'] == 0 and i["dependent"] == v["index"])
         if total_edges_from_root_to_this_v == 0 and v["word"] not in PUNCT:
             jdoc["enhancedDependencies"].append({"governor": 0, "dependent": v["index"],
-                         "governorGloss": "ROOT", "dependentGloss": v["word"],
-                         "dep": "ROOT"})
+                                                 "governorGloss": "ROOT", "dependentGloss": v["word"],
+                                                 "dep": "ROOT"})
     enhanced_nominal_modifiers = [_ for _ in jdoc["enhancedDependencies"] if "nmod:" in _['dep']]
     # see issue #10 on github
     for enhanced_edge in enhanced_nominal_modifiers:

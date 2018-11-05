@@ -41,9 +41,6 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
     assert type(k) == int and k > 0
     words = jdoc["tokens"]
 
-    if verbose:
-        print Q
-
     edge_scores = get_featurized_dependency_scores(jdoc, vs=vocab, weights=weights)
 
     # Model
@@ -60,7 +57,6 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
     m.setParam(GRB.Param.PoolSearchMode, 2)
     m.setParam(GRB.Param.PoolSolutions, k)
 
-
     '''init the X variables'''
     Xs = {}
     for relation in jdoc["enhancedDependencies"]:
@@ -68,9 +64,7 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
         Xs["{}-{}".format(gov, dep)] = m.addVar(name="{}-{}".format(gov, dep),
                                                 vtype=GRB.BINARY)
 
-
     m.setObjective(sum(Xs[x] * edge_scores[x] for x in Xs), GRB.MAXIMIZE)
-
 
     # AH: query constraint
     for word_ in Q:
@@ -103,7 +97,6 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
                 total2 += Xs["{}-{}".format(w, u)]
 
         m.addConstr((total - total2/len(indexes_not_zero)) >= 0)
-
 
     '''abe's addition to model'''
     Ws = {} # only for character counting
@@ -151,16 +144,15 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
     # I am not sure how to implement this # TODO
 
     # this is a debugging method. usually force_debug = []
-    if len(force_debug) > 0: 
+    if len(force_debug) > 0:
         for edge in force_debug:
-            a,b = edge 
+            a, b = edge
             dep = [_ for _ in jdoc["enhancedDependencies"] if _["governor"] in (a,b) and _["dependent"] in (a,b)][0]
             m.addConstr(Xs["{}-{}".format(dep["governor"], dep["dependent"])] >= 1) 
         for dep in jdoc["enhancedDependencies"]:
             e = (dep["governor"], dep["dependent"])
             if e not in force_debug:
                 m.addConstr(Xs["{}-{}".format(dep["governor"], dep["dependent"])] <= 0)
-        
 
     m.optimize()
 
@@ -223,16 +215,15 @@ if __name__ == "__main__":
     else:
         args.Q = args.Q.split()
 
-    print "***"
-    print args
-    print "***"
+    print("***")
+    print(args)
+    print("***")
 
-    for lno,ln in enumerate(open("cache/ds.json", "r")):
+    for lno, ln in enumerate(open("cache/ds.json", "r")):
         if lno == args.sent_no:
             jdoc = json.loads(ln)
             break
 
-    print " ".join([_["word"] for _ in jdoc["tokens"]])
+    print(" ".join([_["word"] for _ in jdoc["tokens"]]))
     output = run_model(jdoc, r=args.r, Q=args.Q)
-    print output
-    #print output["compression"]
+    print(output)
