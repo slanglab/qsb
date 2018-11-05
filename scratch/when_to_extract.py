@@ -18,5 +18,5 @@ if __name__ == "__main__":
             mc = [i for m in mc for i in m]
             mcl = " ".join([o["word"] for o in
                             jdoc["tokens"] if o["index"] in mc])
-
+            mcl = len(mcl)
             print(r, po, mcl)
