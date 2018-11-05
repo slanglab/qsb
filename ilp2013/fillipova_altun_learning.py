@@ -12,6 +12,7 @@ import pickle
 import string
 import ujson as json
 import argparse
+from sklearn.metrics import f1_score
 from code.printers import pretty_print_conl
 from ilp2013.fillipova_altun_supporting_code import *
 from code.utils import get_NER_query
@@ -41,7 +42,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             r = get_oracle_r(source_jdoc)
             Q = get_NER_query(source_jdoc)
             #The maximum permitted compression length is set to be the same as the length of the oracle compression
-            print Q
+            #print Q
             output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
             if output["solved"]:
                 gold.sort()
@@ -83,6 +84,6 @@ if __name__ == "__main__":
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs, verbose=True)
+    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs, verbose=False)
     with open("output/{}".format(args.epochs), "w") as of:
         pickle.dump(averaged_weights, of)
