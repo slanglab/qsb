@@ -28,11 +28,11 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
     weights = zero_weights(vocab)
     avg_weights = np.copy(weights) # a running average of the weights
     t = 0
-    print "[*] running on ", len(dataset)
+    print("[*] running on ", len(dataset))
 
     for epoch in range(1, epochs):
         if verbose:
-            print "[*] epoch {}".format(epoch)
+            print("[*] epoch {}".format(epoch))
         random.shuffle(dataset)
         epoch_scores = []
         for d in dataset:
@@ -76,12 +76,12 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
 
                 epoch_scores.append(f1_score(y_true=y_gold, y_pred=y_pred))
             if verbose:
-                print f1_score(y_true=y_gold, y_pred=y_pred)
+                print(f1_score(y_true=y_gold, y_pred=y_pred))
             if (t % 1000 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []
         if snapshot:
-            with open("snapshots/{}".format(epoch), "w") as of:
+            with open("snapshots/{}".format(epoch), "wb") as of:
                 pickle.dump(avg_weights, of)
     return {"avg_weights":avg_weights, "final_weights":weights}
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     parser.add_argument("-file", default="preproc/100k")
     args = parser.parse_args()
     vocab = get_all_vocabs()
-    with open(args.file, "r") as of:
+    with open(args.file, "rb") as of:
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]

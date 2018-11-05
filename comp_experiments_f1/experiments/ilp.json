@@ -2,5 +2,6 @@
   "results_dir": "comp_experiments_f1/output/",
   "archive_loc": "tests/fixtures/891477193/model.tar.gz",
   "model": "ilp",
-  "query": true
+  "query": true,
+  "weights": "snapshots/2"
 }

@@ -28,7 +28,7 @@ def get_model(config):
         return NeuralNetworkTransitionBFS(config["archive_loc"],
                                           query_focused)
     if config["model"] == "ilp":
-        with open(config["weights"], "r") as of:
+        with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
         return FA2013Compressor(weights=weights)
 
