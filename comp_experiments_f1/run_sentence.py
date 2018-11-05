@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     assert args.start is not None
 
-    range_ = range(args.start * 100, args.start * 100 + 100)
+    range_ = range(args.start * 100, args.start * 100 + 1)
 
     from tqdm import tqdm
 
@@ -63,5 +63,6 @@ if __name__ == "__main__":
     out_ = config["results_dir"] + "/{}-{}".format(str(args.start),
                                                    config["model"])
     config["no_compression"] = no_compression 
+    print(config.keys())
     with open(out_, "w") as of:
         json.dump(config, of)

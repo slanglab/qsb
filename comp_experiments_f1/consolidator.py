@@ -15,8 +15,9 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
             if "sentence" in k:
                 results[dt["model"]]["f1"].append(v["f1"])
                 results[dt["model"]]["nops"].append(v["nops"])
+            results[dt['model']]["no_compression"] = dt["no_compression"]
 
 for model in results:
-    print(model)
+    print(results[model]["no_compression"])
     print(np.mean(results[model]["f1"]))
     print(np.mean(results[model]["nops"]))
