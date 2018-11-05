@@ -67,6 +67,9 @@ class NeuralNetworkTransitionGreedy:
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops += len(vertexes)
             vertexes.sort(key=lambda x: x[1], reverse=True)
+            if len(vertexes) == 0:
+                print("huh")
+                break
             vertex, prob = vertexes[0]
             prune(g=state, v=vertex)
             prev_length = length
