@@ -21,18 +21,24 @@ class NeuralNetworkTransitionGreedy:
         self.query_focused = query_focused
         self.predictor = Predictor.from_archive(archive, "paper-classifier")
 
-    def predict_proba(self, jdoc, vertex):
+    def predict_proba(self, original_s, vertex, state):
         '''
         what is probability that this vertex is prunable,
         according to transition-based nn model
         '''
-        label = "NA"
-        sentence = get_labeled_toks(vertex, jdoc)
-        assert "old" == "way"
-        instance = self.predictor._dataset_reader.text_to_instance(sentence,
-                                                                   label)
+        provisional_label = "p"
+        toks = get_encoded_tokens(provisional_label, state,
+                                  original_s, vertex)
+
+        txt = " ".join([_["word"] for _ in toks])
+
+        instance = self.predictor._dataset_reader.text_to_instance(txt,
+                                                                   "e")
+
+        pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
+        print(pred_labels)
         pred = self.predictor.predict_instance(instance)
-        return pred["class_probabilities"][1]
+        return pred[1]
 
     def predict_vertexes(self, jdoc):
         '''
@@ -81,24 +87,18 @@ class NeuralNetworkTransitionGreedy:
 
 class NeuralNetworkTransitionBFS:
 
-    def __init__(self, archive_loc, query_focused=True):
+    '''
+    This algorithm basically does a BFS walk and executes the greedy move
+
+    It is mostly used to see what kind of F1 we get on oracle options
+    '''
+
+    def __init__(self, archive_loc):
         assert type(archive_loc) == str
         archive = load_archive(archive_file=archive_loc)
-        self.query_focused = query_focused
+        self.query_focused = False
         self.predictor = Predictor.from_archive(archive, "paper-classifier")
         self.archive = archive
-
-    def predict_proba(self, jdoc, vertex):
-        '''
-        what is probability that this vertex is prunable,
-        according to transition-based nn model
-        '''
-        label = "NA"
-        sentence = " ".join([_["word"] for _ in get_labeled_toks(vertex, jdoc)])
-        instance = self.predictor._dataset_reader.text_to_instance(sentence,
-                                                                   label)
-        pred = self.predictor.predict_instance(instance)
-        return pred["class_probabilities"]
 
     def get_char_length(self, jdoc):
         assert type(jdoc["tokens"][0]["word"]) == str
