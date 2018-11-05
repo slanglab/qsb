@@ -39,12 +39,24 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             t += 1
             source_jdoc = d
             gold = get_gold_edges(source_jdoc)
+
+            # The maximum permitted compression length is set to be the same as the
+            # length of the oracle compression
+
             r = get_oracle_r(source_jdoc)
-            Q = get_NER_query(source_jdoc)
-            #The maximum permitted compression length is set to be the same as the length of the oracle compression
-            #print Q
-            #Q = []
-            output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r, Q=Q)
+            # Q = get_NER_query(source_jdoc)
+            # print Q
+
+            # So if you tell the model Q, it seems to always pick edges between
+            # the root and the query tokens which are inserted via the Fillipova tree
+            # transform. This leads to worse F1 (edge and token level)
+            # I think it is fine to just run the F & A model as stated in their
+            # paper (no query term). I was thinking to add query term thinking
+            # it would be a way to be more generous to the baseline but in fact
+            # the query term is making the model worse so no query. Sorting out
+            # and fixing this would change the model they propose in their paper, which
+            # is then no longer a baseline.
+            output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
             if output["solved"]:
                 gold.sort()
                 pred = output["predicted"]
@@ -59,9 +71,8 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
                 original_indexes = [_["index"] for _ in source_jdoc["tokens"]]
                 y_gold = get_gold_y(source_jdoc)
                 predicted_compression = [o['dependent'] for o in output["get_Xs"]]
-                print output
                 y_pred = get_pred_y(predicted_compression=predicted_compression,
-                            original_indexes=original_indexes)
+                                    original_indexes=original_indexes)
 
                 epoch_scores.append(f1_score(y_true=y_gold, y_pred=y_pred))
             if verbose:
@@ -87,6 +98,7 @@ if __name__ == "__main__":
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True, epochs=args.epochs, verbose=True)
+    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
+                             epochs=args.epochs, verbose=False)
     with open("output/{}".format(args.epochs), "w") as of:
         pickle.dump(averaged_weights, of)
