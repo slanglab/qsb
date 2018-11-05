@@ -1,6 +1,37 @@
 import re
 from code.treeops import dfs
 from code.treeops import bfs
+from collections import Counter
+
+
+def get_parent(v, jdoc):
+    '''get the parent of v in the jdoc'''
+    parent = [_ for _ in jdoc["basicDependencies"]
+              if int(_["dependent"]) == int(v)]
+    if parent == []:
+        return None
+    else:
+        assert len(parent) == 1 or int(v) == 0
+        return parent[0]["governor"]
+
+
+def get_min_compression(v, jdoc):
+    '''
+    input:
+        v(int) vertex
+        jdoc(dict) corenlp jdoc blob
+    returns:
+        list vertexes from root to v
+    '''
+    path = []
+    while get_parent(v, jdoc) is not None:
+        path.append(int(v))
+        v = get_parent(v, jdoc)
+    last_in_path = path[-1]
+    top_of_path = [_["dep"] for _ in jdoc["basicDependencies"] if
+                   int(_["dependent"]) == int(last_in_path)][0]
+    assert top_of_path.lower() == "root"  # path should end in root
+    return list(reversed(path))
 
 
 def ner_to_s(tok):
@@ -12,17 +43,29 @@ def ner_to_s(tok):
         return "O"
     return "X"
 
+
 def get_gold_y(jdoc):
     return [o["index"] in jdoc["compression_indexes"] for o in jdoc["tokens"]]
+
 
 def get_pred_y(predicted_compression, original_indexes):
     assert all(type(o) == int for o in predicted_compression)
     return [o in predicted_compression for o in original_indexes]
 
+
 def get_ner_string(jdoc):
     '''make a big string showing NER tag at each position'''
     nerstr = "".join([ner_to_s(_) for _ in jdoc["tokens"]])
     return nerstr
+
+
+def is_prune_only(jdoc):
+    one_extract = Counter(jdoc["oracle"].values())["e"] == 1
+    extract_v = int([k for k, v in jdoc["oracle"].items()
+                    if v == "e"][0])
+    gov = [i["governor"] for i in jdoc["basicDependencies"] if
+           i["dependent"] == extract_v][0]
+    return gov == 0 and one_extract
 
 
 def get_ner_spans(jdoc):

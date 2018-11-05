@@ -19,15 +19,6 @@ def get_root(w):
             if _["dep"].lower() == "root"][0]
 
 
-def is_prune_only(jdoc):
-    one_extract = Counter(jdoc["oracle"].values())["e"] == 1
-    extract_v = int([k for k, v in jdoc["oracle"].items()
-                    if v == "e"][0])
-    gov = [i["governor"] for i in jdoc["basicDependencies"] if
-           i["dependent"] == extract_v][0]
-    return gov == 0 and one_extract
-
-
 def get_r(jdoc):
     return len(" ".join([i["word"] for i in jdoc["tokens"] if i["index"]
                in jdoc["compression_indexes"]]))
