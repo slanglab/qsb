@@ -8,11 +8,11 @@ from allennlp.models.archival import load_archive
 from code.treeops import prune
 from code.utils import prune_deletes_q
 from code.treeops import get_walk_from_root
-from code.algorithms import get_pred_y
+from code.utils import get_pred_y
 from preproc.lstm_preproc import get_encoded_tokens
 from preproc.lstm_preproc import get_proposed
 from ilp2013.fillipova_altun import run_model
-from fillipova_altun_supporting_code import filippova_tree_transform
+from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
 import numpy as np

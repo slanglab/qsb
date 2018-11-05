@@ -6,7 +6,8 @@ from code.treeops import bfs
 from unidecode import unidecode
 import gzip
 import string
-import cPickle as pickle
+import _pickle as pickle
+#import cPickle as pickle
 import numpy as np
 import json
 import random

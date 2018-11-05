@@ -42,7 +42,7 @@ def strike_if_gone_html(source_tok, compressed_toks):
 
 def print_striken(source, compression):
     compressed_toks = compression["tokens"]
-    print " ".join([strike_if_gone(t, compressed_toks) for t in source["tokens"]])
+    print(" ".join([strike_if_gone(t, compressed_toks) for t in source["tokens"]]))
 
 def get_striken_html(source, compression):
     compressed_toks = compression["tokens"]
@@ -54,7 +54,7 @@ def pretty_print_conl(sentence, dependencies_kind = "basicDependencies"):
     aa = sentence[dependencies_kind]
     aa.sort(key=lambda x:x["dependent"])
     for a in aa:
-        print "\t".join([str(a["dependent"]), a["dependentGloss"], "<-" + a["dep"] + "-", a["governorGloss"]])
+        print("\t".join([str(a["dependent"]), a["dependentGloss"], "<-" + a["dep"] + "-", a["governorGloss"]]))
 
 
 def dbp_hop(o):
