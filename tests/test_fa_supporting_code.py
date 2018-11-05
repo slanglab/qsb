@@ -1,9 +1,15 @@
 import scipy
 import json
 
+from tqdm import tqdm
+from sklearn.metrics import f1_score
 from code.printers import *
 from ilp2013.fillipova_altun_supporting_code import *
-import cPickle as pickle
+import _pickle as pickle
+from ilp2013.fillipova_altun import run_model
+from ilp2013.fillipova_altun_supporting_code import *
+from code.utils import get_NER_query,get_gold_y,get_pred_y
+
 
 def load_sentence(filename):
     with open(filename, "r") as inf:
@@ -14,7 +20,7 @@ all_vocabs = get_all_vocab_quick_for_tests()
 
 namer = FeatureNamer(vocabs=all_vocabs)
 
-with open("tests/fixtures/mini_proc", "r") as of:
+with open("tests/fixtures/mini_proc", "rb") as of:
     training_data = pickle.load(of)
 
 def test_get_tok():
@@ -38,7 +44,7 @@ def test_label_type_and_value():
     sent = load_sentence("tests/fixtures/basic_verb.txt.json")
     e = (2,6)
     label_ = label(2,6, sent)
-    assert type(label_) == unicode
+    assert type(label_) == str
     assert label_[0:4] == "nmod"
 
 def test_is_negated():
@@ -53,7 +59,6 @@ def test_is_negated2():
 
 def test_pos():
     sent = load_sentence("tests/fixtures/simple_negation2.txt.json")
-    print pos(2, sent)
     assert pos(2, sent) == "VBZ", "token 2, is, is negated"
     assert lemma(2, sent) == "be", "the word is has lemma be"
 
@@ -144,16 +149,10 @@ def test_in_A_but_not_B():
     assert [_ for _ in A_but_not_B(A,B)][0] == 1
 
 def test_queries():
-    import cPickle as pickle
-    from tqdm import tqdm
-    from sklearn.metrics import f1_score
 
-    with open("tests/fixtures/mini_proc", "r") as of:
+    with open("tests/fixtures/mini_proc", "rb") as of:
         training_data = pickle.load(of)[0:10]
 
-    from ilp2013.fillipova_altun import run_model
-    from ilp2013.fillipova_altun_supporting_code import *
-    from code.utils import get_NER_query,get_gold_y,get_pred_y
 
     vocab = get_all_vocabs()
     weights = zero_weights(vocab)
