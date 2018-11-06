@@ -16,7 +16,9 @@
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage{latexsym}
+\usepackage{amsmath}
 
+\newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
 
 \usepackage{url}
@@ -79,9 +81,9 @@ In this work, we present a new method for compressing sentences, which leverages
 \begin{table*}[htb!]
 \begin{tabular}{cccc}
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows supervision} \\ \hline
-LSTM taggers      & Linear              & No     &    Yes      \\   
-linear programming              & Exponential         & Yes    &    Yes   \\
-transition-based (this work)       & Quadratic*           & Yes    &      Yes   \\
+LSTM taggers      & linear              & no     &    yes      \\   
+linear programming              & exponential         & yes    &    yes   \\
+transition-based (this work)       & quadratic*           & yes    &      yes   \\
 \end{tabular}
 \caption{\ahcomment{Blah blah blah blah}}
 \end{table*}
@@ -140,19 +142,28 @@ Neural subtree deletion methods? &  D    \\
 \end{tabular}
 \end{table}
 
-\subsection{ILP implementation details}
-\ahcomment{TODO}
+\subsection{Implementation: ILP-based compression}
 
+To our knowledge, there is no public code release for this model. We reimplement the method, and achieve similar token-level F1 scores. We use the Gurobi engine (v7) to solve the ILP. There are minor discrepancies between our implementation which have to do w/ different syntactic formalisms, different optimizers and our decision to re-parse and re-tokenize everything. We make note of some differences in the appendix. We also modify the method to accept (optional) query and budget constraints. 
 
-\begin{enumerate}
-\item{q = a list of 1 to 3 NER which are in the compression. All the NER in the compression? If the compression has no NER, use noun unigrams I guess? or probably just skip it}
-\item{r = length of gold}
-\end{enumerate}
+\ahcomment{dont actually release their feature list. we use all available features}
+\ahcomment{tree transform}
+
+\ahcomment{gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
+
+\ahcomment{do you train the ILP to accept query terms? that is not really a baseline. }
+
+\ahcomment{100k in training set. we do too }
+
+\ahcomment{how to assess convergence}
+
+\ahcomment{implementing get Q prefers to get the root. }
+
 
 \ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
  (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
 
-\subsection{Implementation: ILP-based compression}
+
 
 \subsection{Implementation: transition-based compression}
 
@@ -214,6 +225,19 @@ Our concern with lexical constraints is better suited to applications in which u
 Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint. (Other work on query-focused summarization \cite{das} assumes softer constraints). 
 
 Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Our interest in this problem arose from constructing one such novel search system.
+
+\section{Conclusion}
+\ahcomment{TODO}
+
+\section{Appendix}
+
+In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement transformations described in \citet{filippova2008dependency}. There are inevitable discrepancies between implementations. Some differences arise from differences in syntactic formalisms. Most importantly, prior work uses a tree transformation method which is no longer strictly compatible with UD. (For instance, the transformation assumes the PPs are headed by prepositions, which is not true in UD). Therefore, in implementing the ILP, we use the enhanced dependencies representation from CoreNLP \cite{Schuster2016EnhancedEU}. The augmented modifiers and augmented conjuncts in this representation create parses that are very similar to the transformed trees described in \citet{filippova2008dependency}. Prior also describes a syntactic constraint based on the \rdep{sc} relation, which is not included in UD. We therefore exclude this constraint.
+
+Other differences between arise from diverging output from part-of-speech taggers. Prior work modifies a dependency tree by adding an edge between the root note and all verbs in a sentence, as a preprocessing step. This ensures that subclauses can be removed from parse trees to form compressions. However, we found that replicating this transform made it impossible for the ILP to create some gold compressions in the \citet{filippova2013overcoming} dataset; likely because different part-of-speech taggers disagree on some verb tags. We therefore add an edge between the root node and \textit{all} tokens in a sentence; we confirm that with this change the ILP can always output the gold compression.
+
+Prior work does not specify all features in the structured perceptron model. We implement every feature discussed in the published work.
+
+\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
