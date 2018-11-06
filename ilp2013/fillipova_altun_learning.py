@@ -56,7 +56,13 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             # the query term is making the model worse so no query. Sorting out
             # and fixing this would change the model they propose in their paper, which
             # is then no longer a baseline.
-            output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
+            try:
+                output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
+            except IndexError:
+                output = {"solved": False}
+                with open("/tmp/confusion","wb") as of:
+                    debug = (source_jdoc, vocab, weights, r)
+                    pickle.dump(debug, of)
             if output["solved"]:
                 gold.sort()
                 pred = output["predicted"]

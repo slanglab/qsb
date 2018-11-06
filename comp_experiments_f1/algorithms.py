@@ -170,7 +170,7 @@ class FA2013Compressor:
 
     def __init__(self, weights):
         from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
-        self.weights
+        self.weights = weights
         self.vocab = get_all_vocabs()
 
     def predict(self, original_s):

@@ -18,6 +18,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
             results[dt['model']]["no_compression"] = dt["no_compression"]
 
 for model in results:
+    print(model)
     print(results[model]["no_compression"])
     print(np.mean(results[model]["f1"]))
     print(np.mean(results[model]["nops"]))
