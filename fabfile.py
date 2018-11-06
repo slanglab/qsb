@@ -2,7 +2,8 @@
 Using this file requires version 1 of the python library fabric. 
 - http://www.fabfile.org/
 
-This will activate a venv that has fabric installed
+python3
+
 '''
 from __future__ import with_statement
 from fabric.api import env
@@ -26,9 +27,11 @@ def lstm_preproc():
     local("cat preproc/lstm_train.jsonl | jq .label | sort | uniq -c > preproc/2way_counts.txt")
     local("./scripts/send_to_gpu.sh")
 
+
 def computational_experiments_1():
     local("python comp_experiments_part_1/p_deletion_oracle_path.py") 
     local("Rscript scripts/oracle_acceptability_experiment.R")
+
 
 def preproc():
     '''
@@ -44,6 +47,13 @@ def preproc():
         local("ls sentence-compression/data/*jsonl | parallel -j 5 --eta 'python preproc/proc_filipova.py {}'") # do corenlp processing
         local("ls sentence-compression/data/*sent-comp.train*jsonl | parallel rm")
         local("python preproc/split_validation_and_test.py")
-        print "[*] preprocessed done"
+        print("[*] preprocessed done")
     else:
-        print "[*] Can't find data. Do you need to run download? Try $fab download" 
+        print("[*] Can't find data. Do you need to run download? Try $fab download")
+
+
+def qsr_f1_experiments():
+    '''run the (q,s,r) F1 experiments'''
+    local("python comp_experiments_f1/run_sentence.py -start 2 -config comp_experiments_f1/experiments/prune_only_nn.json")
+    local("python comp_experiments_f1/run_sentence.py -start 2 -config comp_experiments_f1/experiments/ilp.json")
+    local("python comp_experiments_f1/consolidator.py")
