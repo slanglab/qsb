@@ -69,9 +69,13 @@ class NeuralNetworkTransitionGreedy:
         return the lowest vertex in the tree that contains the query terms
         '''
         best = None
+        print(jdoc["q"])
+        def tok_is_verb(vertex):
+            gov = [o["pos"][0] for o in jdoc["tokens"] if o["index"] == v][0]
+            return gov[0].lower() == "v"
         for v in get_walk_from_root(jdoc):  # bfs
-            children = dfs(g=jdoc, hop_s=v)
-            if all(i in children for i in jdoc["q"]):
+            children = dfs(g=jdoc, hop_s=v, D=[])
+            if all(i in children for i in jdoc["q"]) and tok_is_verb(v):
                 best = v
         return best
 
@@ -84,7 +88,7 @@ class NeuralNetworkTransitionGreedy:
         orig_toks = jdoc["original_ix"]
         nops = 0
         topv = self.heuristic_extract(jdoc)
-        short_tree = dfs(g=jdoc, v=topv, D=[])
+        short_tree = dfs(g=jdoc, hop_s=topv, D=[])
         toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
         deps_to_start = [i for i in jdoc["basicDependencies"] if
                          i["dependent"] in short_tree

@@ -112,9 +112,12 @@ def get_NER_query(jdoc):
 
 
 def get_labeled_toks(node, jdoc, op_proposed):
+    print(node)
+    import ipdb;ipdb.set_trace()
     if len(jdoc["tokens"]) == 0:
         labeled_toks = [{"word": "SOS", "index": -1000},{"word": "EOS", "index":1000}]
         return labeled_toks
+    
     dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
     START = "OOVSTART" + dep + op_proposed
     END = "OOVEND" + dep + op_proposed
