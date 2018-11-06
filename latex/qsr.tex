@@ -146,9 +146,6 @@ Neural subtree deletion methods? &  D    \\
 
 To our knowledge, there is no public code release for this model. We reimplement the method, and achieve similar token-level F1 scores. We use the Gurobi engine (v7) to solve the ILP. There are minor discrepancies between our implementation which have to do w/ different syntactic formalisms, different optimizers and our decision to re-parse and re-tokenize everything. We make note of some differences in the appendix. We also modify the method to accept (optional) query and budget constraints. 
 
-\ahcomment{dont actually release their feature list. we use all available features}
-\ahcomment{tree transform}
-
 \ahcomment{gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
 
 \ahcomment{do you train the ILP to accept query terms? that is not really a baseline. }
