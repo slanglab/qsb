@@ -19,7 +19,7 @@ def default_to_regular(d): #[1]
 
 def enum_alpha(_words):
     '''enumerate the alpha variables in the cohen/lapata model'''
-    assert all(type(_) in [str, unicode] for _ in _words), "words should be a list of str"
+    assert all(type(_) in [str] for _ in _words), "words should be a list of str"
     n = len(_words) + 1
     return {i:_words[i-1] for i in range(1, n)}
 
@@ -101,7 +101,7 @@ def get_gamma_scores(_words):
 def get_alpha_scores(_words):
     '''take a list of words and return importance scores for those words'''
     assert type(_words) == list
-    assert all(type(i) in [str, unicode] for i in _words)
+    assert all(type(i) in [str] for i in _words)
     out = dict()
     for w in _words:
         out[w] = klm.score("SOS " + w)
@@ -147,6 +147,7 @@ def get_det_mods(jdoc):
     '''
     return [(_["dependent"], _["governor"]) for _ in jdoc["basicDependencies"] if _["dep"] == "det"]
 
+
 def get_negations(jdoc):
     '''
     if we include a negation in the compression you need to include the head,
@@ -154,8 +155,8 @@ def get_negations(jdoc):
     '''
     negations = [(_["dependent"], _["governor"]) for _ in jdoc["basicDependencies"] if _["dep"] == "neg"]
     for dep, gov in negations:
-        dep_tok = filter(lambda x:x["index"] == dep, jdoc["tokens"])[0]
-        gov_tok = filter(lambda x:x["index"] == gov, jdoc["tokens"])[0]
+        dep_tok = [i for i in jdoc["tokens"] if i["index"] == dep][0]
+        gov_tok = [i for i in jdoc["tokens"] if i["index"] == gov][0]
         child_tok = None
         def is_verb(tok):
             return tok["pos"][0].lower() == "v"
@@ -163,7 +164,8 @@ def get_negations(jdoc):
             # AH: can you assume there is always a child tok? will get a runtime error if no on the
             # next 2 lines.
             chi = [_["dependent"] for _ in jdoc["basicDependencies"] if _["dep"] == "aux"][0]
-            child_tok = filter(lambda x:x["index"] == chi, jdoc["tokens"])[0]
+           
+            child_tok = [i for i in jdoc["tokens"] if i['index'] == chi][0] 
         if child_tok is not None:
             yield [dep_tok["index"], gov_tok["index"], child_tok["index"]]
         else:
