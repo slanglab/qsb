@@ -112,8 +112,6 @@ def get_NER_query(jdoc):
 
 
 def get_labeled_toks(node, jdoc, op_proposed):
-    print(node)
-    import ipdb;ipdb.set_trace()
     if len(jdoc["tokens"]) == 0:
         labeled_toks = [{"word": "SOS", "index": -1000},{"word": "EOS", "index":1000}]
         return labeled_toks

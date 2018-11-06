@@ -69,7 +69,6 @@ class NeuralNetworkTransitionGreedy:
         return the lowest vertex in the tree that contains the query terms
         '''
         best = None
-        print(jdoc["q"])
         def tok_is_verb(vertex):
             gov = [o["pos"][0] for o in jdoc["tokens"] if o["index"] == v][0]
             return gov[0].lower() == "v"
