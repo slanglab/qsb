@@ -12,6 +12,7 @@ from code.utils import get_pred_y
 from preproc.lstm_preproc import get_encoded_tokens
 from preproc.lstm_preproc import get_proposed
 from ilp2013.fillipova_altun import run_model
+from code.treeops import dfs
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
@@ -63,6 +64,17 @@ class NeuralNetworkTransitionGreedy:
         assert type(jdoc["tokens"][0]["word"]) == str
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 
+    def heuristic_extract(self, jdoc):
+        '''
+        return the lowest vertex in the tree that contains the query terms
+        '''
+        best = None
+        for v in get_walk_from_root(jdoc):  # bfs
+            children = dfs(g=jdoc, hop_s=v)
+            if all(i in children for i in jdoc["q"]):
+                best = v
+        return best
+
     def predict(self, jdoc):
         '''
         return a compression that preserves q and respects r
@@ -71,7 +83,13 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(jdoc)
         orig_toks = jdoc["original_ix"]
         nops = 0
-        state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
+        topv = self.heuristic_extract(jdoc)
+        short_tree = dfs(g=jdoc, v=topv, D=[])
+        toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
+        deps_to_start = [i for i in jdoc["basicDependencies"] if
+                         i["dependent"] in short_tree
+                         and i["governor"] in short_tree]
+        state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         while length != prev_length and length > int(jdoc["r"]):
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops += len(vertexes)

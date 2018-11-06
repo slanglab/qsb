@@ -1,7 +1,7 @@
 import re
 from code.treeops import dfs
-from code.treeops import bfs
 from collections import Counter
+from code.treeops import get_walk_from_root
 
 
 def get_parent(v, jdoc):
@@ -150,3 +150,4 @@ def prune_deletes_q(vertex, jdoc):
 def get_len_mc(mc_indexes, jdoc):
     out = " ".join([_["word"] for _ in jdoc["tokens"] if _["index"] in mc_indexes])
     return len(out)
+
