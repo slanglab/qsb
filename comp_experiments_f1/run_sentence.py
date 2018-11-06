@@ -5,6 +5,7 @@ import json
 import argparse
 import _pickle as pickle
 
+from tqdm import tqdm
 from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
@@ -37,7 +38,7 @@ def get_model(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-start", type=int)
+    parser.add_argument("-fast", action="store_true", default=False)
     parser.add_argument("-config", type=str)
     args = parser.parse_args()
 
@@ -46,9 +47,10 @@ if __name__ == "__main__":
 
     assert args.start is not None
 
-    range_ = range(args.start * 100, args.start * 100 + 100)
-
-    from tqdm import tqdm
+    if args.fast:
+        range_ = range(0, 100)
+    else:
+        range_ = range(0, 1000)
 
     model = get_model(config)
     with open("preproc/lstm_validation_sentences_3way.jsonl", "r") as inf:
