@@ -3,7 +3,7 @@ python 3
 '''
 import json
 import argparse
-import _pickle as pickle
+import pickle
 
 from tqdm import tqdm
 from sklearn.metrics import f1_score

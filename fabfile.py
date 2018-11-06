@@ -6,11 +6,12 @@ python3
 
 '''
 from __future__ import with_statement
-from fabric.api import env
-from fabric.api import local, run
+from fabric import Connection
+from fabric import task
 from code.log import logger
 import os
 
+local = Connection("localhost").local
 
 def download():
     '''
@@ -51,8 +52,8 @@ def preproc():
     else:
         print("[*] Can't find data. Do you need to run download? Try $fab download")
 
-
-def qsr_f1_experiments():
+@task
+def qsr(cx):
     '''run the (q,s,r) F1 experiments'''
     local("python comp_experiments_f1/run_sentence.py -start 2 -config comp_experiments_f1/experiments/prune_only_nn.json")
     local("python comp_experiments_f1/run_sentence.py -start 2 -config comp_experiments_f1/experiments/ilp.json")
