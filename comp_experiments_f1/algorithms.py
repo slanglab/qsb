@@ -87,12 +87,17 @@ class NeuralNetworkTransitionGreedy:
         orig_toks = jdoc["original_ix"]
         nops = 0
         topv = self.heuristic_extract(jdoc)
-        short_tree = dfs(g=jdoc, hop_s=topv, D=[])
-        toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
-        deps_to_start = [i for i in jdoc["basicDependencies"] if
-                         i["dependent"] in short_tree
-                         and i["governor"] in short_tree]
-        state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
+        
+        if jdoc["q"] != []:
+            short_tree = dfs(g=jdoc, hop_s=topv, D=[])
+            toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
+            deps_to_start = [i for i in jdoc["basicDependencies"] if
+                             i["dependent"] in short_tree
+                             and i["governor"] in short_tree]
+            state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
+        else:
+            print("no q")
+            state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         while length != prev_length and length > int(jdoc["r"]):
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops += len(vertexes)
@@ -104,6 +109,8 @@ class NeuralNetworkTransitionGreedy:
             prune(g=state, v=vertex)
             prev_length = length
             length = self.get_char_length(state) 
+            print(length)
+            print(jdoc["q"])
         length = self.get_char_length(state)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in state["tokens"]]
