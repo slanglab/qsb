@@ -33,6 +33,9 @@ def get_min_compression(v, jdoc):
     assert top_of_path.lower() == "root"  # path should end in root
     return list(reversed(path))
 
+def get_min_compression_Q(Q, jdoc):
+    cix = [get_min_compression(v, jdoc) for v in Q]
+    return [i for v in cix for i in v]
 
 def ner_to_s(tok):
     if tok["ner"] == "PERSON":
@@ -142,3 +145,8 @@ def prune_deletes_q(vertex, jdoc):
     q = jdoc["q"]
     pruned = dfs(g=jdoc, hop_s=vertex, D=[])
     return len(set(pruned) & set(q)) > 0
+
+
+def get_len_mc(mc_indexes, jdoc):
+    out = " ".join([_["word"] for _ in jdoc["tokens"] if _["index"] in mc_indexes])
+    return len(out)

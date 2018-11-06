@@ -66,6 +66,8 @@ if __name__ == "__main__":
                 if out["y_pred"] == "could not find a compression":
                     f1 = 0.0
                     no_compression += 1
+                    with open("/tmp/{}".format(vno), "wb") as of:
+                        pickle.dump(sentence, of)
                 else:
                     f1 = f1_score(y_true=y_true, y_pred=y_pred)
                 config["sentence{}".format(vno)] = {'f1': f1, "nops": ops}
