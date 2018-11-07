@@ -98,8 +98,6 @@ class NeuralNetworkTransitionGreedy:
             state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         else:
             state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
-        from code.printers import pretty_print_conl
-        pretty_print_conl(jdoc)
         while length != prev_length and length > int(jdoc["r"]):
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops += len(vertexes)

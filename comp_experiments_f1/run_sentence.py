@@ -45,8 +45,6 @@ if __name__ == "__main__":
     with open(args.config, "r") as inf:
         config = json.load(inf)
 
-    assert args.start is not None
-
     if args.fast:
         range_ = range(0, 100)
     else:
@@ -74,7 +72,8 @@ if __name__ == "__main__":
                     f1 = f1_score(y_true=y_true, y_pred=y_pred)
                 config["sentence{}".format(vno)] = {'f1': f1, "nops": ops}
 
-    out_ = config["results_dir"] + "/{}-{}".format(str(args.start),
+    fast = "fast" if args.fast else "full"
+    out_ = config["results_dir"] + "/{}-{}".format(str(fast),
                                                    config["model"])
     config["no_compression"] = no_compression 
     print(config.keys())

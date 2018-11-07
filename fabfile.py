@@ -55,6 +55,4 @@ def preproc():
 @task
 def qsr(cx):
     '''run the (q,s,r) F1 experiments'''
-    local("python comp_experiments_f1/run_sentence.py -start 2 -config comp_experiments_f1/experiments/prune_only_nn.json")
-    local("python comp_experiments_f1/run_sentence.py -start 2 -config comp_experiments_f1/experiments/ilp.json")
-    local("python comp_experiments_f1/consolidator.py")
+    local("./scripts/qsr.sh")
