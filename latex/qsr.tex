@@ -211,7 +211,9 @@ Because \textsc{Prune} only removes tokens from the state, we initialize $(V_c, 
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, the authors did not release code for this model, so we reimplement from scratch. We achieve a token-level F1 score of \ahcomment{.72, roughly} on a held out dataset. We use a leading off-the-shelf optimizer \cite{gurobi} to solve the ILP.\footnote{We use version 7.} There are some difference between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work \ahcomment{See comment in appendix. talk to brendan. stanford??}. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
+We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, the authors did not release code for this model. We reimplement from scratch, achieving a similar a token-level F1 score as the original authors \ahcomment{.72, roughly}. We use a leading off-the-shelf optimizer \cite{gurobi} to solve the ILP.\footnote{We use version 7.} 
+
+There are some difference between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work \ahcomment{See comment in appendix. talk to brendan. stanford??}. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
 
 \ahcomment{gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
 
@@ -228,6 +230,9 @@ We compare our transition-based compression system to the state-of-the-art ILP-b
  (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
 
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
+
+\ahcomment{only outline / notes here}
+
 \begin{enumerate}
 \item{q = a list of 1 to 3 NER}
 \item{r = random}
