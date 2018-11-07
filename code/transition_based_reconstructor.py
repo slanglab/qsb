@@ -22,7 +22,7 @@ lns = []
 with open("preproc/training.jsonl", "r") as inf:
     for ino, _ in tqdm(enumerate(inf)):
         ln = json.loads(_)
-        buffer_ = []
+        V = []
 
         d, pi, c = bfs(ln, 0)
 
@@ -31,10 +31,11 @@ with open("preproc/training.jsonl", "r") as inf:
                 oracle = ln["oracle"][str(vertex)]
                 descendants = dfs(g=ln, hop_s=vertex, D=[]) # vertex and descendants
                 if oracle == "e":
-                    buffer_ = buffer_ + descendants
+                    V = V + descendants
                 if oracle == "p":
                     for c in descendants:
-                        if c in buffer_:
-                            buffer_.remove(c)
-        buffer_.sort()
-        assert buffer_ == ln["compression_indexes"]
+                        if c in V:
+                            V.remove(c)
+                # otherwise oracle is a NOP
+        V.sort()
+        assert V == ln["compression_indexes"]
