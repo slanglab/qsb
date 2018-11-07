@@ -32,7 +32,7 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
+\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
@@ -55,16 +55,13 @@
 \maketitle
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new neural compression method which can accommodate length and lexical requirements.  We compare our method to a classical ILP-based approach.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new, linguistically-informed compression method which can accommodate such requirements.  Our method is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings.
 \end{abstract}
 
 \section{Introduction}
-Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) compressions must contain a user's query term. An example of such a compression is shown in Figure \ref{f:qf}.
+Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) must contain a user's query term. An example of such a compression is shown in Figure \ref{f:qf}.
 
-
-This study examines sentence compression under strict lexical and length constraints, in which a compression must be shorter than a given character budget and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. Neural compression systems that can accurately recreate gold standard compressions will not help practitioners who need to include a user's query terms in shortened sentences; or scale compressions to a desktop interface or mobile phone.
-
-\ahcomment{sign posting}
+This study examines the compression problem with length and lexical constraints, in which shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
 \begin{figure}[htb!]
 \includegraphics[width=9cm]{qf.pdf}
@@ -73,10 +70,18 @@ This study examines sentence compression under strict lexical and length constra
 \end{figure}
 
 
+Therefore, in this work:
+
+\begin{itemize}
+\item{We present a new, linguistically-informed method for compressing sentences, which leverages the large corpora used to train neural networks, while also accommodating lexical and length constraints.}
+\item{We compare our transition-based technique to traditional ILP-based methods, which also give a user such control. We also contrast our method with baseline LSTM taggers.}
+\item{We analyze the computational costs of each technique, as well as the nature of the constrained compression problem itself}
+\end{itemize}
+
+
 \section{Compression and constraints}
 
-In this work, we present a new method for compressing sentences, which leverages the predictive power of neural methods while accommodating lexical and length constraints. We compare our \textbf{transition-based} method to traditional \textbf{ILP-based techniques}, which also give a user such control and to baseline \textbf{LSTM taggers} which cannot accommodate such constraints.
-
+This work discusses contrasts traditional ILP-based compression with our novel transition-based technique. We also briefly discuss compression with LSTM taggers, which do not accommodate length or lexical requirements.
 
 \begin{table*}[htb!]
 \begin{tabular}{cccc}
@@ -100,11 +105,11 @@ This integer linear programming approach also easily accommodates constrained co
 
 In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $M$ time steps, by adding and removing $M$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. \ahcomment{argue for coverage w/ F and A at some point} We present the formal details in \S\ref{s:system}.
 
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. In this work, we show that transition-based methods incur much smaller computational costs than integer programming techniques. We also show that transition-based methods achieve higher token-level F1 scores than ILP-based method on constrained compressions, by making use of large corpora of gold standard sentence--compression pairs.
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. In this work, we show that transition-based methods incur much smaller computational costs than integer programming techniques, while achieving higher token-level F1 scores than ILP-based compression.
 
 \subsection{Unconstrained compression with LSTMs}
 
-We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence, and achieves a state-of-the art token-level F1 score. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be examined in future research.
+We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This encoder--decoder approach is linear in the token length of a the input sentence, and achieves state-of-the art performance. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be examined in future research.
 
 \section{Transition-based sentence compression}\label{s:system}
 
@@ -123,26 +128,32 @@ We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we f
 
 Like \cite{D14-1082}, we use a large supervised corpus to assign an oracle operation to each $v \in V_s$, by walking the dependency parse of an original sentence, breadth-first and identifying the oracle operation performed at each vertex. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
-In our transition-based compressor, we say that only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then we say that $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then we say that $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
+In our transition-based compressor, only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then we say that $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then we say that $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
 
 Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair either the operation \textsc{Prune} is valid or the operation \textsc{Insert} is valid, but not both. We can therefore assign two subtypes of $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$. If the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$.
 
 \section{Experiment 1: constrained compression}
 
-We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to both train and evaluate different approaches to length and lexically constrained compression. Using the dataset in this matter requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP \cite{corenlp}, we define all NER tokens which lie within the gold compression as the query, $q$.\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} Formally, $Q$ is a list of tokens. We also define the character length of the gold-standard compression as the maximum number of characters for the constrained compression. This interpretation allows us to redefined the corpus of sentence--compression pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints. We then use token-level F1, to measure how well an ILP-based method and a transition-based method method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. \ahcomment{human eval}
+We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to both train and evaluate different approaches to length and lexically constrained compression. Using the dataset in this matter requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $Q$ is a list of tokens. We also define the character length of the gold-standard compression as the maximum number of characters for the constrained compression. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints. 
+
+We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. \ahcomment{human eval}
     
 \begin{table}[htb!]
 \begin{tabular}{ll}
 \centering
-Approach & F1 \\ \hline
-Human acceptability supervision         &  A          \\
-F and A (2013)    & B           \\
-C and L (2008)    & C        \\
-Neural subtree deletion methods? &  D    \\   
+Approach & F1  \\ \hline
+Human acceptability supervision         &  \ahcomment{TODO, maybe. Roll in w/ nn i think}        \\
+F and A (2013)    & .79           \\
+C and L (2008)    & \ahcomment{TODO, maybe}        \\
+\textbf{Transition-based (this work)} &  \textbf{.86}    \\   
 \end{tabular}
 \end{table}
 
-\subsection{Implementation: ILP-based compression}
+\ahcomment{todo pval}
+
+\subsection{Implementation: ILP-based compression}\label{s:ilp}
+
+\ahcomment{todo: actually write up notes below}
 
 To our knowledge, there is no public code release for this model. We reimplement the method, and achieve similar token-level F1 scores. We use the Gurobi engine (v7) to solve the ILP. There are minor discrepancies between our implementation which have to do w/ different syntactic formalisms, different optimizers and our decision to re-parse and re-tokenize everything. We make note of some differences in the appendix. We also modify the method to accept (optional) query and budget constraints. 
 
@@ -160,9 +171,7 @@ To our knowledge, there is no public code release for this model. We reimplement
 \ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
  (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
 
-
-
-\subsection{Implementation: transition-based compression}
+\subsection{Implementation: transition-based compression}\label{s:transition}
 
 Identifying oracle compressions defines a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
 
@@ -173,18 +182,22 @@ In addition, we also add out-of-vocabulary marker symbols at the beginning and e
 During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. \ahcomment{details here}
 
 \ahcomment{comment on projectivity}
+
 \ahcomment{details of embeddings}
+
 \ahcomment{loss function}
+
+\ahcomment{do you update embeddings?}
+
 \ahcomment{tuning}
+
+\ahcomment{extract preprocessing here}
 
 We execute greedy, breadth first compression to reconstruct sentences. We walk original dependency parse, breadth-first and execute whichever valid operation is assigned the largest probability under the model. This achieves a token-level F1 score of \ahcomment{TODO}
 
-\subsection{Preprocessing with extract}
-Extract preprocessing. Make up a few simple rules. They will help a bunch. Only like 6 dependency types work at all for extract. This is in realfake/createdata/extract at the moment.
 
 
-
-\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. }
+\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess}
 
 
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
@@ -228,7 +241,9 @@ Length and lexically constrained compressions could also be used as part of new 
 
 \section{Appendix}
 
-In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement transformations described in \citet{filippova2008dependency}. There are inevitable discrepancies between implementations. Some differences arise from differences in syntactic formalisms. Most importantly, prior work uses a tree transformation method which is no longer strictly compatible with UD. (For instance, the transformation assumes the PPs are headed by prepositions, which is not true in UD). Therefore, in implementing the ILP, we use the enhanced dependencies representation from CoreNLP \cite{Schuster2016EnhancedEU}. The augmented modifiers and augmented conjuncts in this representation create parses that are very similar to the transformed trees described in \citet{filippova2008dependency}. Prior also describes a syntactic constraint based on the \rdep{sc} relation, which is not included in UD. We therefore exclude this constraint.
+In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement transformations described in \citet{filippova2008dependency}. There are inevitable discrepancies between implementations. 
+
+Some differences arise from differences in syntactic formalisms. To begin, prior work uses a tree transformation method which is no longer strictly compatible with UD. (For instance, the transformation assumes the PPs are headed by prepositions, which is not true in UD). Therefore, in implementing the ILP, we use the enhanced dependencies representation from CoreNLP \cite{Schuster2016EnhancedEU}. The augmented modifiers and augmented conjuncts in this representation create parses that are very similar to the transformed trees described in \citet{filippova2008dependency}. Prior also describes a syntactic constraint based on the \rdep{sc} relation, which is not included in UD. We therefore exclude this constraint.
 
 Other differences between arise from diverging output from part-of-speech taggers. Prior work modifies a dependency tree by adding an edge between the root note and all verbs in a sentence, as a preprocessing step. This ensures that subclauses can be removed from parse trees to form compressions. However, we found that replicating this transform made it impossible for the ILP to create some gold compressions in the \citet{filippova2013overcoming} dataset; likely because different part-of-speech taggers disagree on some verb tags. We therefore add an edge between the root node and \textit{all} tokens in a sentence; we confirm that with this change the ILP can always output the gold compression.
 
