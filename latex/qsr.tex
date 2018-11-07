@@ -32,9 +32,11 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
+%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
+
+\DeclareMathOperator*{\argmaxA}{arg\,max} % Jan Hlavacek
 
 \title{Extractive sentence compression under lexical and length constraints}
 
@@ -58,7 +60,14 @@
 Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new, linguistically-informed compression method which can accommodate such requirements.  Our method is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings.
 \end{abstract}
 
+\section{Unknowns}
+
+\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess. Future work?}
+
+\ahcomment{How to use data from Brian, if at all. It uses dep type info + LM info + worker info. We use dep type info already. Can we use LM info?}
+
 \section{Introduction}
+
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and (often) must contain a user's query term. An example of such a compression is shown in Figure \ref{f:qf}.
 
 This study examines the compression problem with length and lexical constraints, in which shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
@@ -90,7 +99,7 @@ LSTM taggers      & linear              & no     &    yes      \\
 linear programming              & exponential         & yes    &    yes   \\
 transition-based (this work)       & quadratic*           & yes    &      yes   \\
 \end{tabular}
-\caption{\ahcomment{Blah blah blah blah}}
+\caption{\ahcomment{TODO}}
 \end{table*}
 
 \subsection{Constrained compression with ILPs}
@@ -122,40 +131,87 @@ We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we f
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{\ahcomment{TODO}}
+\caption{Our LSTM classifier, which predicts the oracle operation, given the state. The input to the classifier is all tokens in the current state, $(V_c, E_c)$ linearized in their original order, with SOS and EOS tags marking the start and end of the sequence. We also add insert marker symbols with dependency type information denoting the start and end of the sequence of tokens which would be modified by the \textsc{Prune} or \textsc{Insert} operation. In this example, the subsequence ``in limiting risk'' would be pruned by removing a subtree governed by an \rdep{advcl} relation. For \textsc{Insert} operations, we include proposed tokens between marker symbols.}
 \label{f:example}
 \end{figure*}
 
-Like \cite{D14-1082}, we use a large supervised corpus to assign an oracle operation to each $v \in V_s$, by walking the dependency parse of an original sentence, breadth-first and identifying the oracle operation performed at each vertex. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
+Like \cite{D14-1082}, we use a large corpus to identify a series of oracle operations which returns gold standard output. In our case, we assign an oracle operation to each $v \in V_s$, by walking the dependency parse of an original sentence breadth-first, and identifying which operation on $v$ is consistent with the gold-standard compression. For instance, if some vertex $v$ and all of its children are not present in the gold compression, but are present in ${(V_c,E_c)}$ at a given timestep, then we say that the oracle operation for $v$ is \textsc{Prune}. Similarly, if $v$ is present in the gold compression, but is not present in ${(V_c,E_c)}$ at a given timestep we say that the oracle operation for $v$ is \textsc{Insert}. For roughly two thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
 In our transition-based compressor, only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then we say that $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then we say that $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
 
-Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair either the operation \textsc{Prune} is valid or the operation \textsc{Insert} is valid, but not both. We can therefore assign two subtypes of $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$. If the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$.
+Because all $v \in V_s$ are either in $V_c$ or not in $V_c$, for any given vertex--state pair, either the operation \textsc{Prune} is valid or the operation \textsc{Insert} is valid. We can therefore distinguish between two subtypes of $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$. If the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$. This distinction is helpful during modeling, because cases when a compressor should avoid inserting a subtree are different from cases when a compressor should avoid pruning a subtree.
 
-\section{Experiment 1: constrained compression}
+\subsection{Modeling}\label{s:modeling}
 
-We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to both train and evaluate different approaches to length and lexically constrained compression. Using the dataset in this matter requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $Q$ is a list of tokens. We also define the character length of the gold-standard compression as the maximum number of characters for the constrained compression. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints. 
+We use a large, standard compression corpus \cite{filippova2013overcoming} to train a model of transition-based compression. Following \citet{D14-1082}, we interpret the collection of oracle paths (\S\ref{s:system}) for all sentences in the corpus as a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
 
-We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. \ahcomment{human eval}
+The input to our LSTM classifier is a sequence of embeddings which indicate how an operation would modify the current state (Figure \ref{f:example}). The output of our classifier is a probability distribution over possible operations.
+
+To create the input sequence, we linearize all tokens in $V_c$ in their original order, and append out-of-vocabulary SOS and EOS symbols to mark the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the input sequence, again preserving original token order.
+
+We add out-of-vocabulary marker symbols at the beginning and end of the subsequence which would be removed or added by a proposed $\textsc{Insert}$ or $\textsc{Prune}$ operation on a subtree. These marker symbols are formed by concatenating the class of the proposed operation (i.e. prune or insert) with the typed dependency governing the root of the subtree. Such marker symbols allow us to encode some aspects of syntax trees using a standard sequence model \cite{Aharoni2017TowardsSN}, without the added complexities of explicitly modeling nested structures \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. Figure \ref{f:example} shows an example of a token sequence. 
+
+\ahcomment{this is a bit weird; easier/less weird than 2 models?} Because only a \textsc{Prune} or \textsc{Insert} operation is valid for a given vertex--state pair, it is possible to interpret our 4-way classifier as two 2-way classifiers. The added prune and extract symbols added to the input sequence provide very strong hints about which operation subset of operations might be chosen for a given vertex. 
+
+During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. 
+
+
+\ahcomment{details of weighting}
+
+\ahcomment{comment on projectivity}
+
+\ahcomment{details of optimizer}
+
+\ahcomment{details of stopping criteria}
+
+\ahcomment{details of embeddings}
+
+\ahcomment{loss function}
+
+\ahcomment{do you update embeddings?}
+
+\ahcomment{tuning}
+
+\ahcomment{extract preprocessing here}
+
+
+
+
+\section{Experiment: Automatic Evaluation of Constrained Compression}
+
+We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to both train and evaluate different approaches to length and lexically constrained compression. Using the dataset in this matter requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $q$ is a list of tokens. We also define the character length of the gold-standard compression as the character budget, $b$. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints.  \ahcomment{Note: these Q and r are going to be well-behaved! I.e. there is usually a good compression here. Should be revisited.}
+
+We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. We describe each method in the following sections.
+
+\ahcomment{human eval?}
     
 \begin{table}[htb!]
 \begin{tabular}{ll}
 \centering
 Approach & F1  \\ \hline
-Human acceptability supervision         &  \ahcomment{TODO, maybe. Roll in w/ nn i think}        \\
+Human acceptability supervision \ahcomment{????}        &  X        \\
 F and A (2013)    & .79           \\
-C and L (2008)    & \ahcomment{TODO, maybe}        \\
+C and L (2008)  \ahcomment{????}  & X      \\
 \textbf{Transition-based (this work)} &  \textbf{.86}    \\   
 \end{tabular}
 \end{table}
 
-\ahcomment{todo pval}
+\ahcomment{todo p-values}
+
+
+\subsection{Implementation: transition-based compression}\label{s:transition}
+
+Our model of transition-based sentence compression (\S\ref{s:modeling}) predicts the oracle operation $y$, given the state $(V_c, E_c)$. There are many possible ways to use $p(y|(V_c, E_c)$ in a query-focused and length-constrained compression system. We use a simple \textbf{iterative deletion} technique: at each step $j$ we \textsc{Prune} the subtree rooted at 
+
+$$\argmaxA_{v \in V_c}   p(y_j = \textsc{Prune}(v) | (V_c, E_c)_j)$$
+
+\noindent provided that pruning the subtree does not remove any tokens in $q$. We continue pruning subtrees until the length of the linearized tokens in $V_c$ is less than $b$, in which case we stop compression. 
+
+Because \textsc{Prune} only removes tokens from the state, we initialize $(V_c, E_c)$ with the smallest subtree of $(V_s, E_s)$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. The remaining cases are instances when all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence \ahcomment{hand-wavey here. Fix.}. 
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-\ahcomment{todo: actually write up notes below}
-
-To our knowledge, there is no public code release for this model. We reimplement the method, and achieve similar token-level F1 scores. We use the Gurobi engine (v7) to solve the ILP. There are minor discrepancies between our implementation which have to do w/ different syntactic formalisms, different optimizers and our decision to re-parse and re-tokenize everything. We make note of some differences in the appendix. We also modify the method to accept (optional) query and budget constraints. 
+We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, the authors did not release code for this model, so we reimplement from scratch. We achieve a token-level F1 score of \ahcomment{.72, roughly} on a held out dataset. We use a leading off-the-shelf optimizer \cite{gurobi} to solve the ILP.\footnote{We use version 7.} There are some difference between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work \ahcomment{See comment in appendix. talk to brendan. stanford??}. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
 
 \ahcomment{gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
 
@@ -170,35 +226,6 @@ To our knowledge, there is no public code release for this model. We reimplement
 
 \ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
  (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
-
-\subsection{Implementation: transition-based compression}\label{s:transition}
-
-Identifying oracle compressions defines a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
-
-The input to our classifier is a sequence of embeddings which indicate how an operation would modify the current state. To create the sequence, we linearize all tokens in $V_c$ in their original order, and add out-of-vocabulary SOS and EOS symbols marking the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the input sequence; again preserving original token order.
-
-In addition, we also add out-of-vocabulary marker symbols at the beginning and end of the subsequence which would be removed or added by an $\textsc{Insert}$ or $\textsc{Prune}$. These marker symbols are formed by concatenating the type of the proposed operation (i.e. prune or insert) with the typed dependency governing the root of the subtree to be added or removed. Figure \ref{f:example} shows an example of a token sequence. Such marker symbols allow us to easily encode important aspects of the overall tree structure in a standard sequence classifier. 
-
-During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. \ahcomment{details here}
-
-\ahcomment{comment on projectivity}
-
-\ahcomment{details of embeddings}
-
-\ahcomment{loss function}
-
-\ahcomment{do you update embeddings?}
-
-\ahcomment{tuning}
-
-\ahcomment{extract preprocessing here}
-
-We execute greedy, breadth first compression to reconstruct sentences. We walk original dependency parse, breadth-first and execute whichever valid operation is assigned the largest probability under the model. This achieves a token-level F1 score of \ahcomment{TODO}
-
-
-
-\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess}
-
 
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
 \begin{enumerate}
