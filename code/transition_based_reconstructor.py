@@ -5,8 +5,8 @@ prune and extract alone. Prune and extract are the reverse of
 each other. 
 
 Buffer == a list of tokens
-Extract == add this token and all of its children to the buffer
-Prune == remove this token and all of its children from the buffer
+Extract == add this token and all of its descendants to the buffer
+Prune == remove this token and all of its descendants from the buffer
 
 You need to do it BFS
 '''
@@ -26,14 +26,14 @@ with open("preproc/training.jsonl", "r") as inf:
 
         d, pi, c = bfs(ln, 0)
 
-        for _ in walk_tree(d):
-            if _ != 0:
-                oracle = ln["oracle"][str(_)]
-                children = dfs(g=ln, hop_s=_, D=[])
+        for vertex in walk_tree(d):  # get a breadth-first walk
+            if vertex != 0:
+                oracle = ln["oracle"][str(vertex)]
+                descendants = dfs(g=ln, hop_s=vertex, D=[]) # vertex and descendants
                 if oracle == "e":
-                    buffer_ = buffer_ + children
+                    buffer_ = buffer_ + descendants
                 if oracle == "p":
-                    for c in children:
+                    for c in descendants:
                         if c in buffer_:
                             buffer_.remove(c)
         buffer_.sort()
