@@ -26,7 +26,8 @@ with open("preproc/training.jsonl", "r") as inf:
 
         d, pi, c = bfs(ln, 0)
 
-        for vertex in walk_tree(d):  # get a breadth-first walk
+        B = walk_tree(d)
+        for vertex in B:  # get a breadth-first walk
             if vertex != 0:
                 oracle = ln["oracle"][str(vertex)]
                 descendants = dfs(g=ln, hop_s=vertex, D=[]) # vertex and descendants
