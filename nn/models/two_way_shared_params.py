@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 @Model.register("split_classifier")
-class AcademicPaperClassifier(Model):
+class SplitClassifier(Model):
     """
     This ``Model`` performs text classification for an academic paper.  We assume we're given a
     title and an abstract, and we predict some output label.
