@@ -2,10 +2,10 @@
   "dataset_reader": {
     "type": "binary_reader"
   },
-  "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_3way.jsonl",
+  "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/mini.jsonl",
   "validation_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_validation_3way.jsonl",
   "model": {
-    "type": "paper_classifier",
+    "type": "split_classifier",
     "text_field_embedder": {
       "tokens": {
         "type": "embedding",
