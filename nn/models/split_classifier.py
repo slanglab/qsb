@@ -16,7 +16,7 @@ import numpy as np
 from allennlp.training.metrics import CategoricalAccuracy
 
 
-@Model.register("paper_classifier")
+@Model.register("split_classifier")
 class AcademicPaperClassifier(Model):
     """
     This ``Model`` performs text classification for an academic paper.  We assume we're given a
