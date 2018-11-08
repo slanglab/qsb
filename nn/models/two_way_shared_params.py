@@ -53,7 +53,7 @@ class SplitClassifier(Model):
                  classifier_feedforward_p: FeedForward,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
-        super(AcademicPaperClassifier, self).__init__(vocab, regularizer)
+        super(SplitClassifier, self).__init__(vocab, regularizer)
 
         self.text_field_embedder = text_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
