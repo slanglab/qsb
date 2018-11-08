@@ -166,10 +166,8 @@ class SplitClassifier(Model):
         values, indices = torch.max(encoded_abstract, 1)
 
         if is_prune:
-            logger.info("is prune: %s", is_prune)
             logits2 = self.classifier_feedforward_i(values)
         else:
-            logger.info("is prune: %s", is_prune)
             logits2 = self.classifier_feedforward_p(values)
 
         output_dict = {'logits': logits2}
