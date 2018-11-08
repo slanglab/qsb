@@ -1,6 +1,6 @@
 {
   "dataset_reader": {
-    "type": "s2_papers"
+    "type": "binary_reader"
   },
   "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_3way.jsonl",
   "validation_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_validation_3way.jsonl",
@@ -22,10 +22,17 @@
       "num_layers": 1,
       "dropout": 0.2
     },
-    "classifier_feedforward": {
+    "classifier_feedforward_p": {
       "input_dim": 200,
       "num_layers": 1,
-      "hidden_dims": [4],
+      "hidden_dims": [2],
+      "activations": ["sigmoid"],
+      "dropout": [0.2]
+    },
+    "classifier_feedforward_i": {
+      "input_dim": 200,
+      "num_layers": 1,
+      "hidden_dims": [2],
       "activations": ["sigmoid"],
       "dropout": [0.2]
     }
