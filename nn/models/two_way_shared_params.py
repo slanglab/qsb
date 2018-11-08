@@ -87,34 +87,49 @@ class AcademicPaperClassifier(Model):
         else:
             DIR = "/mnt/nfs/work1/brenocon/ahandler/qsr/"
 
+        #
+        #  43087 "e"
+        #  484564 "ne"
+        #  306322 "np"
+        #  166055 "p"
+        #
+
         with open(DIR + "full_counts.txt", "r") as inf:
             dt4 = inf.read().split("\n")
             dt4 = [_.strip().split() for _ in dt4 if len(_) > 0]
             dt4 = {v.strip('"'): int(k) for k, v in dt4}
-
-        with open(DIR + "/2way_counts.txt", "r") as inf:
-            dt2 = inf.read().split("\n")
-            dt2 = [_.strip().split() for _ in dt2 if len(_) > 0]
-            dt2 = {v.strip('"'): int(k) for k, v in dt2}
-
-        n_classes = len(self.labelv)
-        if n_classes == 2:
-            dt = dt2
-        elif n_classes == 4:
             dt = dt4
-        else:
-            assert "bad" == "thing"
 
-        n_samples = sum(dt.values())
-        a = np.zeros(n_classes, dtype=np.float32)
-        print(self.labelv)
-        for i in range(n_classes):
-            a[i] = n_samples / (dt[self.labelv[i]] * n_classes)
-        with open("wut", "w") as of:
-            of.write(np.array_str(a))
-        a = torch.from_numpy(a)
-        self.loss_i = torch.nn.CrossEntropyLoss(weight=a)
-        self.loss_p = torch.nn.CrossEntropyLoss(weight=a)
+        n_samples_p = dt["p"] + dt["np"]
+        n_samples_i = dt["e"] + dt["ne"]
+
+        weights_p = np.zeros(2, dtype=np.float32)
+        weights_i = np.zeros(2, dtype=np.float32)
+
+        n_classes = 2
+
+        for i in range(2):
+            if self.labelv[i] == "1":
+                bincount = dt["p"]
+            elif self.labelv[i] == "0":
+                bincount = dt["np"]
+            else:
+                assert "bad" == "thing"
+            weights_p[i] = n_samples_p / (bincount * n_classes)
+
+        for i in range(2):
+            if self.labelv[i] == "1":
+                bincount = dt["e"]
+            elif self.labelv[i] == "0":
+                bincount = dt["ne"]
+            else:
+                assert "bad" == "thing"
+            weights_i[i] = n_samples_i / (bincount * n_classes)
+
+        weights_p = torch.from_numpy(weights_p)
+        weights_i = torch.from_numpy(weights_i)
+        self.loss_i = torch.nn.CrossEntropyLoss(weight=weights_i)
+        self.loss_p = torch.nn.CrossEntropyLoss(weight=weights_p)
 
         initializer(self)
 
