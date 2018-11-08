@@ -3,6 +3,7 @@ import numpy
 from overrides import overrides
 import json
 import torch
+import logging
 import torch.nn.functional as F
 
 from allennlp.common import Params
@@ -14,6 +15,8 @@ from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn import util
 import numpy as np
 from allennlp.training.metrics import CategoricalAccuracy
+
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 @Model.register("split_classifier")
@@ -118,6 +121,7 @@ class AcademicPaperClassifier(Model):
     @overrides
     def forward(self,  # type: ignore
                 sentence: Dict[str, torch.LongTensor],
+                is_prune,
                 label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
@@ -146,17 +150,18 @@ class AcademicPaperClassifier(Model):
 
         values, indices = torch.max(encoded_abstract, 1)
 
-        if label == "p":
+        if is_prune:
+            logger.info("is prune: %s", is_prune)
             logits2 = self.classifier_feedforward_i(values)
-        elif label == "e":
+        else:
+            logger.info("is prune: %s", is_prune)
             logits2 = self.classifier_feedforward_p(values)
 
         output_dict = {'logits': logits2}
         if label is not None:
-
-            if label == "p":  # TODO
+            if is_prune:
                 loss = self.loss_p(logits2, label)
-            if label == "i":  # TODO
+            else:
                 loss = self.loss_i(logits2, label)
             for metric in self.metrics.values():
                 metric(logits2, label)

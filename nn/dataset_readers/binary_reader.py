@@ -9,7 +9,7 @@ import tqdm
 from allennlp.common import Params
 from allennlp.common.file_utils import cached_path
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from allennlp.data.fields import LabelField, TextField
+from allennlp.data.fields import LabelField, TextField, MetadataField
 from allennlp.data.instance import Instance
 from allennlp.data.tokenizers import Tokenizer, WordTokenizer
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
@@ -71,14 +71,19 @@ class SemanticScholarDatasetReader(DatasetReader):
                     label = "1"
                 else:
                     label = "0"
-                yield self.text_to_instance(sentence, label)
+                if "p" in paper_json["label"]:
+                    is_prune = True
+                else:
+                    is_prune = False
+                yield self.text_to_instance(sentence, is_prune, label)
 
     @overrides
-    def text_to_instance(self, sentence: str, label: str = None) -> Instance:  # type: ignore
+    def text_to_instance(self, sentence: str, is_prune: bool, label: str = None) -> Instance:  # type: ignore
         # pylint: disable=arguments-differ
         tokenized_sentence = self._tokenizer.tokenize(sentence)
         sentence_field = TextField(tokenized_sentence, self._token_indexers)
         fields = {'sentence': sentence_field}
+        fields["is_prune"] = MetadataField(is_prune)
         if label is not None:
             fields['label'] = LabelField(label)
         return Instance(fields)
