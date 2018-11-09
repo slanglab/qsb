@@ -17,6 +17,7 @@
 \usepackage{graphicx}
 \usepackage{latexsym}
 \usepackage{amsmath}
+\usepackage{bm}
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
@@ -59,6 +60,11 @@
 \begin{abstract}
 Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new, linguistically-informed compression method which can accommodate such requirements.  Our method is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings.
 \end{abstract}
+
+\section{General comment}
+Nobody cares about Rookie. Make the argument for open source search engines. 
+
+\ahcomment{TODO: Brendan's email}
 
 \section{Unknowns}
 
@@ -114,7 +120,7 @@ For these methods, adding additional length or lexical requirements is trivial: 
 
 \subsection{Transition-based constrained compression}
 
-In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $M$ time steps, by adding and removing $M$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. \ahcomment{argue for coverage w/ F and A at some point} We present the formal details in \S\ref{s:system}.
+In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. \ahcomment{argue for coverage w/ F and A at some point} We present the formal details in \S\ref{s:system}.
 
 Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. In this work, we show that transition-based methods incur much smaller computational costs than integer programming techniques, while achieving higher token-level F1 scores than ILP-based compression.
 
@@ -147,12 +153,6 @@ All $v \in V_s$ are either in $V_c$ or not in $V_c$. Therefore, for any given ve
 
 We use a large, standard compression corpus \cite{filippova2013overcoming} to train a model of transition-based compression. Following \citet{D14-1082}, we interpret the collection of oracle paths (\S\ref{s:system}) for all sentences in the corpus as a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
 
-The input to our LSTM classifier is a sequence of embeddings which indicate how an operation would modify the current state (Figure \ref{f:example}). The output of our classifier is a probability distribution over possible operations.
-
-To create the input sequence, we linearize all tokens in $V_c$ in their original order, and append out-of-vocabulary SOS and EOS symbols to mark the beginning and end of the sequence. If the oracle operation is either $\textsc{Insert}$ or $\textsc{Nop}_I$, we also add the proposed additional tokens to the input sequence, again preserving original token order.
-
-We add out-of-vocabulary marker symbols at the beginning and end of the subsequence which would be removed or added by a proposed $\textsc{Insert}$ or $\textsc{Prune}$ operation on a subtree. These marker symbols are formed by concatenating the class of the proposed operation (i.e. prune or insert) with the typed dependency governing the root of the subtree. Such marker symbols allow us to encode some aspects of syntax trees using a standard sequence model \cite{Aharoni2017TowardsSN}, without the added complexities of explicitly modeling nested structures \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. Figure \ref{f:example} shows an example token sequence. 
-
 \ahcomment{this is a bit weird; easier/less weird than 2 models?} Because only a \textsc{Prune} or \textsc{Insert} operation is valid for a given vertex--state pair, it is possible to interpret our 4-way classifier as two 2-way classifiers. The added prune and extract symbols added to the input sequence provide very strong hints about which operation subset of operations might be chosen for a given vertex. 
 
 During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. 
@@ -174,10 +174,18 @@ During training, we look up each token in the sequence in an embeddings matrix a
 
 \ahcomment{tuning}
 
-\ahcomment{extract preprocessing here}
+\subsection{Markup function}
 
+We define a markup function, $m: (v,V,s) \rightarrow \bm{x}$, where $v$ is a vertex in the original sentence $s$, and $V$ is the set of vertexes in the state tuple at some step $j$ during compression. The output of the function, $\bm{x} = s_1, s_2, s_3 ... s_K$ is a sequence of symbols called \textbf{the markup}. 
 
+Intuitively, the markup ``shows'' the LSTM what the sentence would ``look'' like if $T(v)$ were to be inserted into or pruned from the sentence. More formally, we use $T(v)$ to denote all vertexes in the subtree governed by $v$ in $s$. We then define $V_L \subseteq V$
+to be is all tokens in $V$ which occur to the left of  $T(v)$ in $s$; and define $V_R \subseteq V$ to be all tokens in $V$ which fall to the right of the subtree. We also define a linearization function, $\ell(  \{v_1, v_2 ... v_n \}, s)$, which returns all vertexes in some set $\{v_1, v_2 ... v_n \}$, linearized in their order in $s$.\footnote{$\ell$ is needed because sets do not have order} 
 
+The markup is the sequence, [SOS, $\ell(V_L)$, StartTag, $\ell(T(v))$, EndTag, $\ell(V_R)$, EOS], where SOS and EOS are out of vocabulary symbols denoting the start and end of the sequence. The StartTag included in the markup is an out of vocabulary symbol formed by concatenating markers which indicate (1) the dependency type governing $T(v)$ (2) the type of operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) the position of the StartTag to the left of $\ell(T(v))$. If there are $D$ dependency types there are $D \times 2$ possible StartTag symbols. The EndTag is identical, except that the final marker indicates that the EndTag occurs to the right of $\ell(T(v))$. 
+
+Figure \ref{f:example} shows an example. Such marker symbols allow us to encode some aspects of syntax trees using a standard sequence model \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly modeling nested structures \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. 
+
+We note that it is only possible to $\textsc{Prune}$ $T(v)$ if $v \in V$, and only possible to \textsc{Insert} $T(v)$ if $v \notin V$. Therefore, the marker indicating the type of the operation included in the StartTag and EndTag is fully determined by the inputs to $m$. 
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
@@ -209,7 +217,15 @@ $$\argmaxA_{v \in V_c}   p(y_j = \textsc{Prune}(v) | (V_c, E_c)_j)$$
 
 \noindent provided that pruning the subtree does not remove any tokens in $q$. We continue pruning subtrees until the length of the linearized tokens in $V_c$ is less than $b$, in which case we stop compression. 
 
-Because \textsc{Prune} only removes tokens from the state, we initialize $(V_c, E_c)$ with the smallest subtree of $(V_s, E_s)$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. The remaining cases are instances when all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence \ahcomment{hand-wavey here. Fix.}. 
+Because \textsc{Prune} only removes tokens from the state, we initialize $(V_c, E_c)$ with the smallest subtree of $(V_s, E_s)$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. The remaining cases are instances when all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence.
+
+\ahcomment{hand-wavey here. Fix.}
+
+\ahcomment{Better job evaluating this compression. How far do you get  by pruning}
+
+\ahcomment{What is the lower bound on F1 from just guessing query tokens} 
+
+\ahcomment{Some algos discussed at meeting w/ brendan: iterative bfs w/ lowering epsilon, predict then prune, predict,prune, loop}
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
@@ -229,7 +245,9 @@ There are some important differences between our implementation and existing wor
 
 
 \ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
- (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).}
+ (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).
+ Find out what they do in lucene. Argue about open source search engines. }
+
 
 
 \begin{table*}[]
@@ -239,8 +257,8 @@ There are some important differences between our implementation and existing wor
 \textsc{Start}      & START $\Rightarrow ( V=\emptyset,  B=[v_1, v_2 ... v_n])$ & Initialize the buffer with the vertexes in the original sentence $s$, arranged breadth-first \\ \hline
 \textsc{Prune}              & $(V, [v|B]), v \in V,  \Rightarrow (V \setminus  T(v), B)$ & Remove the subtree rooted at $v$ in $s$ from $V$ \\  
 $\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v), B)$ & Insert the subtree rooted at $v$ in $s$ into $V$  \\ \hline
-Not \textsc{Prune}           & $(V, [v|B]), v \in V, \Rightarrow (V, B)$ & Don't remove the subtree rooted at $v$ from $V$  \\ 
-Not \textsc{Insert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
+\textsc{NoPrune}           & $(V, [v|B]), v \in V, \Rightarrow (V, B)$ & Don't remove the subtree rooted at $v$ from $V$  \\ 
+\textsc{NoInsert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
 \textsc{Stop}             & $ (V, B=[]) \Rightarrow$ STOP & Compression ends when the buffer is empty \\                                               
 \end{tabular}
 \caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence, $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
@@ -268,7 +286,7 @@ Not \textsc{Insert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)
 
 \ahcomment{this needs to be rewritten}
 
-In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $M$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^M V - i = O(V^2)}$ operations.
+In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations.
 
 This worst case represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
 
