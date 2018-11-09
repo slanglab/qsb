@@ -17,6 +17,7 @@
 \usepackage{graphicx}
 \usepackage{latexsym}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{bm}
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
@@ -33,7 +34,7 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
+%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
@@ -139,9 +140,11 @@ We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we f
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{Our LSTM classifier predicts the oracle operation given the current state $(V_c, E_c)$, which is a subgraph of the original sentence (top). The input to the classifier is all tokens in $V_c$,  linearized in their original order between added SOS and EOS tags which indicate the start and end of the sequence. We also add insert marker symbols with dependency type information denoting the start and end of the sequence of tokens which would be modified by the \textsc{Prune} or \textsc{Insert} operation. In this example, the subsequence ``in limiting risk'' would be pruned by removing a subtree governed by an \rdep{advcl} relation. For \textsc{Insert} operations, we include proposed tokens between marker symbols.}
+\caption{\ahcomment{TODO fix} }
 \label{f:example}
 \end{figure*}
+
+%Our LSTM classifier predicts the oracle operation given the current state $(V_c, E_c)$, which is a subgraph of the original sentence (top). The input to the classifier is all tokens in $V_c$,  linearized in their original order between added SOS and EOS tags which indicate the start and end of the sequence. We also add insert marker symbols with dependency type information denoting the start and end of the sequence of tokens which would be modified by the \textsc{Prune} or \textsc{Insert} operation. In this example, the subsequence ``in limiting risk'' would be pruned by removing a subtree governed by an \rdep{advcl} relation. For \textsc{Insert} operations, we include proposed tokens between marker symbols.
 
 Like \citet{D14-1082}, we use a large corpus to identify a series of oracle operations which returns gold standard output. In our case, we assign an oracle operation to each $v \in V_s$, by walking the dependency parse of an original sentence breadth-first, and identifying which operation on $v$ is consistent with the gold-standard compression. For instance, if some vertex $v$ and all of its children are not present in the gold compression, but are present in ${(V_c,E_c)}$ at a given timestep, then we say that the oracle operation for $v$ is \textsc{Prune}. Similarly, if $v$ is present in the gold compression, but is not present in ${(V_c,E_c)}$ at a given timestep, we say that the oracle operation for $v$ is \textsc{Insert}. For roughly two-thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
 
@@ -151,41 +154,29 @@ All $v \in V_s$ are either in $V_c$ or not in $V_c$. Therefore, for any given ve
 
 \subsection{Modeling}\label{s:modeling}
 
-We use a large, standard compression corpus \cite{filippova2013overcoming} to train a model of transition-based compression. Following \citet{D14-1082}, we interpret the collection of oracle paths (\S\ref{s:system}) for all sentences in the corpus as a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
+\ahcomment{TODO details: class weighting optimizer, stopping criteria,  embeddings,loss function,do you update embeddings,tuning}
+%We use a large, standard compression corpus \cite{filippova2013overcoming} to train a model of transition-based compression. Following \citet{D14-1082}, we interpret the collection of oracle paths (\S\ref{s:system}) for all sentences in the corpus as a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
 
-\ahcomment{this is a bit weird; easier/less weird than 2 models?} Because only a \textsc{Prune} or \textsc{Insert} operation is valid for a given vertex--state pair, it is possible to interpret our 4-way classifier as two 2-way classifiers. The added prune and extract symbols added to the input sequence provide very strong hints about which operation subset of operations might be chosen for a given vertex. 
+%\ahcomment{this is a bit weird; easier/less weird than 2 models?} Because only a \textsc{Prune} or \textsc{Insert} operation is valid for a given vertex--state pair, it is possible to interpret our 4-way classifier as two 2-way classifiers. The added prune and extract symbols added to the input sequence provide very strong hints about which operation subset of operations might be chosen for a given vertex. 
 
-During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle operation. We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. 
+During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle 
+operation. %We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. 
 
-
-\ahcomment{details of weighting}
-
-\ahcomment{comment on projectivity}
-
-\ahcomment{details of optimizer}
-
-\ahcomment{details of stopping criteria}
-
-\ahcomment{details of embeddings}
-
-\ahcomment{loss function}
-
-\ahcomment{do you update embeddings?}
-
-\ahcomment{tuning}
+\pagebreak
 
 \subsection{Markup function}
 
-We define a markup function, $m$ which takes the state of the compression system $(V, v|B)$ as input, and returns a sequence of symbols $\bm{x}$, called \textbf{the markup}. Recall that $V$ is a set of vertexes, and $v$ is a single vertex in the first position of $B$, the buffer (\S\ref{s:system}). Intuitively, the markup ``shows'' the LSTM what the sentence would ``look'' like if $T(v)$ were to be inserted into or pruned from the sentence. 
+We define a markup function $m$ which converts the state of the compression system into a sequence of symbols $\bm{x}$, called \textbf{the markup}. The state of the compression system  (\S\ref{s:system}) is a tuple $(V, v|B)$, where $V$ is a set of vertexes, and $v$ is a single vertex in the first position of $B$, the buffer. Intuitively, the markup ``shows'' the LSTM what the sentence would ``look'' like if $T(v)$ were to be inserted into or pruned from $V$. 
 
 More formally, we again use $T(v)$ to denote all vertexes in the subtree governed by $v$ in $s$. We then define $V_L \subseteq V$
-to be is all tokens in $V$ which occur to the left of  $T(v)$ in $s$; and define $V_R \subseteq V$ to be all tokens in $V$ which fall to the right of $T(v)$ in $s$. We also define a linearization function, $\ell(  \{v_1, v_2 ... v_n \} )$, which returns all vertexes in some set, linearized in their order in $s$.\footnote{$\ell$ is needed because sets do not have order} 
+to be is all $v \in V$ which occur to the left of $T(v)$ in $s$. We also define $V_R \subseteq V$ identically, but tokens must fall to the right of $T(v)$. We also define a linearization function, $\ell(  \{v_1, v_2 ... v_n \} )$, which returns all vertexes in some set, linearized in their order in $s$.\footnote{$\ell$ is needed because sets do not have order} 
 
-The markup is the sequence, [SOS, $\ell(V_L)$, StartTag, $\ell(T(v))$, EndTag, $\ell(V_R)$, EOS], where SOS and EOS are out of vocabulary symbols denoting the start and end of the sequence. The StartTag included in the markup is an out of vocabulary symbol formed by concatenating markers which indicate (1) the dependency type governing $T(v)$ (2) the type of operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) the position of the StartTag to the left of $\ell(T(v))$. If there are $D$ dependency types there are $D \times 2$ possible StartTag symbols. The EndTag is identical, except that the final marker indicates that the EndTag occurs to the right of $\ell(T(v))$. 
+The markup is a sequence, $m(V, v|B)$ = [SOS, $\ell(V_L)$, BracketTag, $\ell(T(v))$, BracketTag, $\ell(V_R)$, EOS], where SOS and EOS are out of vocabulary symbols denoting the start and end of the sequence. 
 
-Figure \ref{f:example} shows an example. Such marker symbols allow us to encode some aspects of syntax trees using a standard sequence model \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly modeling nested structures \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. 
+Each BracketTag has a more complex structure formed by concatenating three different markers: (1) a categorical marker indicating the dependency type governing $T(v)$, (2) a binary marker indicating the type of the proposed operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) a binary marker indicating if the bracket comes before or after $T(v)$ in the markup. For instance, in Figure \ref{f:example}, \ahcomment{TODO rewrite} the BracketTag \textit{nmod-I-L} indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, (2) the proposed operation is \textit{Insert} and (3) the marker symbol comes to the left of $T(v)$ in the sequence. 
+BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. 
 
-We note that it is only possible to $\textsc{Prune}$ $T(v)$ if $v \in V$, and only possible to \textsc{Insert} $T(v)$ if $v \notin V$. Therefore, the marker indicating the type of the operation included in the StartTag and EndTag is fully determined by the inputs to $m$. 
+We note that it is only possible to $\textsc{Prune}$ $T(v)$ if $v \in V$, and only possible to \textsc{Insert} $T(v)$ if $v \notin V$. Therefore, the marker (2) indicating the type of the proposed operation is fully determined by $(V, v|B)$. For \textsc{Prune} operations, $T(v) \subseteq V$; for \textsc{Insert} operations, $T(v) \nsubseteq V$.
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
@@ -322,6 +313,10 @@ Prior work does not specify all features in the structured perceptron model. We 
 
 
 \section{Worked example}
+
+Jack and Jill went up the hill. 
+
+Jill went up.
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
