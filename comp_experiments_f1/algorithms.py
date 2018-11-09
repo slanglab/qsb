@@ -25,14 +25,12 @@ from allennlp.common.util import import_submodules
 import_submodules('nn')
 
 class NeuralNetworkTransitionGreedy:
-    def __init__(self, archive_loc, allennlp_class, query_focused=True):
+    def __init__(self, archive_loc, model_name, predictor_name, query_focused=True):
         assert type(archive_loc) == str
-        print(archive_loc)
-        print(allennlp_class)
         archive = load_archive(archive_file=archive_loc)
         self.archive = archive
         self.query_focused = query_focused
-        self.predictor = Predictor.from_archive(archive, allennlp_class)
+        self.predictor = Predictor.from_archive(archive, predictor_name)
 
     def predict_proba(self, original_s, vertex, state):
         '''

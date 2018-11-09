@@ -18,14 +18,16 @@ def strip_tags(tokens):
 
 
 def get_model(config):
-    print(config["model"])
-    if config["model"] == "nn-prune-greedy":
+    print(config["algorithm"])
+    if config["algorithm"] == "nn-prune-greedy":
         query_focused = config["query"]
-        allennlp_class = config["allennlp_class"]
+        model_name = config["model_name"]
+        predictor_name = config["predictor_name"]
         print(query_focused)
         return NeuralNetworkTransitionGreedy(archive_loc=config["archive_loc"],
                                              query_focused=query_focused,
-                                             allennlp_class=allennlp_class)
+                                             predictor_name=predictor_name,
+                                             model_name=model_name)
     if config["model"] == "nn-transition-based":
         query_focused = config["query"]
         return NeuralNetworkTransitionBFS(config["archive_loc"],
