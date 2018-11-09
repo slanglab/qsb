@@ -18,16 +18,21 @@ from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
 import numpy as np
 import copy
+import nn
 import nn.models
 
+from allennlp.common.util import import_submodules
+import_submodules('nn')
 
 class NeuralNetworkTransitionGreedy:
-    def __init__(self, archive_loc, query_focused=True):
+    def __init__(self, archive_loc, allennlp_class, query_focused=True):
         assert type(archive_loc) == str
+        print(archive_loc)
+        print(allennlp_class)
         archive = load_archive(archive_file=archive_loc)
         self.archive = archive
         self.query_focused = query_focused
-        self.predictor = Predictor.from_archive(archive, "paper-classifier")
+        self.predictor = Predictor.from_archive(archive, allennlp_class)
 
     def predict_proba(self, original_s, vertex, state):
         '''
@@ -40,8 +45,8 @@ class NeuralNetworkTransitionGreedy:
 
         txt = " ".join([_["word"] for _ in toks])
 
-        instance = self.predictor._dataset_reader.text_to_instance(txt,
-                                                                   "e")
+        instance = self.predictor._dataset_reader.text_to_instance(txt, True,
+                                                                   "p")
 
         pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
         op2n = {v:k for k,v in pred_labels.items()}

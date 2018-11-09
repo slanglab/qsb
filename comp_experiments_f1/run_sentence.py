@@ -21,9 +21,11 @@ def get_model(config):
     print(config["model"])
     if config["model"] == "nn-prune-greedy":
         query_focused = config["query"]
+        allennlp_class = config["allennlp_class"]
         print(query_focused)
-        return NeuralNetworkTransitionGreedy(config["archive_loc"],
-                                             query_focused)
+        return NeuralNetworkTransitionGreedy(archive_loc=config["archive_loc"],
+                                             query_focused=query_focused,
+                                             allennlp_class=allennlp_class)
     if config["model"] == "nn-transition-based":
         query_focused = config["query"]
         return NeuralNetworkTransitionBFS(config["archive_loc"],
