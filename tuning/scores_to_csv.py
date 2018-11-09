@@ -35,12 +35,12 @@ out = []
 out.append(["dropout", "hidden_size", "dropout_ff", "weight_decay", "lr", "score"])
 
 for _ in scores:
-    stats = []
+    stats = [_]
     try:
         cf = configs[_] 
         stats.append(cf["model"]["abstract_encoder"]["dropout"])
         stats.append(cf["model"]["abstract_encoder"]["hidden_size"])
-        stats.append(cf["model"]["classifier_feedforward"]["dropout"]) 
+        stats.append(cf["model"]["classifier_feedforward_i"]["dropout"]) 
         stats.append(cf["trainer"]["optimizer"]["weight_decay"])
         stats.append(cf["trainer"]["optimizer"]["lr"])
         stats.append(scores[_])
