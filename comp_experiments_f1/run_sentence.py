@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     fast = "fast" if args.fast else "full"
     out_ = config["results_dir"] + "/{}-{}".format(str(fast),
-                                                   config["model"])
+                                                   config["algorithm"])
     config["no_compression"] = no_compression 
     print(config.keys())
     with open(out_, "w") as of:

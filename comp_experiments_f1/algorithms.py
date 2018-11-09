@@ -44,12 +44,12 @@ class NeuralNetworkTransitionGreedy:
         txt = " ".join([_["word"] for _ in toks])
 
         instance = self.predictor._dataset_reader.text_to_instance(txt, True,
-                                                                   "p")
+                                                                   "1")
 
         pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
         op2n = {v:k for k,v in pred_labels.items()}
         pred = self.predictor.predict_instance(instance)
-        return pred["class_probabilities"][op2n["p"]]
+        return pred["class_probabilities"][op2n["1"]]
 
     def predict_vertexes(self, jdoc, state):
         '''
