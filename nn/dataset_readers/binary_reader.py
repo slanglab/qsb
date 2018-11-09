@@ -68,9 +68,9 @@ class SemanticScholarDatasetReader(DatasetReader):
                 # extract downstream. This is to avoid multiple
                 # vocabuliaries, np/p vs ne/e
                 if paper_json["label"] not in ["p", "e"]:
-                    label = "1"
-                else:
                     label = "0"
+                else:
+                    label = "1"
                 if "p" in paper_json["label"]:
                     is_prune = True
                 else:
