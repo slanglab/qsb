@@ -121,21 +121,23 @@ For these methods, adding additional length or lexical requirements is trivial: 
 
 \subsection{Transition-based constrained compression}
 
-In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. \ahcomment{argue for coverage w/ F and A at some point} We present the formal details in \S\ref{s:system}.
+In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. We present the formal details in \S\ref{s:system}.
 
 Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. In this work, we show that transition-based methods incur much smaller computational costs than integer programming techniques, while achieving higher token-level F1 scores than ILP-based compression.
 
 \subsection{Unconstrained compression with LSTMs}
 
-We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This approach achieves state-of-the art performance, and is linear in the token length of a the input sequence. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be examined in future research.
+We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This approach is linear in the token length of a the input sequence. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be examined in future research.
 
 \section{Transition-based sentence compression}\label{s:system}
 
-In this work, we define a neural, transition-based sentence compression system, inspired by recent successes in neural dependency parsing \cite{D14-1082}. Let ${(V_s,E_s)}$ denote the original, unchanging dependency parse of a sentence. At each timestep during compression, our system has a state ${(V_c,E_c)}$, which is some subgraph of ${(V_s,E_s)}$. The compression ${(V_c,E_c)}$ may or may not be fully-connected. 
+In this work, we define a neural, transition-based sentence compression system, inspired by other kinds of transition-based models within NLP \cite{nivre2003}. 
+\ahcomment{Now citing Nivre 2003, found via Chris Dyer papers. I am trying to find other areas (besides parsing) where transition-based models have been influential in NLP. I have found very old or very early or rarely cited things from workshops... but don't seem to be finding much else. I am searching,  "transition-based" -parsing}
+Let ${(V_s,E_s)}$ denote the original, unchanging dependency parse of a sentence. At each timestep during compression, our system has a state ${(V_c,E_c)}$, which is some subgraph of ${(V_s,E_s)}$. The compression ${(V_c,E_c)}$ may or may not be fully-connected. 
 
 We define two operations which modify the state. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds it to the compression ${(V_c,E_c)}$. After executing a sequence of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence. We initialize the state with an empty subgraph. 
 
-We defined $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in a large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
+We identified $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in a large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
 
 \begin{figure*}[htb!]
 \centering
@@ -161,8 +163,6 @@ All $v \in V_s$ are either in $V_c$ or not in $V_c$. Therefore, for any given ve
 
 During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle 
 operation. %We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. s
-
-\pagebreak
 
 \subsection{Markup function}
 
