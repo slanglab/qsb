@@ -168,14 +168,14 @@ operation. %We train using cross entropy loss, weighting training examples in pr
 
 \ahcomment{One conceptual issue: what if T(v) is gappy?  That is, within the span of the leftmost and rightmost tokens in T(v), it is possible that there are tokens not in T(v).  What does the markup function do then?}
 
-We define a markup function $m(V,v)=\bm{x}$, which maps a subset of vertexes from the original sentence $V$, and some vertex from the original sentence $v$, to a sequence of symbols $\bm{x}$. Intuitively, the markup function, ``shows'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be inserted into or pruned from the compression. The markup $\bm{x}$ is the symbol sequence [SOS, $\ell(V_L)$, BracketTag, $\ell(T(v))$, BracketTag, $\ell(V_R)$, EOS], where
+We define a markup function $m(V,v)=\bm{x}$, which maps a subset of vertexes from the original sentence $V$, and some vertex from the original sentence $v$, to a sequence of symbols $\bm{x}$. Intuitively, the markup function, ``shows'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be inserted into or pruned from the compression. More precisely, the markup $\bm{x}$ is the symbol sequence [SOS, $V_L$, BracketTag, $T(v)$, BracketTag, $V_R$, EOS], where
 
 \begin{itemize}
-\item{$T(v)$ denotes the subtree rooted at $v$ in the original sentence, $s$.}
-\item{The symbols SOS and EOS are special markers denoting the start and end of the markup.}
-\item{$\ell(V_L)$ is all vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order.}
-\item{$\ell(V_R)$ is identical to $\ell(V_L)$, except that vertexes in $V_R$ must occur to the right of $T(v)$.}
-\item{Each BracketTag is formed by concatenating three different markers: (1) a categorical marker indicating the dependency type governing $T(v)$, (2) a binary marker indicating the type of the proposed operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) a binary marker indicating the start or end of $\ell (T(v))$ in the markup.}
+\item{$T(v)$ denotes vertexes in the subtree rooted at $v$ in the original sentence $s$, linearized in their original order.}
+\item{The symbols SOS and EOS are special markers denoting the start and end of the sequence.}
+\item{$V_L$ is all vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order.}
+\item{$V_R$ is identical to $V_L$, except that vertexes in $V_R$ must occur to the right of $T(v)$.}
+\item{Each BracketTag is formed by concatenating three different markers: (1) a categorical marker indicating the dependency type governing $T(v)$, (2) a binary marker indicating the type of the proposed operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) a binary marker indicating the start or end of $T(v)$ in the markup.}
 \end{itemize}
 
 For instance, \ahcomment{Talk thru a whole example} in Figure \ref{f:example}, \ahcomment{TODO fix once figure redone} the BracketTag \textit{$<$tree$>$--\textsc{Insert}--nmod} indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, (2) the proposed operation is \textsc{Insert} and (3) the marker symbol comes at the start of $T(v)$ in $\bm{x}$. 
