@@ -160,23 +160,30 @@ All $v \in V_s$ are either in $V_c$ or not in $V_c$. Therefore, for any given ve
 %\ahcomment{this is a bit weird; easier/less weird than 2 models?} Because only a \textsc{Prune} or \textsc{Insert} operation is valid for a given vertex--state pair, it is possible to interpret our 4-way classifier as two 2-way classifiers. The added prune and extract symbols added to the input sequence provide very strong hints about which operation subset of operations might be chosen for a given vertex. 
 
 During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle 
-operation. %We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. 
+operation. %We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. s
 
 \pagebreak
 
 \subsection{Markup function}
 
-We define a markup function $m$ which converts the state of the compression system into a sequence of symbols $\bm{x}$, called \textbf{the markup}. The state (\S\ref{s:system}) is a tuple $(V, v|B)$, where $V$ is a set of vertexes, and $v$ is a vertex at the head of $B$, the buffer. Intuitively, the markup ``shows'' the LSTM what the sentence would ``look'' like if $T(v)$ were to be inserted into or pruned from $V$. 
+\ahcomment{One conceptual issue: what if T(v) is gappy?  That is, within the span of the leftmost and rightmost tokens in T(v), it is possible that there are tokens not in T(v).  What does the markup function do then?}
 
-More formally, we again use $T(v)$ to denote all vertexes in the subtree governed by $v$ in $s$. We then define $V_L \subseteq V$
-to be is all $v \in V$ which occur to the left of $T(v)$ in $s$. We define the set $V_R \subseteq V$ identically, only $v \in V$ must occur to the right of $T(v)$. We use $\ell(  \{v_1, v_2 ... v_n \} )$ to denote all vertexes in some set, linearized in their order in $s$.\footnote{$\ell$ is needed because sets do not have order. For \textsc{Prune} operations, it will be the case that $T(v) \subseteq V$. For \textsc{Insert} operations, it will be the case that $T(v) \nsubseteq V$. For both operations, $T(v) \cap V_R = \emptyset = T(v) \cap V_L $.} 
+We define a markup function $m(V,v)=\bm{x}$, which ``shows'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be inserted into or pruned from the compression. More precisely, as before (\S\ref{s:system}), $V$ is a subset of vertexes from the original sentence $s$, and $v$ is some vertex from $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. \textbf{the markup} $\bm{x}$ is the symbol sequence [SOS, $\ell(V_L)$, BracketTag, $\ell(T(v))$, BracketTag, $\ell(V_R)$, EOS], where
 
-The markup is a sequence, $m(V, v|B)$ = [SOS, $\ell(V_L)$, BracketTag, $\ell(T(v))$, BracketTag, $\ell(V_R)$, EOS], where SOS and EOS are out of vocabulary symbols denoting the start and end of $\bm{x}$. 
+\begin{itemize}
+\item{The symbols SOS and EOS are special markers denoting the start and end of $\bm{x}$}
+\item{$V_L \subseteq V$ is all  vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order.}
+\item{$\ell(V_R) \subseteq V$ is identical to $\ell(V_L)$, except that vertexes in $V_R$ must occur to the right of $T(v)$).}
+\item{Each BracketTag is formed by concatenating three different markers: (1) a categorical marker indicating the dependency type governing $T(v)$, (2) a binary marker indicating the type of the proposed operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) a binary marker indicating the start or end of $\ell (T(v))$ in the markup.}
+\end{itemize}
 
-Each BracketTag is formed by concatenating three different markers: (1) a categorical marker indicating the dependency type governing $T(v)$, (2) a binary marker indicating the type of the proposed operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) a binary marker indicating if the bracket comes before or after $T(v)$ in the markup. For instance, in Figure \ref{f:example}, \ahcomment{TODO fix once figure redone} the BracketTag \textit{nmod-I-L} indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, (2) the proposed operation is \textsc{Insert} and (3) the marker symbol comes to the left of $T(v)$ in $\bm{x}$. 
+
+\footnote{For \textsc{Prune} operations, it will be the case that $T(v) \subseteq V$. For \textsc{Insert} operations, it will be the case that $T(v) \nsubseteq V$. For both operations, $T(v) \cap V_R = \emptyset = T(v) \cap V_L $.} 
+
+or instance, in Figure \ref{f:example}, \ahcomment{TODO fix once figure redone} the BracketTag \textit{$<$tree$>$--\textsc{Insert}--nmod} indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, (2) the proposed operation is \textsc{Insert} and (3) the marker symbol comes at the start of $T(v)$ in $\bm{x}$. 
 BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. 
 
-As explained earlier (\S\ref{s:system}), it is only possible to $\textsc{Prune}$ $T(v)$ if $v \in V$. It is also only possible to \textsc{Insert} $T(v)$ if $v \notin V$. Therefore, the marker symbol indicating the type of the proposed operation is fully determined by $(V, v|B)$.
+As explained earlier (\S\ref{s:system}), it is only possible to $\textsc{Prune}$ $T(v)$ if $v \in V$. It is also only possible to \textsc{Insert} $T(v)$ if $v \notin V$. Therefore, the marker symbol indicating the type of the proposed operation is fully determined by $(V, v)$.
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
@@ -252,7 +259,7 @@ $\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v
 \textsc{NoInsert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
 \textsc{Stop}             & $ (V, B=[]) \Rightarrow$ STOP & Compression ends when the buffer is empty \\                                               
 \end{tabular}
-\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence, $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
+\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
 \end{table*}
 
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
