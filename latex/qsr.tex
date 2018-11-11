@@ -168,22 +168,22 @@ operation. %We train using cross entropy loss, weighting training examples in pr
 
 \ahcomment{One conceptual issue: what if T(v) is gappy?  That is, within the span of the leftmost and rightmost tokens in T(v), it is possible that there are tokens not in T(v).  What does the markup function do then?}
 
-We define a markup function $m(V,v)=\bm{x}$, which maps a subset of vertexes from the original sentence $V$, and some vertex from the original sentence $v$, to a sequence of symbols $\bm{x}$. Intuitively, the markup function, ``shows'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be inserted into or pruned from the compression. More precisely, the markup $\bm{x}$ is the symbol sequence [SOS, $V_L$, BracketTag, $T(v)$, BracketTag, $V_R$, EOS], where
+We define a markup function $m_{\textsc{P}}(V,v)=\bm{x}$, which is meant to ``show'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be pruned from the compression. More precisely, $m_{P}$ maps a subset of vertexes from the original sentence $V$, and some vertex from the original sentence $v$, to a sequence of symbols $\bm{x}$. The markup $\bm{x}$ is the symbol sequence [SOS, $V_L$, BracketTag, $T(v)$, BracketTag, $V_R$, EOS], where
 
 \begin{itemize}
-\item{$T(v)$ denotes vertexes in the subtree rooted at $v$ in the original sentence $s$, linearized in their original order.}
+\item{$T(v)$ denotes vertexes in the subtree rooted at $v$ in the original sentence $s$, linearized in their original order}
 \item{The symbols SOS and EOS are special markers denoting the start and end of the sequence.}
-\item{$V_L$ is all vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order.}
-\item{$V_R$ is identical to $V_L$, except that vertexes in $V_R$ must occur to the right of $T(v)$.}
-\item{Each BracketTag is formed by concatenating three different markers: (1) a categorical marker indicating the dependency type governing $T(v)$, (2) a binary marker indicating the type of the proposed operation (i.e \textsc{Prune} or \textsc{Insert}) and (3) a binary marker indicating the start or end of $T(v)$ in the markup.}
+\item{$V_L$ is all vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order. $V_R$ is identical to $V_L$, except that vertexes in $V_R$ must occur to the right of $T(v)$.}
+\item{Each BracketTag is formed by concatenating two different markers: (1) a categorical marker indicating the dependency type governing $T(v)$ and (2) a binary marker indicating the start or end of the proposed $\textsc{Prune}$ in the markup.\footnote{BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.}}
 \end{itemize}
 
 For instance, \ahcomment{Talk thru a whole example} in Figure \ref{f:example}, \ahcomment{TODO fix once figure redone} the BracketTag \textit{$<$tree$>$--\textsc{Insert}--nmod} indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, (2) the proposed operation is \textsc{Insert} and (3) the marker symbol comes at the start of $T(v)$ in $\bm{x}$. 
 
+We also define a markup function $m_{\textsc{I}}(V,v)=\bm{x}$ for proposed insert operations, which is defined identically, except that the BracketTag indicates that the proposed operation is $\textsc{Insert}$. (In the case of insert operations (\S\ref{s:system}), no token from $T(v)$ will be in $s$; the markup ``shows'' what the result of the insert would be, if the operation were executed). 
 
-BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}. 
+Because  is only possible to $\textsc{Prune}$ $T(v)$ if $v$ is included in $V$ (and only possible to \textsc{Insert} $T(v)$ if it not included), it is always clear when a compression system should call $m_{\textsc{I}}$ or $m_{\textsc{P}}$. 
 
-As explained earlier (\S\ref{s:system}), it is only possible to $\textsc{Prune}$ $T(v)$ if $v \in V$. It is also only possible to \textsc{Insert} $T(v)$ if $v \notin V$. Therefore, the marker symbol indicating the type of the proposed operation is fully determined by $(V, v)$.\footnote{For \textsc{Prune} operations, it will be the case that $T(v) \subseteq V$. For \textsc{Insert} operations, it will be the case that $T(v) \nsubseteq V$. For both operations, $T(v) \cap V_R = \emptyset = T(v) \cap V_L $.} 
+%\footnote{For \textsc{Prune} operations, it will be the case that $T(v) \subseteq V$. For \textsc{Insert} operations, it will be the case that $T(v) \cap V = \emptyset$. For both operations, $T(v) \cap V_R = \emptyset = T(v) \cap V_L $.} 
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
