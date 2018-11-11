@@ -104,7 +104,8 @@ This work discusses contrasts traditional ILP-based compression with our novel t
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows supervision} \\ \hline
 LSTM taggers      & linear              & no     &    yes      \\   
 linear programming              & exponential         & yes    &    yes   \\
-transition-based (this work)       & quadratic*           & yes    &      yes   \\
+prune, predict, loop  (this work)    & quadratic*           & yes    &      yes   \\
+predict, then prune  (this work)    & linear           & yes    &      yes   \\
 \end{tabular}
 \caption{\ahcomment{TODO}}
 \end{table*}
@@ -121,7 +122,7 @@ For these methods, adding additional length or lexical requirements is trivial: 
 
 \subsection{Transition-based constrained compression}
 
-In this work, we present an alternative method for shortening sentences under lexical and length constraints. Our transition-based technique compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. We present the formal details in \S\ref{s:system}.
+In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints \cite{Earley1970AnEC,nivre2003}, inspired by transition-based parsing techniques. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntactic representations of trees. We present the formal details in \S\ref{s:system}.
 
 Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. In this work, we show that transition-based methods incur much smaller computational costs than integer programming techniques, while achieving higher token-level F1 scores than ILP-based compression.
 
@@ -131,13 +132,27 @@ We contrast transition-based compression and integer programming approaches with
 
 \section{Transition-based sentence compression}\label{s:system}
 
-In this work, we define a neural, transition-based sentence compression system, inspired by other kinds of transition-based models within NLP \cite{nivre2003}. 
-\ahcomment{Now citing Nivre 2003, found via Chris Dyer papers. I am trying to find other areas (besides parsing) where transition-based models have been influential in NLP. I have found very old or very early or rarely cited things from workshops... but don't seem to be finding much else. I am searching,  "transition-based" -parsing}
-Let ${(V_s,E_s)}$ denote the original, unchanging dependency parse of a sentence. At each timestep during compression, our system has a state ${(V_c,E_c)}$, which is some subgraph of ${(V_s,E_s)}$. The compression ${(V_c,E_c)}$ may or may not be fully-connected. 
+In this work, we present a new transition-based sentence compression system. We formally describe the system (\S\ref{s:formal}), present a method for generating oracle path compressions using a standard dataset (\S\ref{s:oracle}), and then detail a computational model which attempts to reconstruct oracle paths (\S\ref{s:modeling}).
 
-We define two operations which modify the state. The operation \textsc{Prune}($v_c$), removes the subtree rooted at $v \in V_c$ from ${(V_c,E_c)}$. The operation \textsc{Insert}($v_s$), copies the subtree rooted at $v \in V_s$ in the original sentence and adds it to the compression ${(V_c,E_c)}$. After executing a sequence of $\textsc{Prune}$ and $\textsc{Insert}$ operations, all tokens in ${(V_c,E_c)}$ are linearized in their original order to return a shortened sentence. We initialize the state with an empty subgraph. 
+\subsection{Formal description}\label{s:formal}
 
-We identified $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: we found that for all compressions in a large, standard  corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V_s|$ $\textsc{Prune}$ and $\textsc{Insert}$ operations which can fully reconstruct the shortened sentence. 
+Our transition-based sentence compression system shortens a sentence $s$ by executing a sequence of operations. Each operation modifies the state, denoted $(V,v|B)$, where $V$ is a subset of tokens from $s$ and $B$ is an ordered buffer of tokens from $s$, headed by the token $v$. In defining operations, we use the notation $T(v)$ to denote the subtree headed by $v$ in the unchanging, precomputed dependency parse of the original sentence.
+
+We define four principal operations. The operation \textbf{\textsc{Prune}} removes all vertexes in $T(v)$ from $V$, while removing $v$ from the buffer. The operation \textbf{\textsc{Insert}} adds $T(v)$ into $V$, while also removing $v$ from the buffer. 
+
+The compression system can also execute the operations \textbf{\textsc{NoPrune}} and \textbf{\textsc{NoInsert}}, which remove $v$ from $B$ without inserting or pruning the subtree $T(v)$. Table \ref{t:ops} defines these four operations formally. 
+
+To generate a compression, we execute the $\textsc{Start}$ operation which initializes $V$ to be an empty set and initialize $B$ to be the tokens in $s$, arranged breadth-first. After the buffer is empty, we execute a $\textsc{Stop}$ operation; all tokens in $V$ are then linearized in their original order to return a shortened sentence. The appendix includes a complete, worked example.
+
+\subsection{Oracle paths}\label{s:oracle}
+
+We identified the four operation in our compression system via empirical experiment: we found that for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|s|$ operations which can fully reconstruct the shortened sentence, where $s$ is the token length of the original sentence. 
+
+In our transition-based compressor, only some operations are valid for some configurations of the state. If $v \notin V$, then $\textsc{Prune}$ is not valid as $v$ cannot be removed from the compression. Similarly, if $v \in V$, then $\textsc{Insert}$ is not valid as $T(v)$ cannot be added to the compression. Table \ref{t:ops} includes these preconditions.
+
+Because only \textsc{Prune} or \textsc{Insert} is valid for a given state, reconstructing a gold compression can be interpreted as a sequence of binary decisions. If $v \in V$, the compression system must decide to execute $\textsc{Prune}$ or $\textsc{NoPrune}$. If $v \notin V$, it must decide to execute $\textsc{Insert}$ or $\textsc{NoInsert}$.
+
+We assign an oracle operation to each $v$ in $s$, by walking the dependency parse of the original sentence breadth-first, and identifying which operation on $v$ is consistent with the gold-standard compression. For instance, if some vertex $v$ and all of its children are not present in the gold compression, but are present in ${V}$ at a given timestep, then we say that the oracle operation for $v$ is \textsc{Prune}. Similarly, if $v$ is present in the gold compression, but is not present in ${V}$ at a given timestep, we say that the oracle operation for $v$ is \textsc{Insert}. For roughly two-thirds of vertexes in the breath-first walk, the oracle executes $\textsc{NoPrune}$ or $\textsc{NoInsert}$ which removes $v$ from $B$ without modifying $V$.
 
 \begin{figure*}[htb!]
 \centering
@@ -146,29 +161,11 @@ We identified $\textsc{Prune}$ and $\textsc{Insert}$ via empirical experiment: w
 \label{f:example}
 \end{figure*}
 
-%Our LSTM classifier predicts the oracle operation given the current state $(V_c, E_c)$, which is a subgraph of the original sentence (top). The input to the classifier is all tokens in $V_c$,  linearized in their original order between added SOS and EOS tags which indicate the start and end of the sequence. We also add insert marker symbols with dependency type information denoting the start and end of the sequence of tokens which would be modified by the \textsc{Prune} or \textsc{Insert} operation. In this example, the subsequence ``in limiting risk'' would be pruned by removing a subtree governed by an \rdep{advcl} relation. For \textsc{Insert} operations, we include proposed tokens between marker symbols.
-
-Like \citet{D14-1082}, we use a large corpus to identify a series of oracle operations which returns gold standard output. In our case, we assign an oracle operation to each $v \in V_s$, by walking the dependency parse of an original sentence breadth-first, and identifying which operation on $v$ is consistent with the gold-standard compression. For instance, if some vertex $v$ and all of its children are not present in the gold compression, but are present in ${(V_c,E_c)}$ at a given timestep, then we say that the oracle operation for $v$ is \textsc{Prune}. Similarly, if $v$ is present in the gold compression, but is not present in ${(V_c,E_c)}$ at a given timestep, we say that the oracle operation for $v$ is \textsc{Insert}. For roughly two-thirds of vertexes in the breath-first walk, the oracle does not execute a $\textsc{Prune}$ or $\textsc{Insert}$ operation. In these cases, we say that the oracle executes a $\textsc{Nop}$, which leaves ${(V_c,E_c)}$ unmodified. 
-
-In our transition-based compressor, only some operations are valid for some configurations of the state. If some vertex $v \in V_s$ is also included in the compression, then we say that $\textsc{Insert}(v)$ is not valid as $v$ is already present in the compression. Similarly, if some vertex $v^{\prime} \notin V_c$ is not included in the compression, then we say that $\textsc{Prune}(v^{\prime})$ is not valid as $v^{\prime}$ cannot be pruned.
-
-All $v \in V_s$ are either in $V_c$ or not in $V_c$. Therefore, for any given vertex--state pair, either the operation \textsc{Prune} is valid or the operation \textsc{Insert} is valid. We can therefore distinguish between two subtypes of $\textsc{Nop}$ operation. If the oracle does not prune a given subtree, we say that the oracle executes $\textsc{Nop}_P$. If the oracle does not insert a given subtree, we say that the oracle executes $\textsc{Nop}_I$. This distinction is helpful during modeling because the state--vertex pairs which correspond to $\textsc{Nop}_I$ are very different to the pairs which correspond to $\textsc{Nop}_P$.
-
 \subsection{Modeling}\label{s:modeling}
 
-\ahcomment{TODO details: class weighting optimizer, stopping criteria,  embeddings,loss function,do you update embeddings,tuning}
-%We use a large, standard compression corpus \cite{filippova2013overcoming} to train a model of transition-based compression. Following \citet{D14-1082}, we interpret the collection of oracle paths (\S\ref{s:system}) for all sentences in the corpus as a set of tuples: ${((V_c,E_c)_j, y_j)}$, where $(V_c,E_c)_j$ is the state of the system at step $j$ along the oracle path and $y_j \in  \{ \textsc{Prune}(v_c), \textsc{Insert}(v_s), \textsc{Nop}_P, \textsc{Nop}_I \}$ is the oracle operation at step $j$. We then train an ordinary LSTM classifier to predict the oracle operation, given the state. 
+Loosely following \citet{D14-1082}, we use a large corpus to create a set of tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, where $\bm{x}$ is a sequence of symbols reflecting some configuration of the compression system at some step $j$  on some oracle path and $y_j \in \{0,1\}$ is a binary variable indicating the oracle operation. We say that $y=1$ if the oracle executes a \textsc{Prune} or if the oracle executes \textsc{Insert}. We say that $y=0$ if the oracle executes a \textsc{NoPrune} or if the oracle executes \textsc{NoInsert}. The appropriate binary decision (e.g. prune or no prune) is always clear from context (\S\ref{s:oracle}). We use a standard compression corpus \cite{filippova2013overcoming} to generate tuples.
 
-%\ahcomment{this is a bit weird; easier/less weird than 2 models?} Because only a \textsc{Prune} or \textsc{Insert} operation is valid for a given vertex--state pair, it is possible to interpret our 4-way classifier as two 2-way classifiers. The added prune and extract symbols added to the input sequence provide very strong hints about which operation subset of operations might be chosen for a given vertex. 
-
-During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle 
-operation. %We train using cross entropy loss, weighting training examples in proportion to their prevalence in the dataset. s
-
-\subsection{Markup function}
-
-\ahcomment{One conceptual issue: what if T(v) is gappy?  That is, within the span of the leftmost and rightmost tokens in T(v), it is possible that there are tokens not in T(v).  What does the markup function do then?}
-
-We define a markup function $m_{\textsc{P}}(V,v)=\bm{x}$, which is meant to ``show'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be pruned from the compression. More precisely, $m_{P}$ maps a subset of vertexes from the original sentence $V$, and some vertex from the original sentence $v$, to a sequence of symbols $\bm{x}$. The markup $\bm{x}$ is the symbol sequence [SOS, $V_L$, BracketTag, $T(v)$, BracketTag, $V_R$, EOS], where:
+We define two markup functions $m(V,v)=\bm{x}$ to generate the sequence $\bm{x}$. The markup function $m_{\textsc{P}}$ is meant to ``show'' the LSTM what a compressed sentence would ``look'' like if the subtree headed at $v$ were to be pruned from the compression. $m_{P}$ maps $V$ and $v$, to the symbol sequence [SOS, $V_L$, BracketTag, $T(v)$, BracketTag, $V_R$, EOS], where:
 
 \begin{itemize}
 \item{$T(v)$ denotes all vertexes in the subtree rooted at $v$ in the original sentence $s$ which are also included in $V$, linearized in their original order.}
@@ -181,9 +178,11 @@ For instance, \ahcomment{Talk thru a whole example. Rewrite} in Figure \ref{f:ex
 
 We also define a markup function $m_{\textsc{I}}(V,v)=\bm{x}$ for proposed insert operations, which is defined identically, except that the BracketTag indicates that the proposed operation is $\textsc{Insert}$. Additionally, for insert operations (\S\ref{s:system}), no token from $T(v)$ will be in $s$;\footnote{$v$ is assumed to be the token at the start of the buffer, and the buffer must be initialized breadth-first.} the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were copied over into $V$. 
 
-Because  is only possible to $\textsc{Prune}$ $T(v)$ if $v$ is included in $V$ (and only possible to \textsc{Insert} $T(v)$ if $v$ is not in $V$), it is always clear when a compression system should call $m_{\textsc{I}}$ or $m_{\textsc{P}}$. 
+\ahcomment{TODO details: class weighting optimizer, stopping criteria,  embeddings,loss function,do you update embeddings,tuning}
 
-%\footnote{For \textsc{Prune} operations, it will be the case that $T(v) \subseteq V$. For \textsc{Insert} operations, it will be the case that $T(v) \cap V = \emptyset$. For both operations, $T(v) \cap V_R = \emptyset = T(v) \cap V_L $.} 
+During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle 
+operation. 
+
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
@@ -200,6 +199,7 @@ Approach & F1  \\ \hline
 Human acceptability supervision \ahcomment{????}        &  X        \\
 F and A (2013)    & .79           \\
 C and L (2008)  \ahcomment{????}  & X      \\
+\textbf{Prune,predict,loop} &  \textbf{.86}    \\ 
 \textbf{Transition-based (this work)} &  \textbf{.86}    \\   
 \end{tabular}
 \end{table}
@@ -259,7 +259,8 @@ $\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v
 \textsc{NoInsert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
 \textsc{Stop}             & $ (V, B=[]) \Rightarrow$ STOP & Compression ends when the buffer is empty \\                                               
 \end{tabular}
-\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
+\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}. The appendix presents a complete, worked example.}
+\label{t:ops}
 \end{table*}
 
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
