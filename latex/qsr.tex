@@ -185,7 +185,7 @@ For instance, in Figure \ref{f:example}, the markup ``shows'' the  effect of a p
 
 \textbf{Architecture and training} Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and a non-linear activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We can interpret the shared Bi-LSTM layer as learning deep features from the markup, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. 
 
-We initialize with GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with Adam. The hyperaramters are \ahcomment{TODO}. We do not update symbol vectors during training. 
+We initialize with GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with the Adam optimizer \cite{Kingma2014AdamAM}. Our model includes several hyperparameters including the width of the max pooling layer, the learning rate, the Adam weight decay setting and the dropout rate \ahcomment{where is the dropout? fix}.  We do not update word and symbol vectors during training. 
 
 We tune hyperparameters manually, by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high accuracy on the validation set. 
 
@@ -222,6 +222,7 @@ $$\argmaxA_{v \in V_c,q\not\in T(v)}   p(y_j = \textsc{Prune}(v) | (V_c, E_c)_j)
 
 \noindent where $(V_c, E_c)_j$ represents the state of the compression system at time $j$. We continue pruning subtrees until the length of the linearized tokens in $V_c$ is less than $b$, in which case we stop compression. 
 
+\ahcomment{notation out of date in graf below}
 Because \textsc{Prune} only removes tokens from the state, we initialize $(V_c, E_c)$ with the smallest subtree of $(V_s, E_s)$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. The remaining cases are instances when all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence.
 
 \ahcomment{hand-wavey here. Fix.}
