@@ -21,6 +21,8 @@
 \usepackage{bm}
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
+
+
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
 
 \usepackage{url}
@@ -86,6 +88,18 @@ This study examines the compression problem with length and lexical constraints:
 \end{figure}
 
 
+\begin{table*}[htb!]
+\begin{tabular}{cccc}
+\textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows supervision} \\ \hline
+LSTM taggers      & linear              & no     &    yes      \\   
+linear programming              & exponential         & yes    &    yes   \\
+prune, predict, loop  (this work)    & quadratic     & yes    &      yes   \\
+predict, then prune  (this work)    & linear           & yes    &      yes   \\
+\end{tabular}
+\caption{\ahcomment{TODO}}
+\end{table*}
+
+
 Therefore, in this work:
 
 \begin{itemize}
@@ -98,17 +112,6 @@ Therefore, in this work:
 \section{Compression and constraints}
 
 This work discusses contrasts traditional ILP-based compression with our novel transition-based technique. We also briefly discuss compression with LSTM taggers, which do not accommodate length or lexical requirements.
-
-\begin{table*}[htb!]
-\begin{tabular}{cccc}
-\textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows supervision} \\ \hline
-LSTM taggers      & linear              & no     &    yes      \\   
-linear programming              & exponential         & yes    &    yes   \\
-prune, predict, loop  (this work)    & quadratic*           & yes    &      yes   \\
-predict, then prune  (this work)    & linear           & yes    &      yes   \\
-\end{tabular}
-\caption{\ahcomment{TODO}}
-\end{table*}
 
 \subsection{Constrained compression with ILPs}
 
@@ -155,7 +158,7 @@ Because only \textsc{Prune} or \textsc{Insert} is valid for a given state (\S\re
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{\ahcomment{TODO fix} }
+\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The state (\S\ref{s:formal}) includes $V$, a subset of tokens (in bold) from the original sentence.}
 \label{f:example}
 \end{figure*}
 
@@ -167,16 +170,16 @@ To train the LSTM, we define a set of tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, w
 
 \textbf{Markup function.} We define a markup function $m(V,v,o)=\bm{x}$ to generate the sequence of input symbols for the LSTM. The markup function ``shows'' the model what a compressed sentence would ``look'' like if the compression system were to execute the operation $o \in \{\textsc{Prune}, \textsc{Insert}\}$ given the state $(V, v|B)$. For insert operations, the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were copied over into $V$; for prune operations, it ``shows'' what the compression would be if $T(v)$ were removed.
 
-More concretely, $\bm{x}$ is the symbol sequence [SOS, $V_L$, $\langle {o \cdot d} \rangle$, $T(v)$, $\langle{/o\cdot d}\rangle$, $V_R$, EOS], where:
+More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle {o \cdot d} \rangle$, $T(v)$, $\langle{/o\cdot d}\rangle$, $V_R$, \texttt{EOS}], where:
 
 \begin{itemize}
 \item{$T(v)$ denotes all vertexes in the subtree rooted at $v$ in the original sentence $s$, linearized in their original order.}
-\item{The symbols SOS and EOS are special markers denoting the start and end of the sequence.}
+\item{The symbols \texttt{SOS} and \texttt{EOS} are special markers denoting the start and end of the sequence.}
 \item{$V_L$ is all vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order. $V_R$ is identical to $V_L$, except that vertexes in $V_R$ must occur to the right of $T(v)$.}
-\item{The symbol $\langle o \cdot d \rangle$ is formed by concatenating two different markers: (1) a start symbol of type $o$, indicating the beginning of the sequence of tokens affected by the operation $o$, and (2) a marker indicating $d$, the dependency type governing $T(v)$. For instance in the sequence shown in Figure \ref{f:example}, $\langle o, d \rangle$ is $\langle \textsc{Prune} \text{advcl} \rangle$. The symbol $\langle / o \cdot d \rangle$ is formed identically, only the marker indicates the end of the sequence.\footnote{BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.}}
+\item{The symbol $\langle o \cdot d \rangle$ is formed by concatenating two different markers: (1) a start symbol of type $o$, indicating the beginning of the sequence of tokens affected by the operation $o$, and (2) a marker indicating $d$, the dependency type governing $T(v)$. For instance in the sequence shown in Figure \ref{f:example}, $\langle o, d \rangle$ is $\langle \textsc{Prune} \texttt{advcl} \rangle$. The symbol $\langle / o \cdot d \rangle$ is formed identically, only the marker indicates the end of the sequence.\footnote{BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.}}
 \end{itemize}
 
-For instance, \ahcomment{Talk thru a whole example. Rewrite} in Figure \ref{f:example}, the BracketTag \textsc{Prune}--nmod indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, and (2) the next tokens \textsc{Prune}
+For instance, in Figure \ref{f:example}, the BracketTag \textsc{Prune}--nmod indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, and (2) the next tokens \textsc{Prune}
 
 \footnote{$v$ is assumed to be the token at the start of the buffer, and the buffer must be initialized breadth-first.}
 
