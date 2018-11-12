@@ -96,7 +96,7 @@ linear programming              & exponential         & yes    &    yes   \\
 prune, predict, loop  (this work)    & quadratic     & yes    &      yes   \\
 predict, then prune  (this work)    & linear           & yes    &      yes   \\
 \end{tabular}
-\caption{\ahcomment{TODO}}
+\caption{Four algorithms for extractive sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used in both linear and quadratic methods for compressing sentences under lexical and length constraints.}
 \end{table*}
 
 
@@ -113,7 +113,7 @@ Therefore, in this work:
 
 This work discusses contrasts traditional ILP-based compression with our novel transition-based technique. We also briefly discuss compression with LSTM taggers, which do not accommodate length or lexical requirements.
 
-\subsection{Constrained compression with ILPs}
+\subsection{Constrained compression with ILPs}\label{s:ilps}
 
 One common approach for shortening sentences formulates compression as an integer linear programming (ILP) task. ILP-based methods assign binary variables to each token in a sentence \cite{clarke2008global} or subtree in a dependency parse \cite{filippova2008dependency}. These variables indicate if the corresponding component included in a compression. Each such sentence component is also assigned a local weight, indicating its worthiness for inclusion in a shortened sentence. Local weights are either learned with structured perceptron techniques \cite{filippova2013overcoming}, or inferred from corpus statistics \cite{filippova2008dependency}, word importance scores and language models \cite{clarke2008global}.
 
