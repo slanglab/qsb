@@ -140,7 +140,7 @@ Our transition-based sentence compression system shortens a sentence $s$ by exec
 
 We define four principal operations, which reference the vertex $v$ at the head of the buffer $v|B$. The operation \textbf{\textsc{Prune}} removes all vertexes in $T(v)$ from $V$. The operation \textbf{\textsc{Insert}} adds $T(v)$ into $V$. \textsc{Prune} and \textsc{Insert} each remove $v$ from $B$. The compression system can also execute the operations \textbf{\textsc{NoPrune}} and \textbf{\textsc{NoInsert}}, which remove $v$ from $B$ without inserting or pruning the subtree $T(v)$. 
 
-To generate a compression, we execute the $\textsc{Start}$ operation which initializes $V$ to be an empty set and initialize $B$ to be the tokens in $s$, arranged breadth-first. After the buffer is empty, we execute a $\textsc{Stop}$ operation; all tokens in $V$ are then linearized in their original order to return a shortened sentence. The appendix includes a complete, worked example. Table \ref{t:ops} defines all operations formally. 
+To generate a compression, we execute the $\textsc{Start}$ operation which initializes $V$ to be an empty set and initialize $B$ to be the tokens in $s$, arranged breadth-first. After the buffer is empty, we execute a $\textsc{Stop}$ operation; all tokens in $V$ are then linearized in their original order to return a shortened sentence. The appendix includes a complete, worked example. Table \ref{t:ops} formally defines all operations. 
 
 In our transition-based compressor, only some operations are valid for some configurations of the state. If $v \notin V$, then $\textsc{Prune}$ is not valid as $T(v)$ cannot be removed from $V$. Similarly, if $v \in V$, then $\textsc{Insert}$ is not valid as $T(v)$ cannot be added to $V$. Table \ref{t:ops} includes these preconditions.
 
@@ -148,9 +148,9 @@ In our transition-based compressor, only some operations are valid for some conf
 
 We identified the operations in our compression system via empirical experiment: we found that for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|s|$ operations which can fully reconstruct the shortened sentence. $|s|$ denotes the token length of the original sentence.
 
-We can assign an oracle operation to each $v$ in $s$ by walking the dependency parse of the original sentence breadth-first, and identifying which operation is consistent with the gold-standard compression. For instance, if some vertex $v$ is not present in the gold compression, but is present in ${V}$ at a given timestep, then we say that the oracle operation for $v$ must be \textsc{Prune}. Similarly, if $v$ is present in the gold compression, but is not present in ${V}$ at a given timestep, we say that the oracle operation for $v$ must be \textsc{Insert}.\footnote{Because we walk the dependency parse exactly once in breadth-first fashion to generate gold compressions, each operation in the oracle path affects increasingly nested subtrees. Thus, if a vertex $v$ is or is not included in a compression it must be pruned or inserted when it is at the head of the buffer.} For roughly two-thirds of vertexes in the breath-first walk, the oracle executes $\textsc{NoPrune}$ or $\textsc{NoInsert}$ which removes $v$ from $B$ without modifying $V$.
+We identify the oracle path by initializing the compression system with a $\textsc{Start}$ operation, and then determining the oracle operation for each vertex in the buffer. If some vertex $v$ is not present in the gold compression, but is present in ${V}$ at a given timestep, then we say that the oracle operation for $v$ must be \textsc{Prune}. Similarly, if $v$ is present in the gold compression, but is not present in ${V}$ at a given timestep, we say that the oracle operation for $v$ must be \textsc{Insert}.\footnote{Because we walk the dependency parse breadth-first to generate gold compressions, each operation in the oracle path affects increasingly nested subtrees. Thus, if a vertex $v$ is not included in a compression it must be pruned when it is at the head of the buffer. The same is true for insertions.} For roughly two-thirds of vertexes in the breath-first walk, the oracle executes a $\textsc{NoPrune}$ or $\textsc{NoInsert}$ operation.
 
-Because only \textsc{Prune} or \textsc{Insert} is valid for a given state (\S\ref{s:formal}), reconstructing a gold compression can be interpreted as a sequence of binary decisions. If $v \in V$, the compression system must decide to execute $\textsc{Prune}$ or $\textsc{NoPrune}$. If $v \notin V$, it must decide to execute $\textsc{Insert}$ or $\textsc{NoInsert}$. The compression system must make a binary decision for any given state--vertex pair.
+Because only \textsc{Prune} or \textsc{Insert} is valid for a given state (\S\ref{s:formal}), reconstructing a gold compression can be interpreted as a sequence of binary decisions. If $v \in V$, the compression system must decide to execute $\textsc{Prune}$ or $\textsc{NoPrune}$. If $v \notin V$, it must decide to execute $\textsc{Insert}$ or $\textsc{NoInsert}$. A series of oracle, binary decisions yields the oracle compression.
 
 \begin{figure*}[htb!]
 \centering
@@ -161,9 +161,11 @@ Because only \textsc{Prune} or \textsc{Insert} is valid for a given state (\S\re
 
 \subsection{Modeling}\label{s:modeling}
 
-Loosely following \citet{D14-1082}, we define a set of tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, where $\bm{x}$ is a sequence of symbols reflecting some configuration of the compression system at some step $j$ on some oracle path and $y_j \in \{0,1\}$ is a binary variable indicating the oracle choice for that configuration. The appropriate binary choice (e.g. prune or no prune) is always clear from context (\S\ref{s:oracle}). We use a standard compression corpus \cite{filippova2013overcoming} to generate \ahcomment{TODO} tuples, which we use to train a LSTM.
+Loosely following \citet{D14-1082}, we use a large collection of state--decision pairs to train an LSTM to predict $p(y=1 | \bm{x})$, the probability of a binary oracle decision (\S\ref{s:oracle}), given a collection of input symbols $\bm{x}$.
 
-\textbf{Markup function.} We define a markup function $m(V,v,o)=\bm{x}$ to generate the sequence of input symbols for the LSTM. The markup function is meant to ``show'' the model what a compressed sentence would ``look'' like if the compression system were to execute the operation $o \in \{\textsc{Prune}, \textsc{Insert}\}$. For insert operations, the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were copied over into $V$; for prune operations, it ``shows'' what the compression would be if $T(v)$ were removed.
+To train the LSTM, we define a set of tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, where $\bm{x}$ is a sequence of symbols reflecting some configuration of the compression system at some step $j$ on some oracle path and $y_j \in \{0,1\}$ is a binary variable indicating the oracle choice for that configuration. We use a standard compression corpus \cite{filippova2013overcoming} to generate tuples. 
+
+\textbf{Markup function.} We define a markup function $m(V,v,o)=\bm{x}$ to generate the sequence of input symbols for the LSTM. The markup function ``shows'' the model what a compressed sentence would ``look'' like if the compression system were to execute the operation $o \in \{\textsc{Prune}, \textsc{Insert}\}$ given the state $(V, v|B)$. For insert operations, the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were copied over into $V$; for prune operations, it ``shows'' what the compression would be if $T(v)$ were removed.
 
 More concretely, $\bm{x}$ is the symbol sequence [SOS, $V_L$, $\langle {o \cdot d} \rangle$, $T(v)$, $\langle{/o\cdot d}\rangle$, $V_R$, EOS], where:
 
@@ -178,11 +180,14 @@ For instance, \ahcomment{Talk thru a whole example. Rewrite} in Figure \ref{f:ex
 
 \footnote{$v$ is assumed to be the token at the start of the buffer, and the buffer must be initialized breadth-first.}
 
-\ahcomment{TODO details: class weighting optimizer, stopping criteria,  embeddings,loss function,do you update embeddings,tuning}
+\ahcomment{TODO details: class weighting optimizer, stopping criteria,embeddings,tuning:what is tuned}
 
-During training, we look up each token in the sequence in an embeddings matrix and pass these embeddings to a Bi-LSTM. Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we use a max pooling layer to encode a variable-length sequence into a fixed-length vector, which we pass through a sigmoid and then softmax layer to predict the oracle 
-operation. 
+\textbf{Architecture and training} Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we predict the binary, oracle operation using a Bi-LSTM and a max pooling layer. We pass the output of the max pooling layer to one of two, separate feedforward layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. 
+%which predict $p(y=1 | \bm{x})$
 
+, which we pass through a sigmoid and then softmax layer to predict the oracle operation. 
+
+We initialize with GloVe embeddings \cite{pennington2014glove} which we do not update during training. We train with cross entropy loss. We tune hyperparameters manually, by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high accuracy on the validation set. 
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
