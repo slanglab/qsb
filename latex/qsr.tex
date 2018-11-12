@@ -187,7 +187,7 @@ For instance, in Figure \ref{f:example}, the markup ``shows'' the  effect of a p
 
 We initialize with GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with the Adam optimizer \cite{Kingma2014AdamAM}. Our model includes several hyperparameters including the width of the max pooling layer, the learning rate, the Adam weight decay setting and the dropout rate \ahcomment{where is the dropout? fix}.  We do not update word and symbol vectors during training. 
 
-We tune hyperparameters manually, by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high accuracy on the validation set. 
+We tune hyperparameters by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high accuracy on the validation set. 
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
