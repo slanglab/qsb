@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-fast", action="store_true", default=False)
     parser.add_argument("-config", type=str)
+    parser.add_argument("-verbose", action="store_true", default=False)
     args = parser.parse_args()
 
     with open(args.config, "r") as inf:
@@ -74,6 +75,10 @@ if __name__ == "__main__":
                         pickle.dump(sentence, of)
                 else:
                     f1 = f1_score(y_true=y_true, y_pred=y_pred)
+                    if args.verbose:
+                        print "***"
+                        print " ".join([o["word"] for o in sentence["tokens"]])
+                        print " ".join([o["word"] for o in sentence["tokens"] if o["index"] in y_pred])
                 config["sentence{}".format(vno)] = {'f1': f1, "nops": ops}
 
     fast = "fast" if args.fast else "full"
