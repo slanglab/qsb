@@ -76,9 +76,9 @@ if __name__ == "__main__":
                 else:
                     f1 = f1_score(y_true=y_true, y_pred=y_pred)
                     if args.verbose:
-                        print "***"
-                        print " ".join([o["word"] for o in sentence["tokens"]])
-                        print " ".join([o["word"] for o in sentence["tokens"] if o["index"] in y_pred])
+                        print("***")
+                        print(" ".join([o["word"] for o in sentence["tokens"]]))
+                        print(" ".join([o["word"] for ino,o in enumerate(sentence["tokens"]) if y_pred[ino]]))
                 config["sentence{}".format(vno)] = {'f1': f1, "nops": ops}
 
     fast = "fast" if args.fast else "full"
