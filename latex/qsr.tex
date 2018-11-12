@@ -173,7 +173,7 @@ More concretely, $\bm{x}$ is the symbol sequence [SOS, $V_L$, $\langle {o \cdot 
 \item{$T(v)$ denotes all vertexes in the subtree rooted at $v$ in the original sentence $s$, linearized in their original order.}
 \item{The symbols SOS and EOS are special markers denoting the start and end of the sequence.}
 \item{$V_L$ is all vertexes from $V$ which occur to the left of $T(v)$ in $s$, linearized in their original order. $V_R$ is identical to $V_L$, except that vertexes in $V_R$ must occur to the right of $T(v)$.}
-\item{The symbol $\langle o \cdot d \rangle$ is formed by concatenating two different markers: (1) a start symbol of type $o$ indicating the beginning of the sequence of tokens affected by the operation of type $o$, and (2) a marker indicating $d$, the dependency type governing $T(v)$. The symbol $\langle / o \cdot d \rangle$ is formed identically, only the marker indicates the end of the sequence.\footnote{BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.}}
+\item{The symbol $\langle o \cdot d \rangle$ is formed by concatenating two different markers: (1) a start symbol of type $o$, indicating the beginning of the sequence of tokens affected by the operation $o$, and (2) a marker indicating $d$, the dependency type governing $T(v)$. The symbol $\langle / o \cdot d \rangle$ is formed identically, only the marker indicates the end of the sequence.\footnote{BracketTags allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.}}
 \end{itemize}
 
 For instance, \ahcomment{Talk thru a whole example. Rewrite} in Figure \ref{f:example}, the BracketTag \textsc{Prune}--nmod indicates that (1) $T(v)$ is governed by an \rdep{nmod} relation, and (2) the next tokens \textsc{Prune}
@@ -182,12 +182,11 @@ For instance, \ahcomment{Talk thru a whole example. Rewrite} in Figure \ref{f:ex
 
 \ahcomment{TODO details: class weighting optimizer, stopping criteria,embeddings,tuning:what is tuned}
 
-\textbf{Architecture and training} Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we predict the binary, oracle operation using a Bi-LSTM and a max pooling layer. We pass the output of the max pooling layer to one of two, separate feedforward layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. 
-%which predict $p(y=1 | \bm{x})$
+\textbf{Architecture and training} Following recent work on LSTM classification for sentence-level tasks \cite{D17-1070}, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, an affine layer and a non-linearity. We maintain two separate affine and non-linear layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. Figure \ref{f:example} shows the architecture of the network.
 
-, which we pass through a sigmoid and then softmax layer to predict the oracle operation. 
+We initialize with GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with Adam. The hyperaramters are \ahcomment{TODO}. We do not update symbol vectors during training. 
 
-We initialize with GloVe embeddings \cite{pennington2014glove} which we do not update during training. We train with cross entropy loss. We tune hyperparameters manually, by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high accuracy on the validation set. 
+We tune hyperparameters manually, by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high accuracy on the validation set. 
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
