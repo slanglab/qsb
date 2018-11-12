@@ -61,31 +61,32 @@
 \maketitle
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new, linguistically-informed compression method which can accommodate such requirements.  Our method is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based compression method which can accommodate such requirements.  Our method is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings under constraints.
 \end{abstract}
 
-\section{General comment}
-Nobody cares about Rookie. Make the argument for open source search engines. 
+%\section{General comment}
+%Nobody cares about Rookie. Make the argument for open source search engines. 
 
 \ahcomment{TODO: Brendan's email}
 
-\section{Unknowns}
+%\section{Unknowns}
 
-\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess. Future work?}
+%\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess. Future work?}
 
-\ahcomment{How to use data from Brian, if at all. It uses dep type info + LM info + worker info. We use dep type info already. Can we use LM info?}
+%\ahcomment{How to use data from Brian, if at all. It uses dep type info + LM info + worker info. We use dep type info already. Can we use LM info?}
 
 \section{Introduction}
 
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface; and often must contain a user's query term. An example of such a compression is shown in Figure \ref{f:qf}.
-
-This study examines the compression problem with length and lexical constraints: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
-
 \begin{figure}[htb!]
-\includegraphics[width=9cm]{qf.pdf}
+\includegraphics[width=8cm]{qf.pdf}
 \caption{Search interfaces often require compressions with length and lexical constraints. In this case, the user has queried for ``Pemex contracts"; a system returns a related link and a short compression which contains the query terms}
 \label{f:qf}
 \end{figure}
+
+This study examines the compression problem with length and lexical constraints: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
+
+
 
 
 \begin{table*}[htb!]
