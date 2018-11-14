@@ -9,6 +9,7 @@ from tqdm import tqdm
 from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
+from comp_experiments_f1.algorithms import NeuralNetworkPredictThenPrune
 from comp_experiments_f1.algorithms import FA2013Compressor
 
 
@@ -36,6 +37,15 @@ def get_model(config):
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
         return FA2013Compressor(weights=weights)
+
+    if config['algorithm'] == "predict-then-prune":
+        query_focused = config["query"]
+        model_name = config["model_name"]
+        predictor_name = config["predictor_name"]
+        return NeuralNetworkPredictThenPrune(archive_loc=config["archive_loc"],
+                                             query_focused=query_focused,
+                                             predictor_name=predictor_name,
+                                             model_name=model_name)
 
     assert "unknown" == "model"
 
