@@ -337,7 +337,7 @@ class NeuralNetworkPredictThenPrune:
             prune(g=state, v=vertex)
             prev_length = length
             length = self.get_char_length(state)
-            vertexes.remove(vertex)
+            vertexes.remove((vertex,prob))
         length = self.get_char_length(state)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in state["tokens"]]
