@@ -67,8 +67,6 @@ Traditional approaches to extractive sentence compression seek to reduce the len
 %\section{General comment}
 %Nobody cares about Rookie. Make the argument for open source search engines. 
 
-\ahcomment{TODO: Brendan's email}
-
 %\section{Unknowns}
 
 %\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess. Future work?}
@@ -83,6 +81,10 @@ Traditional study of extractive sentence compression seeks to create short, read
 \caption{Search interfaces often require compressions with length and lexical constraints. In this case, the user has queried for ``Pemex contracts"; a system returns a related link and a short compression which contains the query terms}
 \label{f:qf}
 \end{figure}
+
+\ahcomment{TODO: lower bound f1 w q}
+
+\ahcomment{TODO: f1 for the predict everything method}
 
 This study examines the compression problem with such length and lexical requirements: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
@@ -133,6 +135,22 @@ Like ILP-based methods, transition-based approaches can easily accommodate lexic
 
 We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence models that label tokens with a 1 or a 0 indicating if the token should be included in a summary. This approach is linear in the token length of a the input sequence. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be examined in future research.
 
+
+\begin{table*}[]
+\centering
+\begin{tabular}{llp{70mm}}
+\textbf{Operation} &             \textbf{Definition}                                                    &      \textbf{Description}    \\ \hline
+\textsc{Start}      & START $\Rightarrow ( V=\emptyset,  B=[v_1, v_2 ... v_n])$ & Initialize the buffer with the vertexes in the original sentence $s$, arranged breadth-first \\ \hline
+\textsc{Prune}              & $(V, [v|B]), v \in V,  \Rightarrow (V \setminus  T(v), B)$ & Remove the subtree rooted at $v$ in $s$ from $V$ \\  
+$\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v), B)$ & Insert the subtree rooted at $v$ in $s$ into $V$  \\ \hline
+\textsc{NoPrune}           & $(V, [v|B]), v \in V, \Rightarrow (V, B)$ & Don't remove the subtree rooted at $v$ from $V$  \\ 
+\textsc{NoInsert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
+\textsc{Stop}             & $ (V, B=[]) \Rightarrow$ STOP & Compression ends when the buffer is empty \\                                               
+\end{tabular}
+\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}. The appendix presents a complete, worked example.}
+\label{t:ops}
+\end{table*}
+
 \section{Transition-based sentence compression}\label{s:system}
 
 In this work, we present a new transition-based sentence compression system. We formally describe the system (\S\ref{s:formal}), present a method for generating oracle paths to gold standard shortenings (\S\ref{s:oracle}), and then detail a computational model of oracle compression (\S\ref{s:modeling}). We demonstrate how to use this model for constrained compression (\S\ref{s:transition}).
@@ -155,12 +173,6 @@ We identify the oracle path by executing  a sequence of operations. Let $(V_j, v
 
 Because it is only possible to prune $v_j$ if $v_j \in V$, and only possible to insert $v_j$ if $v_j \notin V$ (\S\ref{s:formal}), we interpret the oracle path as a sequence of binary decisions. If $v \in V$, the compression system must decide to execute $\textsc{Prune}$ or $\textsc{NoPrune}$. If $v \notin V$, it must decide to execute $\textsc{Insert}$ or $\textsc{NoInsert}$. We use this interpretation for modeling (\S\ref{s:modeling}).
 
-\begin{figure*}[htb!]
-\centering
-\includegraphics[width=.75\textwidth]{example.pdf}
-\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
-\label{f:example}
-\end{figure*}
 
 \subsection{Modeling}\label{s:modeling}
 
@@ -179,8 +191,18 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 \item{The symbol $\langle o \cdot d \rangle$ is formed by concatenating two different markers: (1) a start symbol of type $o$, indicating the beginning of the sequence of tokens affected by the operation $o$, and (2) a marker indicating $d$, the dependency type governing $T(v)$. For instance in the sequence shown in Figure \ref{f:example}, $\langle o, d \rangle$ is $\langle \textsc{Prune} \texttt{dobj} \rangle$. The symbol $\langle / o \cdot d \rangle$ is formed identically, only the marker indicates the end of the sequence.\footnote{The symbols $\langle {o \cdot d} \rangle$ allow us to encode some aspects of syntax trees using a vanilla LSTM \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}, without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.}}
 \end{itemize}
 
+
+\begin{figure*}[htb!]
+\centering
+\includegraphics[width=.75\textwidth]{example.pdf}
+\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
+\label{f:example}
+\end{figure*}
+
+
+
 For instance, in Figure \ref{f:example}, $\bm{x}$ ``shows'' the  effect of a proposed \textsc{Prune} of the subtree governed by $v=$\textit{risk}. Tokens in $V$ are shown in bold. The symbols, $\langle \textsc{Prune} \texttt{dobj} \rangle$  and $\langle / \textsc{Prune} \texttt{dobj} \rangle$ mark the start and end of the span of tokens in $T(v)$.
-\ahcomment{TODO details: class weighting optimizer, stopping criteria,tuning:what is tuned}
+\ahcomment{TODO details: class weighting, stopping criteria,tuning:what is tuned}
 
 Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and a non-linear activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. 
 
@@ -227,9 +249,11 @@ Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|
 
 \ahcomment{Better job evaluating this compression. How far do you get  by pruning}
 
+\ahcomment{Better job evaluating this compression. How far do you get  by heuristic?}
+
 \ahcomment{What is the lower bound on F1 from just guessing query tokens} 
 
-\ahcomment{Some algos discussed at meeting w/ brendan: iterative bfs w/ lowering epsilon, predict then prune, predict,prune, loop}
+\ahcomment{Some algos discussed at meeting w/ brendan: iterative bfs w/ lowering epsilon vs. predict then prunev vs. predict,prune, loop. get F1 for these.}
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
@@ -254,20 +278,6 @@ There are some important differences between our implementation and existing wor
 
 
 
-\begin{table*}[]
-\centering
-\begin{tabular}{llp{70mm}}
-\textbf{Operation} &             \textbf{Definition}                                                    &      \textbf{Description}    \\ \hline
-\textsc{Start}      & START $\Rightarrow ( V=\emptyset,  B=[v_1, v_2 ... v_n])$ & Initialize the buffer with the vertexes in the original sentence $s$, arranged breadth-first \\ \hline
-\textsc{Prune}              & $(V, [v|B]), v \in V,  \Rightarrow (V \setminus  T(v), B)$ & Remove the subtree rooted at $v$ in $s$ from $V$ \\  
-$\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v), B)$ & Insert the subtree rooted at $v$ in $s$ into $V$  \\ \hline
-\textsc{NoPrune}           & $(V, [v|B]), v \in V, \Rightarrow (V, B)$ & Don't remove the subtree rooted at $v$ from $V$  \\ 
-\textsc{NoInsert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
-\textsc{Stop}             & $ (V, B=[]) \Rightarrow$ STOP & Compression ends when the buffer is empty \\                                               
-\end{tabular}
-\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v$ is at the head of the buffer. $V$ is a subset of vertexes from the original sentence $s$. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. The \textsc{Prune} operation removes all tokens in $T(v)$ from $V$. The \textsc{Insert} operation adds all vertexes from $T(v)$ into $V$. If the compression system does not execute a \textsc{Prune} or \textsc{Insert}, $v$ is removed from the head of the buffer and $V$ is not modified. $B$ is initialized with all tokens from $s$ (arranged in breadth-first order) at the \textsc{Start} of compression. Once the buffer is empty, compression will \textsc{Stop} and all vertexes in $V$ are linearized in their original order. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}. The appendix presents a complete, worked example.}
-\label{t:ops}
-\end{table*}
 
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
 

@@ -215,7 +215,9 @@ class FA2013Compressor:
 
         output = run_model(transformed_s,
                            vocab=self.vocab,
-                           weights=self.weights, r=r)
+                           weights=self.weights,
+                           Q=original_s["q"],
+                           r=r)
 
         predicted_compression = [o['dependent'] for o in output["get_Xs"]]
         y_pred = get_pred_y(predicted_compression=predicted_compression,
@@ -223,4 +225,27 @@ class FA2013Compressor:
 
         return {"y_pred": y_pred,
                 "nops": -19999999  # whut to do here????
+                }
+
+
+class BaselineCompressor:
+
+    '''
+    This implements a baseline that just guesses the query terms
+    '''
+
+    def __init__(self):
+        pass
+
+    def predict(self, original_s):
+        '''
+        baseline prediction
+        '''
+
+        original_indexes = [_["index"] for _ in original_s["tokens"]]
+        y_pred = get_pred_y(predicted_compression=original_s["q"],
+                            original_indexes=original_indexes)
+
+        return {"y_pred": y_pred,
+                "nops": 0  # whut to do here????
                 }
