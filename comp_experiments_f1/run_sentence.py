@@ -28,11 +28,11 @@ def get_model(config):
                                              query_focused=query_focused,
                                              predictor_name=predictor_name,
                                              model_name=model_name)
-    if config["model"] == "nn-transition-based":
-        query_focused = config["query"]
-        return NeuralNetworkTransitionBFS(config["archive_loc"],
-                                          query_focused)
-    if config["model"] == "ilp":
+        if config["model"] == "nn-transition-based":
+            query_focused = config["query"]
+            return NeuralNetworkTransitionBFS(config["archive_loc"],
+                                              query_focused)
+    if config["algorithm"] == "ilp":
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
         return FA2013Compressor(weights=weights)
