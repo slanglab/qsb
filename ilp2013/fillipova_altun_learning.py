@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-N', nargs="?", default=None, type=int)
-    parser.add_argument('-epochs', nargs="?", default=100, type=int)
+    parser.add_argument('-epochs', nargs="?", default=7, type=int)
     parser.add_argument("-file", default="preproc/100k")
     args = parser.parse_args()
     vocab = get_all_vocabs()
