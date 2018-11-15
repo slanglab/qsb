@@ -26,9 +26,10 @@ def make_rando():
         dt = json.load(inf)
 
     fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
-    dt['model']['text_field_embedder']['pretrained_file'] = fn
-    dt['model']['text_field_embedder']['embedding_dim'] = inputd
-    dt["model"]["abstract_encoder"]["hidden_size"] = inputd
+    print(dt["model"]["text_field_embedder"]["tokens"])
+    dt['model']['text_field_embedder']["tokens"]['pretrained_file'] = fn
+    dt['model']['text_field_embedder']['tokens']['embedding_dim'] = inputd
+    dt["model"]["abstract_encoder"]["input_size"] = inputd
 
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(100, 1000)
     dt['model']["abstract_encoder"]['dropout'] = random.uniform(0, .1)
@@ -57,6 +58,8 @@ def make_rando():
 
     with open("/mnt/nfs/scratch1/ahandler/experiments/qsr/{}.json".format(uuid_ex), "w") as of:
         json.dump(dt, of)
+
+    print(dt)
 
 for i in range(100):
     make_rando()
