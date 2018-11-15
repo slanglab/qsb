@@ -1,12 +1,12 @@
-# pylint: disable=no-self-use,invalid-name
-from allennlp.common.testing import AllenNlpTestCase
-from allennlp.common.util import ensure_list
-#FiveSegReader
-from nn.models import TwoEmbedsClassifier
+# pylint: disable=invalid-name,protected-access
+from allennlp.common.testing import ModelTestCase
 
 
-class TestSemanticScholarDatasetReader(AllenNlpTestCase):
-    def test_read_from_file(self):
+class TwoEmbedsClassifier(ModelTestCase):
+    def setUp(self):
+        super(TwoEmbedsClassifier, self).setUp()
+        self.set_up_model('tests/fixtures/academic_paper_classifier.json',
+                          'tests/fixtures/s2_papers.jsonl')
 
-        reader = TwoEmbedsClassifier()
-        instances = ensure_list(reader.read('tests/fixtures/validation_3way.jsonl'))
+    def test_model_can_train_save_and_load(self):
+        self.ensure_model_can_train_save_and_load(self.param_file)
