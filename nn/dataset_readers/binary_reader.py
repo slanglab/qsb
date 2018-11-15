@@ -90,7 +90,7 @@ class SemanticScholarDatasetReader(DatasetReader):
 
 
 @DatasetReader.register("markup_5_segment_reader")
-class SemanticScholarDatasetReader(DatasetReader):
+class FiveSegReader(DatasetReader):
     """
     - Read in the fields of the markup and break it up into 5 fields
       This is to allow different embeddings matrixes for each of the fields,
