@@ -142,6 +142,7 @@ class TwoEmbedsClassifier(Model):
                 b1: Dict[str, torch.LongTensor],
                 b2: Dict[str, torch.LongTensor],
                 tv: Dict[str, torch.LongTensor],
+                sentence: Dict[str, torch.LongTensor], # dummy field. for allen bucketer
                 is_prune,
                 label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
