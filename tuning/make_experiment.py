@@ -40,7 +40,7 @@ def make_rando():
     layers = [1, 2, 3, 4, 5]
     random.shuffle(layers)
     num_layers = layers[0]
-    dt["abstract_encoder"]["num_layers"] = num_layers
+    dt["model"]["abstract_encoder"]["num_layers"] = num_layers
 
     x = random.uniform(2, 7)
 
