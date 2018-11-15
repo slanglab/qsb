@@ -20,6 +20,10 @@ for experiment in glob.glob(experiments):
             print(epoch_metric, epoch)
         with open(experiment + "/config.json", "r") as inf2:
             cf = json.load(inf2)
+        if cf["train_data_path"] == "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_3way.jsonl":
+            datasize = 1000000
+        else:
+            datasize = 100000
         stats.append(experiment)
         stats.append(epoch)
         stats.append(cf["model"]["abstract_encoder"]["num_layers"])
@@ -29,6 +33,7 @@ for experiment in glob.glob(experiments):
         stats.append(cf["trainer"]["optimizer"]["weight_decay"])
         stats.append(cf["trainer"]["optimizer"]["lr"])
         stats.append(cf['model']['text_field_embedder']['tokens']['embedding_dim'])
+        stats.append(datasize)
         stats.append(epoch_metric)
         out.append(stats)
 
@@ -40,6 +45,6 @@ with open("tuning/tuner.csv", "w") as of:
 
     csv_writer.writerow(["experiment", "epoch", "num_layers",
                          "dropout", "hidden_size", "dropout_ff",
-                         "weight_decay", "lr", "embed_dim", "score"])
+                         "weight_decay", "lr", "embed_dim", "datasize", "score"])
 
     csv_writer.writerows(out)
