@@ -1,1 +1,1 @@
-from nn.models.academic_paper_classifier import AcademicPaperClassifier
+from nn.models.two_embed_fields import *
