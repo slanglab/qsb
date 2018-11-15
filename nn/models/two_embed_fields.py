@@ -163,20 +163,24 @@ class TwoEmbedsClassifier(Model):
         #abstract_mask = util.get_text_field_mask(sentence)
         #encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
 
-        b1 = self.symbol_field_embedder(b1)
-        b2 = self.symbol_field_embedder(b2)
-        vl = self.text_field_embedder(vl)
-        vr = self.text_field_embedder(vr)
-        tv = self.text_field_embedder(tv)
+        b1_embed = self.symbol_field_embedder(b1)
+        b2_embed = self.symbol_field_embedder(b2)
+        vl_embed = self.text_field_embedder(vl)
+        vr_embed = self.text_field_embedder(vr)
+        tv_embed = self.text_field_embedder(tv)
 
         # TODO => lookup and concatenate!
 
         #get_text_field_mask's input is => text_field_tensors: Dict[str, torch.Tensor]
 
         # guessing on how to merge all of these TODO
-        sentence = torch.cat([vl, b1, tv, b2, vr], dim=-1)
 
-        embedded_abstract = torch.cat([vl, b1, tv, b2, vr], dim=-1)
+        # typing.Dict[str, torch.Tensor]
+        sentence = {**b1, **b2, **vl, **vr, **tv}
+
+        embedded_abstract = torch.cat([vl_embed, b1_embed,
+                                       tv_embed, b2_embed,
+                                       vr_embed], dim=-1)
 
         abstract_mask = util.get_text_field_mask(sentence)
         encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
