@@ -174,7 +174,7 @@ class TwoEmbedsClassifier(Model):
         #get_text_field_mask's input is => text_field_tensors: Dict[str, torch.Tensor]
 
         # guessing on how to merge all of these TODO
-        sentence = {**b1, **b2, **vl, **vr, **tv}
+        sentence = torch.cat([vl, b1, tv, b2, vr], dim=-1)
 
         embedded_abstract = torch.cat([vl, b1, tv, b2, vr], dim=-1)
 
