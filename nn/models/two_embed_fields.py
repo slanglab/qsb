@@ -148,13 +148,6 @@ class TwoEmbedsClassifier(Model):
         """
         Parameters
         ----------
-        title : Dict[str, Variable], required
-            The output of ``TextField.as_array()``.
-        abstract : Dict[str, Variable], required
-            The output of ``TextField.as_array()``.
-        label : Variable, optional (default = None)
-            A variable representing the label for each instance in the batch.
-
         Returns
         -------
         An output dictionary consisting of:

@@ -185,8 +185,8 @@ class FiveSegReader(DatasetReader):
         faux_sentence = tokenized_vl + tokenized_vr + tokenized_tv + tokenized_bracket2 + tokenized_bracket1
         faux_sentence = TextField(faux_sentence, self._token_indexers)
 
-        fields = {'v1': vl_field,
-                  'v2': vr_field,
+        fields = {'vl': vl_field,
+                  'vr': vr_field,
                   'tv': tv_field,
                   'b1': bracket1_field,
                   'b2': bracket2_field,
