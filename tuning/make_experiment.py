@@ -20,6 +20,7 @@ def make_rando():
 
     inputd = [300, 100]
     random.shuffle(inputd)
+    inputd = inputd[0]
 
     with open(experiment, "r") as inf:
         dt = json.load(inf)
