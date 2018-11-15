@@ -142,10 +142,10 @@ class FiveSegReader(DatasetReader):
                     is_prune = False
 
                 before, after = [ino for ino,i in 
-                                 enumerate(sentence["tokens"]) if "OOV" in i["word"] 
+                                 enumerate(paper_json["tokens"]) if "OOV" in i["word"] 
                                  and "proposed" in i["word"]]
 
-                toks = sentence["tokens"]
+                toks = paper_json["tokens"]
                 toks.sort(key=lambda x:x["index"])
 
                 def stringify(seq):
