@@ -4,6 +4,9 @@ python 3
 import json
 import argparse
 import pickle
+import logging
+
+logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 from tqdm import tqdm
 from sklearn.metrics import f1_score
@@ -61,21 +64,26 @@ if __name__ == "__main__":
         config = json.load(inf)
 
     if args.fast:
-        range_ = range(0, 100)
+        max_sentences = 100
     else:
-        range_ = range(0, 1000)
+        max_sentences = 1000 
 
     model = get_model(config)
     with open("preproc/lstm_validation_sentences_3way.jsonl", "r") as inf:
         no_compression = 0
         for vno, _ in tqdm(enumerate(inf)):
-            if vno in range_:
+            if vno < max_sentences:
                 sentence = json.loads(_)
                 sentence["tokens"] = strip_tags(sentence["tokens"])
                 orig_ix = sentence["original_ix"]
                 y_true = [_ in sentence["compression_indexes"] for
                           _ in orig_ix]
-                out = model.predict(sentence)
+                try:
+                    out = model.predict(sentence)
+                except: 
+                    print("ERROR!")
+                    logger.info("ERROR!:{},{}".format(config["algorithm"],vno))
+                    out = {"y_pred":"could not find a compression", "nops":-100000}
                 y_pred = out["y_pred"]
                 ops = out["nops"]
                 if out["y_pred"] == "could not find a compression":
