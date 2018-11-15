@@ -180,11 +180,17 @@ class FiveSegReader(DatasetReader):
         bracket1_field = TextField(tokenized_bracket1, self._token_indexers)
         bracket2_field = TextField(tokenized_bracket2, self._token_indexers)
 
+        # this field is just a hack for the allennlp iterator, which groups by "sentence" :)
+        # the only point of this sentence field is to trick the iterator into grouping by token number
+        faux_sentence = tokenized_vl + tokenized_vr + tokenized_tv + tokenized_bracket2 + tokenized_bracket1
+        faux_sentence = TextField(faux_sentence, self._token_indexers)
+
         fields = {'v1': vl_field,
                   'v2': vr_field,
                   'tv': tv_field,
                   'b1': bracket1_field,
-                  'b2': bracket2_field
+                  'b2': bracket2_field,
+                  'sentence': faux_sentence
                   }
         fields["is_prune"] = MetadataField(is_prune)
         if label is not None:
