@@ -1,11 +1,11 @@
 {
   "dataset_reader": {
-    "type": "binary_reader"
+    "type": "markup_5_segment_reader"
   },
-  "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/mini.jsonl",
-  "validation_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/mini.jsonl",
+  "train_data_path": "/home/ahandler/qsr/tests/fixtures/mini.jsonl",
+  "validation_data_path": "/home/ahandler/qsr/tests/fixtures/mini.jsonl",
   "model": {
-    "type": "split_classifier",
+    "type": "two_embeds_classifier",
     "text_field_embedder": {
       "tokens": {
         "type": "embedding",
@@ -57,7 +57,7 @@
     },
     "num_epochs": 3,
     "patience": 10,
-    "cuda_device": 0,
+    "cuda_device": -1,
     "grad_clipping": 5.0,
     "validation_metric": "+accuracy"
   }
