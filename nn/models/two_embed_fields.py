@@ -19,8 +19,8 @@ from allennlp.training.metrics import CategoricalAccuracy
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
-@Model.register("split_classifier")
-class SplitClassifier(Model):
+@Model.register("two_embeds_classifier")
+class TwoEmbedsClassifier(Model):
     """
     This ``Model`` performs text classification for an academic paper.  We assume we're given a
     title and an abstract, and we predict some output label.
@@ -48,14 +48,16 @@ class SplitClassifier(Model):
     """
     def __init__(self, vocab: Vocabulary,
                  text_field_embedder: TextFieldEmbedder, 
+                 symbol_field_embedder: TextFieldEmbedder,
                  abstract_encoder: Seq2SeqEncoder,
                  classifier_feedforward_i: FeedForward,
                  classifier_feedforward_p: FeedForward,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
-        super(SplitClassifier, self).__init__(vocab, regularizer)
+        super(TwoEmbedsClassifier, self).__init__(vocab, regularizer)
 
         self.text_field_embedder = text_field_embedder
+        self.symbol_field_embedder = symbol_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
         self.labelv = self.vocab.get_index_to_token_vocabulary("labels")
         self.abstract_encoder = abstract_encoder
@@ -135,7 +137,11 @@ class SplitClassifier(Model):
 
     @overrides
     def forward(self,  # type: ignore
-                sentence: Dict[str, torch.LongTensor],
+                vl: Dict[str, torch.LongTensor],
+                vr: Dict[str, torch.LongTensor],
+                b1: Dict[str, torch.LongTensor],
+                b2: Dict[str, torch.LongTensor],
+                tv: Dict[str, torch.LongTensor],
                 is_prune,
                 label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
@@ -159,7 +165,25 @@ class SplitClassifier(Model):
             A scalar loss to be optimised.
         """
 
-        embedded_abstract = self.text_field_embedder(sentence)
+        #embedded_abstract = self.text_field_embedder(sentence)
+        #abstract_mask = util.get_text_field_mask(sentence)
+        #encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
+
+        b1 = self.symbol_field_embedder(b1)
+        b2 = self.symbol_field_embedder(b2)
+        vl = self.text_field_embedder(vl)
+        vr = self.text_field_embedder(vr)
+        tv = self.text_field_embedder(tv)
+
+        # TODO => lookup and concatenate!
+
+        #get_text_field_mask's input is => text_field_tensors: Dict[str, torch.Tensor]
+
+        # guessing on how to merge all of these TODO
+        sentence = {**b1, **b2, **vl, **vr, **tv}
+
+        embedded_abstract = torch.cat([vl, b1, tv, b2, vr], dim=-1)
+
         abstract_mask = util.get_text_field_mask(sentence)
         encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
 
