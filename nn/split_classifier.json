@@ -2,7 +2,7 @@
   "dataset_reader": {
     "type": "binary_reader"
   },
-  "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_3way.jsonl",
+  "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_100k.jsonl",
   "validation_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_validation_3way.jsonl",
   "model": {
     "type": "split_classifier",
