@@ -76,7 +76,7 @@ def get_encoded_tokens(label, state, original_s, node):
     return encoded_tokens
 
 
-def save_split_3way(fn, data, cap=None):
+def save_split(fn, data, cap=None, keep_deps=False):
     '''
     note, avoiding pulling a whole big corpus into memory
     inputs:
@@ -102,7 +102,11 @@ def save_split_3way(fn, data, cap=None):
                                                                 state,
                                                                 original_s,
                                                                 node)
-                        of.write(json.dumps(instance) + "\n")
+                        # for faster load on gypsum
+                        write_this = copy.deepcopy(instance)
+                        if not keep_deps:
+                            del write_this["basicDependencies"]
+                        of.write(json.dumps(write_this) + "\n")
 
                         # update state if relevant
                         if instance["label"] == "p":
@@ -165,11 +169,11 @@ if __name__ == "__main__":
 
     N = 2000000
 
-    save_split_3way('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
+    save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
         
     N = 100000
 
-    save_split_3way('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
+    save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
-    save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)
+    save_split('preproc/lstm_validation_3way.jsonl', val, cap=10000, keep_deps=True)
     just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val, cap=10000)
