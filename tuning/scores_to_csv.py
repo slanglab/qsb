@@ -21,7 +21,7 @@ for experiment in glob.glob(experiments):
         with open(experiment + "/config.json", "r") as inf2:
             cf = json.load(inf2)
         #print(cf["train_data_path"])
-        
+
         try:
             datasize = cf["train_data_path"].split("_").pop().replace('.jsonl', '')
         except:
@@ -31,10 +31,11 @@ for experiment in glob.glob(experiments):
                 datasize = 100000
         stats.append(experiment)
         stats.append(epoch)
+        stats.append(cf["iterator"]["batch_size"])
         stats.append(cf["model"]["abstract_encoder"]["num_layers"])
         stats.append(cf["model"]["abstract_encoder"]["dropout"])
         stats.append(cf["model"]["abstract_encoder"]["hidden_size"])
-        stats.append(cf["model"]["classifier_feedforward_i"]["dropout"]) 
+        stats.append(cf["model"]["classifier_feedforward_i"]["dropout"])
         stats.append(cf["trainer"]["optimizer"]["weight_decay"])
         stats.append(cf["trainer"]["optimizer"]["lr"])
         stats.append(cf['model']['text_field_embedder']['tokens']['embedding_dim'])
@@ -48,7 +49,7 @@ out.sort(key=lambda x:x[-1], reverse=True)
 with open("tuning/tuner.csv", "w") as of:
     csv_writer = csv.writer(of)
 
-    csv_writer.writerow(["experiment", "epoch", "num_layers",
+    csv_writer.writerow(["experiment", "epoch", "batch_size", "num_layers",
                          "dropout", "hidden_size", "dropout_ff",
                          "weight_decay", "lr", "embed_dim", "datasize", "score"])
 
