@@ -52,6 +52,8 @@ def make_rando():
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
+    dt['iterator']['batch_size'] = random.uniform(50, 150)
+
     import uuid
 
     uuid_ex = str(uuid.uuid1())[0:8]
