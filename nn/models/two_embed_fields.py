@@ -180,7 +180,7 @@ class TwoEmbedsClassifier(Model):
 
         embedded_abstract = torch.cat([vl_embed, b1_embed,
                                        tv_embed, b2_embed,
-                                       vr_embed], dim=-1)
+                                       vr_embed], dim=1)
 
         abstract_mask = util.get_text_field_mask(sentence)
         encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)

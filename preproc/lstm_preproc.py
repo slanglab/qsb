@@ -88,6 +88,8 @@ def save_split_3way(fn, data, cap=None):
     with open(CORPUS, 'r') as inf:
         with open(fn, 'w') as of:
             for ino, original_s in enumerate(inf):
+                if ino % 100000 == 0:
+                    print ino,
                 if cap is not None and total_so_far > cap:
                     break  # early stopping
                 if ino in data:
@@ -161,8 +163,13 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    N = 100
+    N = 2000000
 
-    save_split_3way('preproc/lstm_train_3way.jsonl', train, cap=N)
+    save_split_3way('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
+        
+    N = 100000
+
+    save_split_3way('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
+
     save_split_3way('preproc/lstm_validation_3way.jsonl', val, cap=10000)
     just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val, cap=10000)
