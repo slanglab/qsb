@@ -48,9 +48,9 @@ def make_rando():
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(3, 8)
+    x = random.uniform(3, 10)
 
-    dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(3, 10)
+    dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
     import uuid
 
