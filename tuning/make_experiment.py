@@ -22,6 +22,11 @@ def make_rando():
     random.shuffle(inputd)
     inputd = inputd[0]
 
+    nonlinearity = ["sigmoid", "relu", "tanh"]
+    random.shuffle(nonlinearity)
+
+    nonlinearity = nonlinearity[0]
+
     with open(experiment, "r") as inf:
         dt = json.load(inf)
 
@@ -35,9 +40,11 @@ def make_rando():
     dt['model']["abstract_encoder"]['dropout'] = random.uniform(0, .1)
     dt["model"]['classifier_feedforward_i']["dropout"] = random.uniform(.2, .7)
     dt["model"]['classifier_feedforward_i']["input_dim"] = dt['model']["abstract_encoder"]["hidden_size"] * 2
+    dt["model"]['classifier_feedforward_i']["activations"] = [nonlinearity]
 
     dt["model"]['classifier_feedforward_p']["dropout"] = dt["model"]['classifier_feedforward_i']["dropout"]
     dt["model"]['classifier_feedforward_p']["input_dim"] = dt['model']["classifier_feedforward_i"]["input_dim"]
+    dt["model"]['classifier_feedforward_p']["activations"] = [nonlinearity]
 
     layers = [1, 2, 3, 4, 5]
     random.shuffle(layers)
@@ -52,7 +59,7 @@ def make_rando():
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
-    dt['iterator']['batch_size'] = random.uniform(50, 150)
+    dt['iterator']['batch_size'] = int(random.uniform(50, 150))
 
     import uuid
 
