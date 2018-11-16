@@ -20,10 +20,15 @@ for experiment in glob.glob(experiments):
             print(epoch_metric, epoch)
         with open(experiment + "/config.json", "r") as inf2:
             cf = json.load(inf2)
-        if cf["train_data_path"] == "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_3way.jsonl":
-            datasize = 1000000
-        else:
-            datasize = 100000
+        #print(cf["train_data_path"])
+        
+        try:
+            datasize = cf["train_data_path"].split("_").pop().replace('.jsonl', '')
+        except:
+            if cf["train_data_path"] == "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_3way.jsonl":
+                datasize = 1000000
+            else:
+                datasize = 100000
         stats.append(experiment)
         stats.append(epoch)
         stats.append(cf["model"]["abstract_encoder"]["num_layers"])
