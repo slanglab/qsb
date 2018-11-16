@@ -44,11 +44,11 @@ def make_rando():
     num_layers = layers[0]
     dt["model"]["abstract_encoder"]["num_layers"] = num_layers
 
-    x = random.uniform(2, 5)
+    x = random.uniform(3, 6)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(3, 7)
+    x = random.uniform(3, 8)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
