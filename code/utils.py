@@ -2,6 +2,7 @@ import re
 from code.treeops import dfs
 from collections import Counter
 from code.treeops import get_walk_from_root
+from charguana import get_charset
 
 
 def get_parent(v, jdoc):
@@ -134,7 +135,12 @@ def get_labeled_toks(node, jdoc, op_proposed):
         return labeled_toks
 
     dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
-    START = "β" + ud2symbols[dep] + op_proposed   # BETA is BracketStart
+    
+    #learning curve seems to be capping at 4M examples. but if you add more, uncomment this line to fill any unseen deps before rerunning.    
+    #with open("preproc/ud.txt", "a") as of:
+    #    of.write(dep + "\n")
+    
+    START = "β" + ud2symbols[dep]  +op_proposed   # BETA is BracketStart
     END = "γ" + ud2symbols[dep] + op_proposed  # gamma is BracketEnd
     toks = [i for i in jdoc["tokens"]]
     cut = dfs(g=jdoc, hop_s=node, D=[])
