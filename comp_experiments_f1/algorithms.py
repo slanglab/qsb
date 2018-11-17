@@ -136,8 +136,9 @@ class NeuralNetworkTransitionGreedy:
 
 class FMCSearch:
     def __init__(self, archive_loc, model_name,
-                 predictor_name, query_focused=True):
+                 predictor_name,nsamples):
         assert type(archive_loc) == str
+        self.nsamples = nsamples
         self.predictor = NeuralNetworkTransitionGreedy(archive_loc,
                                                        model_name,
                                                        predictor_name,
@@ -145,25 +146,28 @@ class FMCSearch:
 
     def run_one(self, jdoc_sentence):
         jdoc_sentence = copy.deepcopy(jdoc_sentence)
-        state = self.init_state(jdoc_sentence)
-        length = self.get_char_length(state)
+        state = self.predictor.init_state(jdoc_sentence)
+        length = self.predictor.get_char_length(state)
         orig_toks = jdoc_sentence["original_ix"]
         score = 0
         nops = 0
         prunes = 0
         while length > jdoc_sentence["r"]:
-            v2prob = self.predictor.predict_vertexes(self, jdoc_sentence, state)
+            v2prob = self.predictor.predict_vertexes(jdoc_sentence, state)
             nops += len(v2prob)
             prunes += 1
             total_probability = sum(v2prob.values())
+
+            # list on dict keys/vals returns in insertion order, i.e. consistent order
             distribution_ops = np.asarray([(p/total_probability) for
-                                          p in v2prob.values()])
+                                          p in list(v2prob.values())])
             # probability over ## indexes
             pick = np.random.choice(len(v2prob), size=None, p=distribution_ops)
-            vertex = v2prob.keys()[pick]
+            vertex = list(v2prob.keys())[pick]
             prune(g=state, v=vertex)
             score += log(v2prob[vertex], 10)
-
+            length = self.predictor.get_char_length(state)
+        
         remaining_toks = [_["index"] for _ in state["tokens"]]
 
         return {"score": score,
@@ -173,7 +177,7 @@ class FMCSearch:
                 }
 
     def predict(self, jdoc):
-        options = [self.run_one(jdoc) for i in range(self.samples)]
+        options = [self.run_one(jdoc) for i in range(self.nsamples)]
         options.sort(key=lambda x: x["score"], reverse=True)
         return options[0]
 

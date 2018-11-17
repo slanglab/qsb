@@ -39,8 +39,7 @@ def get_model(config):
         query_focused = config["query"]
         model_name = config["model_name"]
         predictor_name = config["predictor_name"]
-        return FMCSearch(archive_loc=config["archive_loc"],
-                         query_focused=query_focused,
+        return FMCSearch(archive_loc=config["archive_loc"], 
                          predictor_name=predictor_name,
                          model_name=model_name,
                          nsamples=config["nsamples"])

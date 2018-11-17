@@ -88,8 +88,6 @@ def save_split(fn, data, cap=None, keep_deps=False):
     with open(CORPUS, 'r') as inf:
         with open(fn, 'w') as of:
             for ino, original_s in enumerate(inf):
-                if ino % 100000 == 0:
-                    print ino,
                 if cap is not None and total_so_far > cap:
                     break  # early stopping
                 if ino in data:
