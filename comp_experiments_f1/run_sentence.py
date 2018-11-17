@@ -11,6 +11,7 @@ from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
 from comp_experiments_f1.algorithms import NeuralNetworkPredictThenPrune
 from comp_experiments_f1.algorithms import FA2013Compressor
+from comp_experiments_f1.algorithms import FMCSearch
 
 
 def strip_tags(tokens):
@@ -33,6 +34,17 @@ def get_model(config):
             query_focused = config["query"]
             return NeuralNetworkTransitionBFS(config["archive_loc"],
                                               query_focused)
+
+    if config["algorithm"] == "fmcsearch":
+        query_focused = config["query"]
+        model_name = config["model_name"]
+        predictor_name = config["predictor_name"]
+        return FMCSearch(archive_loc=config["archive_loc"],
+                         query_focused=query_focused,
+                         predictor_name=predictor_name,
+                         model_name=model_name,
+                         nsamples=config["nsamples"])
+
     if config["algorithm"] == "ilp":
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
@@ -93,8 +105,6 @@ if __name__ == "__main__":
                         print("***")
                         print(" ".join([o["word"] for o in sentence["tokens"]]))
                         print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"]) if y_pred[ino]]))
-                print(vno)
-                print(f1)
                 assert f1 <= 1 and f1 >= 0
                 config["sentence{}".format(vno)] = {'f1': f1,
                                                     "nops": ops,

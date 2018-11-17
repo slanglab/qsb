@@ -134,7 +134,7 @@ class NeuralNetworkTransitionGreedy:
                     }
 
 
-class BeamSearch:
+class FMCSearch:
     def __init__(self, archive_loc, model_name,
                  predictor_name, query_focused=True):
         assert type(archive_loc) == str
@@ -172,8 +172,8 @@ class BeamSearch:
                 "prunes": prunes
                 }
 
-    def predict(self, jdoc, N):
-        options = [self.run_one(jdoc) for i in range(N)]
+    def predict(self, jdoc):
+        options = [self.run_one(jdoc) for i in range(self.samples)]
         options.sort(key=lambda x: x["score"], reverse=True)
         return options[0]
 
