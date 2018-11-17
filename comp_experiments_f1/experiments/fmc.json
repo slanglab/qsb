@@ -5,5 +5,5 @@
   "predictor_name": "split_classifier",
   "model_name": "split_classifier",
   "query": true,
-  "nsamples":5
+  "nsamples":25
 }
