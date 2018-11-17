@@ -78,6 +78,10 @@ if __name__ == "__main__":
                 out = model.predict(sentence)
                 y_pred = out["y_pred"]
                 ops = out["nops"]
+                if "prunes" in out:
+                    prunes = out["prunes"]
+                else:
+                    prunes = -999999
                 if out["y_pred"] == "could not find a compression":
                     f1 = 0.0
                     no_compression += 1
@@ -91,6 +95,7 @@ if __name__ == "__main__":
                         print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"]) if y_pred[ino]]))
                 config["sentence{}".format(vno)] = {'f1': f1,
                                                     "nops": ops,
+                                                    "prunes": prunes,
                                                     "y_pred": y_pred,
                                                     "y_true": y_true}
 
