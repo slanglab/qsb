@@ -13,8 +13,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
         for k, v in dt.items():
             if "sentence" in k:
                 results[dt["algorithm"]]["f1"].append(v["f1"])
-                results[dt["algorithm"]]["nops"].append(v["nops"])
-                results[dt["algorithm"]]["f1"].append(v["prunes"])
+                results[dt["algorithm"]]["nops"].append(v["nops"]) 
                 f1s_prunes.append((v["f1"], v["prunes"]))
             results[dt['algorithm']]["no_compression"] = dt["no_compression"]
 
