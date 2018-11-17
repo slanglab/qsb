@@ -45,8 +45,7 @@ def make_rando():
 
     if elmo:
         dt["dataset_reader"]["token_indexers"] = tok_indexers
-        dt["text_field_embedder"] = {}
-        dt["text_field_embedder"]['elmo'] = elmo_vectors
+        dt["model"]["text_field_embedder"]['elmo'] = elmo_vectors
 
     fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
     print(dt["model"]["text_field_embedder"]["tokens"])
