@@ -9,7 +9,6 @@ from code.treeops import get_walk_from_root
 from code.treeops import extract_for_state
 from collections import Counter
 from code.utils import get_labeled_toks
-from charguana import get_charset
 
 PP = "π"  # "proposedprune"
 PE = "ε"  # 'proposedextract'
@@ -153,7 +152,7 @@ if __name__ == "__main__":
         for _ in inf:
             c += 1
 
-    c = range(c)
+    c = list(range(c))
     random.shuffle(c)
 
     split_ix = int(len(c) * PCT_TRAIN)
