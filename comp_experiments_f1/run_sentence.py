@@ -93,6 +93,9 @@ if __name__ == "__main__":
                         print("***")
                         print(" ".join([o["word"] for o in sentence["tokens"]]))
                         print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"]) if y_pred[ino]]))
+                print(vno)
+                print(f1)
+                assert f1 <= 1 and f1 >= 0
                 config["sentence{}".format(vno)] = {'f1': f1,
                                                     "nops": ops,
                                                     "prunes": prunes,
