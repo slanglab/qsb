@@ -9,9 +9,10 @@ from code.treeops import get_walk_from_root
 from code.treeops import extract_for_state
 from collections import Counter
 from code.utils import get_labeled_toks
+from charguana import get_charset
 
-PP = "proposedprune"
-PE = 'proposedextract'
+PP = "π"  # "proposedprune"
+PE = "ε"  # 'proposedextract'
 
 
 def get_root(w):
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     N = 2000000
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
-        
+
     N = 100000
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)

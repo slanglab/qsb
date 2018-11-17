@@ -111,14 +111,31 @@ def get_NER_query(jdoc):
     return out
 
 
+def getUD2symbols():
+    '''
+    elmo does character-based representation, 
+    so represent the OOV symbols w/ non english chars
+    '''
+    katakana = list(get_charset('katakana'))
+    out = {}
+    with open("preproc/ud.txt", "r") as inf:
+        for lno, ln in enumerate(inf):
+            ln = ln.replace("\n", "")
+            out[ln] = katakana[lno]
+    return out
+
+
+ud2symbols = getUD2symbols()
+
+
 def get_labeled_toks(node, jdoc, op_proposed):
     if len(jdoc["tokens"]) == 0:
-        labeled_toks = [{"word": "SOS", "index": -1000},{"word": "EOS", "index":1000}]
+        labeled_toks = [{"word": "α", "index": -1000},{"word": "Ω", "index":1000}]
         return labeled_toks
-    
+
     dep = [_["dep"] for _ in jdoc["basicDependencies"] if _["dependent"] == node][0]
-    START = "OOVSTART" + dep + op_proposed
-    END = "OOVEND" + dep + op_proposed
+    START = "β" + ud2symbols[dep] + op_proposed   # BETA is BracketStart
+    END = "γ" + ud2symbols[dep] + op_proposed  # gamma is BracketEnd
     toks = [i for i in jdoc["tokens"]]
     cut = dfs(g=jdoc, hop_s=node, D=[])
     cut.sort()
@@ -129,14 +146,14 @@ def get_labeled_toks(node, jdoc, op_proposed):
     #assert len(cut) == len(range(mint, maxt + 1))
 
     # the indexes are added w/ +.5 and -.5 so toks get sorted in right order downstream
-    labeled_toks = [{"word": "SOS", "index": -1000}]
+    labeled_toks = [{"word": "α", "index": -1000}] # alpha is SOS tag
     for counter, t in enumerate(toks):
         if t["index"] == mint:
             labeled_toks.append({"word": START, "index": t["index"] - .5})
         labeled_toks.append({"word": t["word"], "index": t["index"]})
         if t["index"] == maxt:
             labeled_toks.append({"word": END, "index": t["index"] + .5})
-    labeled_toks = labeled_toks + [{"word": "EOS", "index": 1000}]
+    labeled_toks = labeled_toks + [{"word": "Ω", "index": 1000}] # omega is EOS tag
     labeled_toks.sort(key=lambda x: float(x["index"]))
     return labeled_toks
 
