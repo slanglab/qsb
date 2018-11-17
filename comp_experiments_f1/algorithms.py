@@ -16,6 +16,7 @@ from code.treeops import dfs
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
+from math import log
 import numpy as np
 import copy
 import nn
@@ -83,16 +84,9 @@ class NeuralNetworkTransitionGreedy:
                 best = v
         return best
 
-    def predict(self, jdoc):
-        '''
-        return a compression that preserves q and respects r
-        '''
-        prev_length = 0
-        length = self.get_char_length(jdoc)
-        orig_toks = jdoc["original_ix"]
-        nops = 0
+    def init_state(self, jdoc):
+        '''init to the governing subtree'''
         topv = self.heuristic_extract(jdoc)
- 
         if jdoc["q"] != []:
             short_tree = dfs(g=jdoc, hop_s=topv, D=[])
             toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
@@ -102,6 +96,18 @@ class NeuralNetworkTransitionGreedy:
             state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         else:
             state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
+        return state
+
+    def predict(self, jdoc):
+        '''
+        return a compression that preserves q and respects r
+        '''
+        prev_length = 0
+        length = self.get_char_length(jdoc)
+        orig_toks = jdoc["original_ix"]
+        nops = 0
+
+        state = self.init_state(jdoc)
         prunes = 0
         while length != prev_length and length > int(jdoc["r"]):
             prunes += 1
@@ -114,9 +120,9 @@ class NeuralNetworkTransitionGreedy:
             vertex, prob = vertexes[0]
             prune(g=state, v=vertex)
             prev_length = length
-            length = self.get_char_length(state) 
+            length = self.get_char_length(state)
         length = self.get_char_length(state)
-        if length <= int(jdoc["r"]): 
+        if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in state["tokens"]]
             return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                     "nops": nops,
@@ -128,6 +134,113 @@ class NeuralNetworkTransitionGreedy:
                     }
 
 
+class BeamSearch:
+    def __init__(self, archive_loc, model_name,
+                 predictor_name, query_focused=True):
+        assert type(archive_loc) == str
+        self.predictor = NeuralNetworkTransitionGreedy(archive_loc,
+                                                       model_name,
+                                                       predictor_name,
+                                                       query_focused=True)
+
+    def run_one(self, jdoc_sentence):
+        jdoc_sentence = copy.deepcopy(jdoc_sentence)
+        state = self.init_state(jdoc_sentence)
+        length = self.get_char_length(state)
+        orig_toks = jdoc_sentence["original_ix"]
+        score = 0
+        nops = 0
+        prunes = 0
+        while length > jdoc_sentence["r"]:
+            v2prob = self.predictor.predict_vertexes(self, jdoc_sentence, state)
+            nops += len(v2prob)
+            prunes += 1
+            total_probability = sum(v2prob.values())
+            distribution_ops = np.asarray([(p/total_probability) for
+                                          p in v2prob.values()])
+            # probability over ## indexes
+            pick = np.random.choice(len(v2prob), size=None, p=distribution_ops)
+            vertex = v2prob.keys()[pick]
+            prune(g=state, v=vertex)
+            score += log(v2prob[vertex], 10)
+
+        remaining_toks = [_["index"] for _ in state["tokens"]]
+
+        return {"score": score,
+                "y_pred": [_ in remaining_toks for _ in orig_toks],
+                "nops": nops,
+                "prunes": prunes
+                }
+
+    def predict(self, jdoc, N):
+        options = [self.run_one(jdoc) for i in range(N)]
+        options.sort(key=lambda x: x["score"], reverse=True)
+        return options[0]
+
+
+class BaselineCompressor:
+
+    '''
+    This implements a baseline that just guesses the query terms
+    '''
+
+    def __init__(self):
+        pass
+
+    def predict(self, original_s):
+        '''
+        baseline prediction
+        '''
+
+        original_indexes = [_["index"] for _ in original_s["tokens"]]
+        y_pred = get_pred_y(predicted_compression=original_s["q"],
+                            original_indexes=original_indexes)
+
+        return {"y_pred": y_pred,
+                "nops": 0  # whut to do here????
+                }
+
+
+class FA2013Compressor:
+
+    '''
+    This implements a query query_focused compression w/ F and A
+    '''
+
+    def __init__(self, weights):
+        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+        self.weights = weights
+        self.vocab = get_all_vocabs()
+
+    def predict(self, original_s):
+        '''
+        run the ILP
+        '''
+
+        r = int(original_s["r"])
+
+        original_indexes = [_["index"] for _ in original_s["tokens"]]
+
+        transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
+
+        output = run_model(transformed_s,
+                           vocab=self.vocab,
+                           weights=self.weights,
+                           Q=original_s["q"],
+                           r=r)
+
+        predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+        y_pred = get_pred_y(predicted_compression=predicted_compression,
+                            original_indexes=original_indexes)
+
+        return {"y_pred": y_pred,
+                "nops": -19999999  # whut to do here????
+                }
+
+
+# This one is mostly a technical curiousity.
+# Just a transition-based compressor that does
+# traditional sentence compression
 class NeuralNetworkTransitionBFS:
 
     '''
@@ -195,66 +308,7 @@ class NeuralNetworkTransitionBFS:
                 }
 
 
-class FA2013Compressor:
-
-    '''
-    This implements a query query_focused compression w/ F and A
-    '''
-
-    def __init__(self, weights):
-        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
-        self.weights = weights
-        self.vocab = get_all_vocabs()
-
-    def predict(self, original_s):
-        '''
-        run the ILP
-        '''
-
-        r = int(original_s["r"])
-
-        original_indexes = [_["index"] for _ in original_s["tokens"]]
-
-        transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
-
-        output = run_model(transformed_s,
-                           vocab=self.vocab,
-                           weights=self.weights,
-                           Q=original_s["q"],
-                           r=r)
-
-        predicted_compression = [o['dependent'] for o in output["get_Xs"]]
-        y_pred = get_pred_y(predicted_compression=predicted_compression,
-                            original_indexes=original_indexes)
-
-        return {"y_pred": y_pred,
-                "nops": -19999999  # whut to do here????
-                }
-
-
-class BaselineCompressor:
-
-    '''
-    This implements a baseline that just guesses the query terms
-    '''
-
-    def __init__(self):
-        pass
-
-    def predict(self, original_s):
-        '''
-        baseline prediction
-        '''
-
-        original_indexes = [_["index"] for _ in original_s["tokens"]]
-        y_pred = get_pred_y(predicted_compression=original_s["q"],
-                            original_indexes=original_indexes)
-
-        return {"y_pred": y_pred,
-                "nops": 0  # whut to do here????
-                }
-
-
+### this one does not work well
 class NeuralNetworkPredictThenPrune:
     def __init__(self, archive_loc, model_name, predictor_name, query_focused=True):
         assert type(archive_loc) == str
