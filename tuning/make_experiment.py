@@ -15,6 +15,16 @@ experiment = sys.argv[1]
 for fn in glob.glob("/mnt/nfs/scratch1/ahandler/experiments/qsr/*json"):
     os.remove(fn)
 
+tok_indexers = {"tokens": {"type": "single_id"},
+                "elmo": {"type": "elmo_characters"}}
+
+elmo_vectors = {"type": "elmo_token_embedder",
+                "options_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_options.json",
+                "weight_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5",
+                "do_layer_norm": False,
+                "dropout": 0.5
+                }
+
 
 def make_rando():
 
@@ -25,16 +35,27 @@ def make_rando():
     nonlinearity = ["sigmoid", "relu", "tanh"]
     random.shuffle(nonlinearity)
 
+    elmo = [True]#, False]
+    random.shuffle(elmo)
+
     nonlinearity = nonlinearity[0]
 
     with open(experiment, "r") as inf:
         dt = json.load(inf)
 
+    if elmo:
+        dt["dataset_reader"]["token_indexers"] = tok_indexers
+        dt["dataset_reader"]["text_field_embedder"] = elmo_vectors
+
     fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
     print(dt["model"]["text_field_embedder"]["tokens"])
     dt['model']['text_field_embedder']["tokens"]['pretrained_file'] = fn
     dt['model']['text_field_embedder']['tokens']['embedding_dim'] = inputd
-    dt["model"]["abstract_encoder"]["input_size"] = inputd
+
+    if elmo:
+        dt["model"]["abstract_encoder"]["input_size"] = inputd + 1024
+    else:
+        dt["model"]["abstract_encoder"]["input_size"] = inputd
 
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(100, 1000)
     dt['model']["abstract_encoder"]['dropout'] = random.uniform(0, .1)
