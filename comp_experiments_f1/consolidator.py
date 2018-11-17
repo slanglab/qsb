@@ -21,7 +21,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
 with open("/tmp/f1vprunes.txt", "w") as of:
     for _ in f1s_prunes:
         f1, p = _
-        of.write("{},{}".format(f1, p))
+        of.write("{},{}\n".format(f1, p))
 
 for model in results:
     print(model)
