@@ -102,7 +102,9 @@ class NeuralNetworkTransitionGreedy:
             state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         else:
             state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
+        prunes = 0
         while length != prev_length and length > int(jdoc["r"]):
+            prunes += 1
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops += len(vertexes)
             vertexes.sort(key=lambda x: x[1], reverse=True)
@@ -117,7 +119,8 @@ class NeuralNetworkTransitionGreedy:
         if length <= int(jdoc["r"]): 
             remaining_toks = [_["index"] for _ in state["tokens"]]
             return {"y_pred": [_ in remaining_toks for _ in orig_toks],
-                    "nops": nops
+                    "nops": nops,
+                    "prunes": prunes
                     }
         else:
             return {"y_pred": "could not find a compression",
