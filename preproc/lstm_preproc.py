@@ -165,11 +165,7 @@ if __name__ == "__main__":
     val = train[0:val_ix]
     train = train[val_ix:]
 
-    N = 2000000
-
-    save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
-
-    N = 100000
+    N = 4000000
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
