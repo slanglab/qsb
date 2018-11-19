@@ -39,6 +39,7 @@ for experiment in glob.glob(experiments):
         stats.append(cf["trainer"]["optimizer"]["weight_decay"])
         stats.append(cf["trainer"]["optimizer"]["lr"])
         stats.append(cf['model']['text_field_embedder']['tokens']['embedding_dim'])
+        stats.append(cf["model"]["classifier_feedforward_p"]["activations"][0])
         stats.append(datasize)
         stats.append(epoch_metric)
         out.append(stats)
@@ -51,6 +52,6 @@ with open("tuning/tuner.csv", "w") as of:
 
     csv_writer.writerow(["experiment", "epoch", "batch_size", "num_layers",
                          "dropout", "hidden_size", "dropout_ff",
-                         "weight_decay", "lr", "embed_dim", "datasize", "score"])
+                         "weight_decay", "lr", "embed_dim", "activation", "datasize", "score"])
 
     csv_writer.writerows(out)

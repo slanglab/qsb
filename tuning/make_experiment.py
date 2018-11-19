@@ -73,15 +73,15 @@ def make_rando():
     num_layers = layers[0]
     dt["model"]["abstract_encoder"]["num_layers"] = num_layers
 
-    x = random.uniform(3, 6)
+    x = random.uniform(4, 7)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(3, 10)
+    x = random.uniform(5, 10)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
-    dt['iterator']['batch_size'] = int(random.uniform(50, 150))
+    dt['iterator']['batch_size'] = int(random.uniform(10, 25))
 
     import uuid
 
@@ -92,5 +92,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(100):
+for i in range(20):
     make_rando()
