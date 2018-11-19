@@ -60,7 +60,7 @@ def make_rando():
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(100, 1000)
     dt['model']["abstract_encoder"]['dropout'] = random.uniform(0, .1)
 
-    classification_layers = range(1, 4)
+    classification_layers = list(range(1, 4))
     random.shuffle(classification_layers)
     classification_layers = classification_layers[0]
 
@@ -70,8 +70,8 @@ def make_rando():
     dropouts = []
     for i in range(classification_layers):
         activations_.append(random.choice(nonlinearity))
-        sizes.append(random.choice(range(max_)))
-        max_ = max_ / 2
+        sizes.append(random.choice(range(int(max_))))
+        max_ = int(max_ / 2)
         dropouts.append(random.uniform(.1, .7))
 
     for component in ['classifier_feedforward_i', 'classifier_feedforward_p']:
