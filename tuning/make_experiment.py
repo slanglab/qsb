@@ -37,6 +37,7 @@ def make_rando():
 
     elmo = [False]#, True]
     random.shuffle(elmo)
+    elmo = elmo[0]
 
     #nonlinearity = nonlinearity[0]
 
@@ -46,6 +47,8 @@ def make_rando():
     if elmo:
         dt["dataset_reader"]["token_indexers"] = tok_indexers
         dt["dataset_reader"]["text_field_embedder"] = elmo_vectors
+    else:
+        print("no elmo")
 
     fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
     print(dt["model"]["text_field_embedder"]["tokens"])
@@ -60,7 +63,7 @@ def make_rando():
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(100, 1000)
     dt['model']["abstract_encoder"]['dropout'] = random.uniform(0, .1)
 
-    classification_layers = range(1, 4)
+    classification_layers = list(range(1, 4))
     random.shuffle(classification_layers)
     classification_layers = classification_layers[0]
 
@@ -70,8 +73,8 @@ def make_rando():
     dropouts = []
     for i in range(classification_layers):
         activations_.append(random.choice(nonlinearity))
-        sizes.append(random.choice(range(max_)))
-        max_ = max_ / 2
+        sizes.append(random.choice(range(int(max_))))
+        max_ = int(max_ / 2)
         dropouts.append(random.uniform(.1, .7))
 
     sizes[-1] = 2
@@ -107,5 +110,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(100):
+for i in range(10):
     make_rando()
