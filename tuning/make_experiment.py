@@ -22,8 +22,7 @@ elmo_vectors = {"type": "elmo_token_embedder",
                 "options_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_options.json",
                 "weight_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5",
                 "do_layer_norm": False,
-                "dropout": 0.5,
-                "requires_grad": True
+                "dropout": 0.5
                 }
 
 
@@ -33,20 +32,20 @@ def make_rando():
     random.shuffle(inputd)
     inputd = inputd[0]
 
-    nonlinearity = ["sigmoid", "relu", "tanh"]
+    nonlinearity = ["sigmoid", "relu", "tanh", "linear"]
     random.shuffle(nonlinearity)
 
-    elmo = [True]#, False]
+    elmo = [False]#, True]
     random.shuffle(elmo)
 
-    nonlinearity = nonlinearity[0]
+    #nonlinearity = nonlinearity[0]
 
     with open(experiment, "r") as inf:
         dt = json.load(inf)
 
     if elmo:
         dt["dataset_reader"]["token_indexers"] = tok_indexers
-        dt["model"]["text_field_embedder"]['elmo'] = elmo_vectors
+        dt["dataset_reader"]["text_field_embedder"] = elmo_vectors
 
     fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
     print(dt["model"]["text_field_embedder"]["tokens"])
@@ -60,28 +59,42 @@ def make_rando():
 
     dt['model']["abstract_encoder"]["hidden_size"] = random.randint(100, 1000)
     dt['model']["abstract_encoder"]['dropout'] = random.uniform(0, .1)
-    dt["model"]['classifier_feedforward_i']["dropout"] = random.uniform(.2, .7)
-    dt["model"]['classifier_feedforward_i']["input_dim"] = dt['model']["abstract_encoder"]["hidden_size"] * 2
-    dt["model"]['classifier_feedforward_i']["activations"] = [nonlinearity]
 
-    dt["model"]['classifier_feedforward_p']["dropout"] = dt["model"]['classifier_feedforward_i']["dropout"]
-    dt["model"]['classifier_feedforward_p']["input_dim"] = dt['model']["classifier_feedforward_i"]["input_dim"]
-    dt["model"]['classifier_feedforward_p']["activations"] = [nonlinearity]
+    classification_layers = range(1, 4)
+    random.shuffle(classification_layers)
+    classification_layers = classification_layers[0]
 
-    layers = [1, 2, 3, 4, 5]
+    max_ = 100
+    activations_ = []
+    sizes = []
+    dropouts = []
+    for i in range(classification_layers):
+        activations_.append(random.choice(nonlinearity))
+        sizes.append(random.choice(range(max_)))
+        max_ = max_ / 2
+        dropouts.append(random.uniform(.1, .7))
+
+    for component in ['classifier_feedforward_i', 'classifier_feedforward_p']:
+        dt["model"][component]["dropout"] = dropouts
+        dt["model"][component]["input_dim"] = dt['model']["abstract_encoder"]["hidden_size"] * 2
+        dt["model"][component]["activations"] = activations_
+        dt["model"][component]["num_layers"] = classification_layers
+        dt["model"][component]["hidden_dims"] = sizes
+
+    layers = [1, 2, 3]
     random.shuffle(layers)
     num_layers = layers[0]
     dt["model"]["abstract_encoder"]["num_layers"] = num_layers
 
-    x = random.uniform(4, 7)
+    x = random.uniform(3, 6)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(5, 10)
+    x = random.uniform(3, 10)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
-    dt['iterator']['batch_size'] = int(random.uniform(10, 25))
+    dt['iterator']['batch_size'] = int(random.uniform(50, 150))
 
     import uuid
 
@@ -92,5 +105,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(20):
+for i in range(100):
     make_rando()
