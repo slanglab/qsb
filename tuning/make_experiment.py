@@ -74,6 +74,8 @@ def make_rando():
         max_ = max_ / 2
         dropouts.append(random.uniform(.1, .7))
 
+    sizes[-1] = 2
+
     for component in ['classifier_feedforward_i', 'classifier_feedforward_p']:
         dt["model"][component]["dropout"] = dropouts
         dt["model"][component]["input_dim"] = dt['model']["abstract_encoder"]["hidden_size"] * 2
