@@ -37,6 +37,7 @@ def make_rando():
 
     elmo = [False]#, True]
     random.shuffle(elmo)
+    elmo = elmo[0]
 
     #nonlinearity = nonlinearity[0]
 
@@ -46,6 +47,8 @@ def make_rando():
     if elmo:
         dt["dataset_reader"]["token_indexers"] = tok_indexers
         dt["dataset_reader"]["text_field_embedder"] = elmo_vectors
+    else:
+        print("no elmo")
 
     fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
     print(dt["model"]["text_field_embedder"]["tokens"])
@@ -105,5 +108,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(100):
+for i in range(10):
     make_rando()
