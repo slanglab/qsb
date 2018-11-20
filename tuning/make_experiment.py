@@ -35,7 +35,7 @@ def make_rando():
     nonlinearity = ["sigmoid", "relu", "tanh", "linear"]
     random.shuffle(nonlinearity)
 
-    elmo = [False]#, True]
+    elmo = [True]
     random.shuffle(elmo)
     elmo = elmo[0]
 
@@ -46,7 +46,7 @@ def make_rando():
 
     if elmo:
         dt["dataset_reader"]["token_indexers"] = tok_indexers
-        dt["dataset_reader"]["text_field_embedder"] = elmo_vectors
+        dt["model"]["text_field_embedder"]["elmo"] = elmo_vectors
     else:
         print("no elmo")
 
@@ -110,5 +110,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(10):
+for i in range(1):
     make_rando()
