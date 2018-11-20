@@ -80,6 +80,7 @@ class NeuralNetworkTransitionGreedy:
             return gov[0].lower() == "v"
         for v in get_walk_from_root(jdoc):  # bfs
             children = dfs(g=jdoc, hop_s=v, D=[])
+            # the verb heuristic is b/c the min governing tree is often just Q itself
             if all(i in children for i in jdoc["q"]) and tok_is_verb(v):
                 best = v
         return best
