@@ -30,10 +30,13 @@ def get_model(config):
                                              query_focused=query_focused,
                                              predictor_name=predictor_name,
                                              model_name=model_name)
-        if config["model"] == "nn-transition-based":
-            query_focused = config["query"]
-            return NeuralNetworkTransitionBFS(config["archive_loc"],
-                                              query_focused)
+
+    if config["algorithm"] == "transition-based-compressor":
+        query_focused = config["query"]
+        model_name = config["model_name"]
+        predictor_name = config["predictor_name"]
+        return NeuralNetworkTransitionBFS(archive_loc=config["archive_loc"],
+                                          query_focused=query_focused)
 
     if config["algorithm"] == "fmcsearch":
         query_focused = config["query"]
