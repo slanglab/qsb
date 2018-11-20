@@ -1,3 +1,4 @@
+models/*
 .pytest_cache/
 tuning/tuner.csv
 tests/fixtures/633320059/*
