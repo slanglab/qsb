@@ -273,6 +273,26 @@ class NeuralNetworkTransitionBFS:
         assert type(jdoc["tokens"][0]["word"]) == str
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 
+    def predict_proba(self, original_s, vertex, state, is_prune):
+        '''
+        what is probability that this vertex is prunable,
+        according to transition-based nn model
+        '''
+        provisional_label = "p"
+        toks = get_encoded_tokens(provisional_label, state,
+                                  original_s, vertex)
+
+        txt = " ".join([_["word"] for _ in toks])
+
+        instance = self.predictor._dataset_reader.text_to_instance(txt,
+                                                                   is_prune,
+                                                                   "1")
+
+        pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
+        op2n = {v: k for k, v in pred_labels.items()}
+        pred = self.predictor.predict_instance(instance)
+        return pred["class_probabilities"][op2n["1"]]
+
     def predict(self, original_s):
         '''
         return a compression that preserves q and respects r
@@ -288,28 +308,16 @@ class NeuralNetworkTransitionBFS:
         for vertex in get_walk_from_root(original_s):
             if in_compression(vertex, state):
                 proposed = PP
-                provisional_label = "p"
             else:
                 proposed = PE
-                provisional_label = "e"
 
-            toks = get_encoded_tokens(provisional_label, state,
-                                      original_s, vertex)
+            is_prune = proposed == PP
 
-            txt = " ".join([_["word"] for _ in toks])
+            prob = self.predict_proba(original_s, vertex, state, is_prune)
 
-            instance = self.predictor._dataset_reader.text_to_instance(txt,
-                                                                       "e")
-
-            pred = self.predictor.predict_instance(instance)
-
-            pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
-
-            move = pred_labels[np.argmax(pred["class_probabilities"])]
-
-            if move == "p":
+            if PP and prob > .5:
                 prune(g=state, v=vertex)
-            if move == "e":
+            if not PP and prob > .5:
                 proposed = get_proposed(original_s, vertex, state)
                 state["tokens"] = proposed["tokens"]
                 state["basicDependencies"] = proposed["basicDependencies"]
