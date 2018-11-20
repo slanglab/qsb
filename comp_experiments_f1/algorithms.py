@@ -262,12 +262,11 @@ class NeuralNetworkTransitionBFS:
     It is mostly used to see what kind of F1 we get on oracle options
     '''
 
-    def __init__(self, archive_loc):
+    def __init__(self, archive_loc, model_name, predictor_name):
         assert type(archive_loc) == str
         archive = load_archive(archive_file=archive_loc)
-        self.query_focused = False
-        self.predictor = Predictor.from_archive(archive, "paper-classifier")
         self.archive = archive
+        self.predictor = Predictor.from_archive(archive, predictor_name)
 
     def get_char_length(self, jdoc):
         assert type(jdoc["tokens"][0]["word"]) == str
