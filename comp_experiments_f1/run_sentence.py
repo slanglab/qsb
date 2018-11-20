@@ -65,6 +65,39 @@ def get_model(config):
     assert "unknown" == "model"
 
 
+def do_sentence(_, no_compression, config):
+    sentence = json.loads(_)
+    sentence["tokens"] = strip_tags(sentence["tokens"])
+    orig_ix = sentence["original_ix"]
+    y_true = [_ in sentence["compression_indexes"] for
+              _ in orig_ix]
+    out = model.predict(sentence)
+    y_pred = out["y_pred"]
+    ops = out["nops"]
+    if "prunes" in out:
+        prunes = out["prunes"]
+    else:
+        prunes = -999999
+    if out["y_pred"] == "could not find a compression":
+        f1 = 0.0
+        no_compression += 1
+        with open("/tmp/{}".format(vno), "wb") as of:
+            pickle.dump(sentence, of)
+    else:
+        f1 = f1_score(y_true=y_true, y_pred=y_pred)
+        if args.verbose:
+            print("***")
+            print(" ".join([o["word"] for o in sentence["tokens"]]))
+            print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"])
+                            if y_pred[ino]]))
+    assert f1 <= 1 and f1 >= 0
+    config["sentence{}".format(vno)] = {'f1': f1,
+                                        "nops": ops,
+                                        "prunes": prunes,
+                                        "y_pred": y_pred,
+                                        "y_true": y_true}
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-fast", action="store_true", default=False)
@@ -85,35 +118,10 @@ if __name__ == "__main__":
         no_compression = 0
         for vno, _ in tqdm(enumerate(inf)):
             if vno in range_:
-                sentence = json.loads(_)
-                sentence["tokens"] = strip_tags(sentence["tokens"])
-                orig_ix = sentence["original_ix"]
-                y_true = [_ in sentence["compression_indexes"] for
-                          _ in orig_ix]
-                out = model.predict(sentence)
-                y_pred = out["y_pred"]
-                ops = out["nops"]
-                if "prunes" in out:
-                    prunes = out["prunes"]
-                else:
-                    prunes = -999999
-                if out["y_pred"] == "could not find a compression":
-                    f1 = 0.0
-                    no_compression += 1
-                    with open("/tmp/{}".format(vno), "wb") as of:
-                        pickle.dump(sentence, of)
-                else:
-                    f1 = f1_score(y_true=y_true, y_pred=y_pred)
-                    if args.verbose:
-                        print("***")
-                        print(" ".join([o["word"] for o in sentence["tokens"]]))
-                        print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"]) if y_pred[ino]]))
-                assert f1 <= 1 and f1 >= 0
-                config["sentence{}".format(vno)] = {'f1': f1,
-                                                    "nops": ops,
-                                                    "prunes": prunes,
-                                                    "y_pred": y_pred,
-                                                    "y_true": y_true}
+                try:
+                    do_sentence(_, no_compression, config) 
+                except IndexError:
+                    print("ERROR")
 
     fast = "fast" if args.fast else "full"
     out_ = config["results_dir"] + "/{}-{}".format(str(fast),
