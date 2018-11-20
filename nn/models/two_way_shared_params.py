@@ -188,7 +188,7 @@ class SplitClassifier(Model):
         Does a simple argmax over the class probabilities, converts indices to string labels, and
         adds a ``"label"`` key to the dictionary with the result.
         """
-        class_probabilities = output_dict['logits']
+        class_probabilities = F.softmax(output_dict['logits'], dim=-1) 
         output_dict['class_probabilities'] = class_probabilities
 
         predictions = class_probabilities.cpu().data.numpy()
