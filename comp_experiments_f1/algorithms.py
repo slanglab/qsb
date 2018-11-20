@@ -2,7 +2,7 @@
 All of the algorithms for query-focused compression
 python 3
 '''
-
+import math
 from allennlp.predictors.predictor import Predictor
 from allennlp.models.archival import load_archive
 from code.treeops import prune
@@ -51,6 +51,7 @@ class NeuralNetworkTransitionGreedy:
         pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
         op2n = {v:k for k,v in pred_labels.items()}
         pred = self.predictor.predict_instance(instance)
+        import ipdb;ipdb.set_trace()
         return pred["class_probabilities"][op2n["1"]]
 
     def predict_vertexes(self, jdoc, state):
@@ -162,6 +163,7 @@ class FMCSearch:
             distribution_ops = np.asarray([(p/total_probability) for
                                           p in list(v2prob.values())])
             # probability over ## indexes
+            import ipdb;ipdb.set_trace()
             pick = np.random.choice(len(v2prob), size=None, p=distribution_ops)
             vertex = list(v2prob.keys())[pick]
             prune(g=state, v=vertex)
