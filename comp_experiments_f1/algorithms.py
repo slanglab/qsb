@@ -325,7 +325,6 @@ class NeuralNetworkTransitionBFS:
 
         remaining_toks = [_["index"] for _ in state["tokens"]]
 
-        import ipdb;ipdb.set_trace()
 
         return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                 "nops": len(original_s["tokens"])
