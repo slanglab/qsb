@@ -276,7 +276,10 @@ class NeuralNetworkTransitionBFS:
         what is probability that this vertex is prunable,
         according to transition-based nn model
         '''
-        provisional_label = "p"
+        if is_prune:
+            provisional_label = "p"
+        else:
+            provisional_label = "e"
         toks = get_encoded_tokens(provisional_label, state,
                                   original_s, vertex)
 
@@ -321,6 +324,8 @@ class NeuralNetworkTransitionBFS:
                 state["basicDependencies"] = proposed["basicDependencies"]
 
         remaining_toks = [_["index"] for _ in state["tokens"]]
+
+        import ipdb;ipdb.set_trace()
 
         return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                 "nops": len(original_s["tokens"])
