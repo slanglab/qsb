@@ -163,11 +163,15 @@ if __name__ == "__main__":
     val_ix = int((1 - PCT_TRAIN) * len(train))
 
     val = train[0:val_ix]
+
+    val1 = val[:-1000]
+    val2 = val[-1000:]
+
     train = train[val_ix:]
 
     N = 500000
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
-    save_split('preproc/lstm_validation_3way.jsonl', val, cap=10000, keep_deps=True)
-    just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val, cap=10000)
+    save_split('preproc/lstm_validation_3way.jsonl', val1, cap=10000, keep_deps=True)
+    just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val2, cap=10000)
