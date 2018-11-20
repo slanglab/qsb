@@ -200,7 +200,7 @@ def filippova_tree_transform(jdoc):
         return tok["pos"] in ["VB", "VBD", "VBG", "VBN", "VBP", "VBZ"]
     for v in jdoc["tokens"]:
         total_edges_from_root_to_this_v = sum(1 for i in jdoc["enhancedDependencies"] if i['governor'] == 0 and i["dependent"] == v["index"])
-        if total_edges_from_root_to_this_v == 0 and v["word"] not in PUNCT:
+        if total_edges_from_root_to_this_v == 0:
             jdoc["enhancedDependencies"].append({"governor": 0, "dependent": v["index"],
                                                  "governorGloss": "ROOT", "dependentGloss": v["word"],
                                                  "dep": "ROOT"})
@@ -225,14 +225,14 @@ def filippova_tree_transform(jdoc):
         t["word"] = unidecode(t["word"])
         return t
     jdoc["tokens"] = [unidecode_tok(t) for t in jdoc["tokens"]]
-    jdoc["tokens"] = [_ for _ in jdoc["tokens"] if _["word"] not in PUNCT]
+    jdoc["tokens"] = [_ for _ in jdoc["tokens"]]
     retained_indexes = [_["index"] for _ in jdoc["tokens"]]
     if "compression_indexes" in jdoc: # some test cases dont go thru preproc/proc_fillipova.py so they don't have this.
                                       # eventually it would be go to run them thru this for more uniformity but also prob not worth it
         jdoc["compression_indexes"] = list(set([_ for _ in jdoc["compression_indexes"] if _ in retained_indexes]))
 
-    jdoc["enhancedDependencies"] = [_ for _ in jdoc['enhancedDependencies'] if _["dependentGloss"] not in PUNCT]
-    jdoc["enhancedDependencies"] = [_ for _ in jdoc['enhancedDependencies'] if _["governorGloss"] not in PUNCT]
+    jdoc["enhancedDependencies"] = [_ for _ in jdoc['enhancedDependencies'] if _["dependentGloss"]]
+    jdoc["enhancedDependencies"] = [_ for _ in jdoc['enhancedDependencies'] if _["governorGloss"]]
 
     return jdoc
 
