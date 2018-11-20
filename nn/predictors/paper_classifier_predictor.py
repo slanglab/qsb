@@ -24,6 +24,6 @@ class BinaryPredictor(Predictor):
             is_prune = False
 
         instance = self._dataset_reader.text_to_instance(sentence=sentence,
-                                                        label=label,
-                                                        is_prune=is_prune)
+                                                         label=label,
+                                                         is_prune=is_prune)
         return instance
