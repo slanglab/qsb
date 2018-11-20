@@ -4,4 +4,6 @@
   "model": "nn-transition-based",
   "query": false,
   "algorithm": "transition-based-compressor",
+  "model_name": "split_classifier",
+  "predictor_name": "split_classifier"
 }
