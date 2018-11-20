@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
     train = train[val_ix:]
 
-    N = 500000
+    N = 2000000
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
