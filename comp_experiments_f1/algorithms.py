@@ -51,7 +51,6 @@ class NeuralNetworkTransitionGreedy:
         pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
         op2n = {v:k for k,v in pred_labels.items()}
         pred = self.predictor.predict_instance(instance)
-        import ipdb;ipdb.set_trace()
         return pred["class_probabilities"][op2n["1"]]
 
     def predict_vertexes(self, jdoc, state):
