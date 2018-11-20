@@ -163,7 +163,6 @@ class FMCSearch:
             distribution_ops = np.asarray([(p/total_probability) for
                                           p in list(v2prob.values())])
             # probability over ## indexes
-            import ipdb;ipdb.set_trace()
             pick = np.random.choice(len(v2prob), size=None, p=distribution_ops)
             vertex = list(v2prob.keys())[pick]
             prune(g=state, v=vertex)
@@ -314,9 +313,9 @@ class NeuralNetworkTransitionBFS:
 
             prob = self.predict_proba(original_s, vertex, state, is_prune)
 
-            if PP and prob > .5:
+            if is_prune and prob > .5:
                 prune(g=state, v=vertex)
-            if not PP and prob > .5:
+            if not is_prune and prob > .5:
                 proposed = get_proposed(original_s, vertex, state)
                 state["tokens"] = proposed["tokens"]
                 state["basicDependencies"] = proposed["basicDependencies"]
