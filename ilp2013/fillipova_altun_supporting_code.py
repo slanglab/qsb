@@ -323,6 +323,9 @@ def get_q_word_and_governor(word_, jdoc):
         e(tuple): the index of the relation from the word's head to
                   the word in the jdoc
     '''
+    print(word_)
+    print([_["index"] for _ in jdoc["tokens"]])
+    
     assert word_ in (i["index"] for i in jdoc["tokens"])
 
     out = [_ for _ in jdoc["enhancedDependencies"]
