@@ -61,7 +61,7 @@
 \maketitle
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based compression method which can accommodate such requirements.  Our technique is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings under constraints.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based compression method which can accommodate such requirements.  Our technique is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings under constraints. It also achieves state-of-the-art performance on the traditional compression task.
 \end{abstract}
 
 %\section{General comment}
@@ -90,14 +90,14 @@ This study examines the compression problem with such length and lexical require
 
 
 \begin{table*}[htb!]
-\begin{tabular}{cccc}
+\begin{tabular}{lccc}
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained} & \textbf{Allows supervision} \\ \hline
-LSTM taggers      & linear              & no     &    yes      \\   
-linear programming              & exponential         & yes    &    yes   \\
-iterative deletion  (this work)    & quadratic     & yes    &      yes   \\
-predict, then prune  (this work)    & linear           & yes    &      yes   \\
+LSTM taggers \cite{filippova2015sentence}   & linear              & no     &    yes      \\   
+ILP    \cite{filippova2013overcoming}       &   exponential         & yes    &    yes   \\
+ILP + LSTM \cite{Wang2017CanSH} &  exponential & yes & yes  \\
+Iterative deletion (this work)  & quadratic     & yes    &      yes   \\
 \end{tabular}
-\caption{Four algorithms for extractive sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used in both linear and quadratic methods for compressing sentences under lexical and length constraints.}
+\caption{Four algorithms for sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used in quadratic methods for compressing sentences under lexical and length constraints.} 
 \label{t:algos}
 \end{table*}
 
@@ -105,7 +105,7 @@ predict, then prune  (this work)    & linear           & yes    &      yes   \\
 Therefore, in this work:
 
 \begin{itemize}
-\item{We present a new, linguistically-informed method for compressing sentences, which efficiently accomodates lexical and length constraints.}
+\item{We present a new, transition-based method for compressing sentences, which efficiently accommodates lexical and length constraints. Our method also achieves higher F1 scores than state-of-the-art compression systems.}
 \item{Compare our transition-based technique to traditional ILP-based methods, which also give a user such control.}
 \item{Analyze the computational costs of each technique, as well as the nature of the constrained compression problem itself}
 \end{itemize}
@@ -210,6 +210,8 @@ We initialize with \ahcomment{dimensionality} GloVe embeddings \cite{pennington2
 
 We tune hyperparameters by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. 
 
+\ahcomment{Results table here}
+
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
 We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to evaluate different approaches to length and lexically constrained compression. Using the dataset in this manner requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP 3.8.0 \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $q$ is a list of tokens. We also define the character length of the gold-standard compression as the character budget, $b$. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints.  \ahcomment{Note: these Q and r are going to be well-behaved! I.e. there is usually a good compression here. Should be revisited.}
@@ -277,27 +279,27 @@ There are some important differences between our implementation and existing wor
  Find out what they do in lucene. Argue about open source search engines. }
 
 
-
-
 \section{Computational experiments part 2: investigating properties of q,s,r compression}
 
-\ahcomment{only outline / notes here}
+\ahcomment{include?}
 
-\begin{enumerate}
-\item{q = a list of 1 to 3 NER}
-\item{r = random}
-\item{What is the size of the minimum compression?}
-\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}
-\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
-\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
-\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
-\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
-\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
-\end{enumerate}
+%\ahcomment{only outline / notes here}
+
+%\begin{enumerate}
+%\item{q = a list of 1 to 3 NER}
+%\item{r = random}
+%\item{What is the size of the minimum compression?}
+%\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}%
+%\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
+%\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
+%\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
+%\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
+%\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
+%\end{enumerate}
 
 \section{computational experiments part 3: computational costs}
 
-\ahcomment{See Brendan's notes on Trapezoidal costs Nov 8th on phone during meeting}
+\ahcomment{See Brendan's notes on Trapezoidal costs Nov 8th on phone during meeting. it is committed to repo}
 
 \ahcomment{this needs to be rewritten}
 
@@ -306,8 +308,6 @@ In the worst case, an iterative deletion method will prune one singleton subtree
 This worst case represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
 
 In section \S\ahcomment{TODO} we also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
-
-
 
 \section{Related work}
 
@@ -338,11 +338,22 @@ Prior work does not specify all features in the structured perceptron model. We 
 
 \section{Worked example}
 
+
+
 \ahcomment{TODO. Graffle}
 
 Jack and Jill went up the hill. 
 
 Jill went up.
+
+
+\begin{figure*}[htb!]
+\centering
+\includegraphics[width=.75\textwidth]{worked.pdf}
+\caption{Ten operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, v|B)$. In the diagram, the tokens in $V$ are shown in bold. The token $v$ at the head of the buffer $B$ is shown set apart from the other tokens in the buffer. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram.}
+\label{f:example}
+\end{figure*}
+
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
