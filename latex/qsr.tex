@@ -338,11 +338,22 @@ Prior work does not specify all features in the structured perceptron model. We 
 
 \section{Worked example}
 
+
+
 \ahcomment{TODO. Graffle}
 
 Jack and Jill went up the hill. 
 
 Jill went up.
+
+
+\begin{figure*}[htb!]
+\centering
+\includegraphics[width=.75\textwidth]{worked.pdf}
+\caption{Ten operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, v|B)$. In the diagram, the tokens in $V$ are shown in bold. The token $v$ at the head of the buffer $B$ is shown set apart from the other tokens in the buffer. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram.}
+\label{f:example}
+\end{figure*}
+
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
