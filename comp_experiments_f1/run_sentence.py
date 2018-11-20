@@ -35,8 +35,8 @@ def get_model(config):
         query_focused = config["query"]
         model_name = config["model_name"]
         predictor_name = config["predictor_name"]
-        return NeuralNetworkTransitionBFS(archive_loc=config["archive_loc"],
-                                          query_focused=query_focused)
+        return NeuralNetworkTransitionBFS(archive_loc=config["archive_loc"])
+                                          
 
     if config["algorithm"] == "fmcsearch":
         query_focused = config["query"]
