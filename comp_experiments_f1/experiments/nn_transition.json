@@ -3,5 +3,5 @@
   "archive_loc": "models/378501484/model.tar.gz",
   "model": "nn-transition-based",
   "query": false,
-  "algorithm":;transition-based-compressor'
+  "algorithm": "transition-based-compressor",
 }
