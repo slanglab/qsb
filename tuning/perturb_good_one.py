@@ -1,3 +1,8 @@
+##
+# Used for minor perturbations of known good settings
+# e.g. python tuning/perturb_good_one.py tuning/simple_and_big.json
+##
+
 from __future__ import division
 import json
 import random
