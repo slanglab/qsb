@@ -34,6 +34,15 @@ def sigfigs(val, figs="3"):
 
 
 with open("latex/f1.tex", "w") as of:
+
+    # min compression
+    f1_only_q = sigfigs(np.mean(results["min-compression"]["f1"]))
+    out = "Query terms only & {}    \\\\ ".format(f1_only_q)
+    of.write(out + "\n")
+
+
+    # prune only greedy
     f1_greedy_prune = sigfigs(np.mean(results["nn-prune-greedy"]["f1"]))
     out = " \\textbf{{Iterative deletion}} &  \\textbf{{{}}}    \\\\ ".format(f1_greedy_prune)
     of.write(out + "\n")
+
