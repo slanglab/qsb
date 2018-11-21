@@ -121,6 +121,7 @@ if __name__ == "__main__":
     with open("preproc/lstm_validation_sentences_3way.jsonl", "r") as inf:
         no_compression = 0
         for vno, _ in tqdm(enumerate(inf)):
+            print(vno)
             if vno in range_:
                 try:
                     do_sentence(_, no_compression, config) 
@@ -128,7 +129,8 @@ if __name__ == "__main__":
                     print("ERROR")
 
     fast = "fast" if args.fast else "full"
-    out_ = config["results_dir"] + "/{}-{}".format(str(fast),
+    archive = config["archive_loc"]
+    out_ = config["results_dir"] + "/{}-{}-{}".format(str(fast), archive,
                                                    config["algorithm"])
     config["no_compression"] = no_compression 
     print(config.keys())

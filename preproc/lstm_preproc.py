@@ -178,5 +178,8 @@ if __name__ == "__main__":
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
+    # this is for the LSTM
     save_split('preproc/lstm_validation_3way.jsonl', val1, cap=10000, keep_deps=True)
+   
+    # this if for the compression systems 
     just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val2, cap=10000)
