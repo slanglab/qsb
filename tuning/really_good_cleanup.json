@@ -17,7 +17,6 @@
         "abstract_encoder": {
             "type": "lstm",
             "bidirectional": true,
-            "dropout": 0.006416007357582765,
             "hidden_size": 535,
             "input_size": 100,
             "num_layers": 1
