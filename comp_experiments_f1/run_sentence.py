@@ -129,7 +129,7 @@ if __name__ == "__main__":
                     print("ERROR")
 
     fast = "fast" if args.fast else "full"
-    archive = config["archive_loc"]
+    archive = config["archive_loc"].split("/")[1]
     out_ = config["results_dir"] + "/{}-{}-{}".format(str(fast), archive,
                                                    config["algorithm"])
     config["no_compression"] = no_compression 
