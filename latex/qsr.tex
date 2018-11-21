@@ -42,7 +42,8 @@
 
 \DeclareMathOperator*{\argmaxA}{arg\,max} % Jan Hlavacek
 
-\title{Extractive sentence compression under lexical and length constraints}
+% Extractive sentence compression under lexical and length constraints
+\title{Transition-based Extractive Sentence Compression}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -61,6 +62,7 @@
 \maketitle
 
 \begin{abstract}
+\ahcomment{Proposed revision: In this work we present a new, transition-based framework for extractive sentence compression. We use this framework to construct a sentence compression system based on a very simple neural network, which achieves large gains in automatic evaluation measures over previous state-of-the-art approaches. Unlike prior techniques, our method also allows accommodates lexical and length constraints without incurring exponential computational costs. This makes our method better suited to user-facing search applications, where length and lexical constraints are paramount.}
 Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based compression method which can accommodate such requirements.  Our technique is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings under constraints. It also achieves state-of-the-art performance on the traditional compression task.
 \end{abstract}
 
@@ -82,9 +84,6 @@ Traditional study of extractive sentence compression seeks to create short, read
 \label{f:qf}
 \end{figure}
 
-\ahcomment{TODO: lower bound f1 w q}
-
-\ahcomment{TODO: f1 for the predict everything method}
 
 This study examines the compression problem with such length and lexical requirements: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
@@ -97,7 +96,7 @@ ILP    \cite{filippova2013overcoming}       &   exponential         & yes    &  
 ILP + LSTM \cite{Wang2017CanSH} &  exponential & yes & yes  \\
 Iterative deletion (this work)  & quadratic     & yes    &      yes   \\
 \end{tabular}
-\caption{Four algorithms for sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used in quadratic methods for compressing sentences under lexical and length constraints.} 
+\caption{Four algorithms for sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints.} 
 \label{t:algos}
 \end{table*}
 
@@ -202,15 +201,23 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 
 
 For instance, in Figure \ref{f:example}, $\bm{x}$ ``shows'' the  effect of a proposed \textsc{Prune} of the subtree governed by $v=$\textit{risk}. Tokens in $V$ are shown in bold. The symbols, $\langle \textsc{Prune} \texttt{dobj} \rangle$  and $\langle / \textsc{Prune} \texttt{dobj} \rangle$ mark the start and end of the span of tokens in $T(v)$.
-\ahcomment{TODO details: class weighting, stopping criteria,tuning:what is tuned}
+\ahcomment{TODO details: class weighting, stopping criteria}
 
-Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and a non-linear activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. 
+Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and an activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. Word vectors are updated during training. 
 
-We initialize with \ahcomment{dimensionality} GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with Adam \cite{Kingma2014AdamAM}. Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting and the dropout rate \ahcomment{where is the dropout? fix}.  We do not update word and symbol vectors during training. 
+We initialize with GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with Adam \cite{Kingma2014AdamAM}. Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate \ahcomment{where is the dropout? extraneous param. fix} and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve validation accuracies higher than 97\% with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase scores in the future.} 
 
-We tune hyperparameters by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. 
+We tuned all of these parameters on varying sized subsets of the training data by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. The learning rate, weight decay parameter and activation function each have clear, observable effects on validation accuracy. In particular, using a linear activation function leads to a several point change in validation accuracy. The importance of other parameters is less clear. The final parameters are \ahcomment{TODO}
 
-\ahcomment{Results table here}
+ \ahcomment{where to include the actual parameter settings? I dont see these in syntaxnet paper or }
+
+\subsection{Results}\label{s:transitionresults}
+
+This work introduces a novel, transition-based approach to extractive sentence compression. We compare our method to state-of-the-art approaches to the compression task, in terms of both \ahcomment{human? We need to do this I think} and automatic evaluation. 
+
+\ahcomment{moderately interesting: validation accuracy vs. size vs. F1. Cite Brill 2003.}
+
+\ahcomment{sentences vs. operations is maybe interesting. basically we get more training data b/c we have more ops per sentence. }
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}
 
@@ -235,25 +242,17 @@ Query terms only (lower bound) & 0.384    \\
 
 \subsection{Implementation: transition-based compression}\label{s:transition}
 
-\ahcomment{Brendan email: so it's a pruning-only model?  need to justify why, given the modeling includes INSERTs. answer= fast!} 
-
-Our model of transition-based sentence compression (\S\ref{s:modeling}) predicts the oracle operation $y$, given the state $(V,v|B)$. There are many possible ways to use $p(y=1| \bm{x})$ in a query-focused and length-constrained compression system. We use a simple \textbf{iterative deletion} technique: at each step $j$ we \textsc{Prune} the subtree rooted at 
+Our model of transition-based sentence compression (\S\ref{s:modeling}) predicts the oracle operation $y$, given the state $(V,v|B)$. There are many possible ways to use $p(y=1| \bm{x})$ in a query-focused and length-constrained compression system. In this work, we use a simple \textbf{iterative deletion} technique: at each step $j$ we \textsc{Prune} the subtree rooted at 
 
 $$\argmaxA_{v \in V,q\not\in T(v)}   p(y = 1 | \bm{x})$$
 
 \noindent where $\bm{x}$ is the markup and the binary decision is for \textsc{Prune} or \textsc{NoPrune} (\S\ref{s:modeling}). We continue pruning subtrees until the length of the linearized tokens in $V$ is less than $b$, in which case we stop compression. 
 
-Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. The remaining cases are instances when all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence.
+Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. In the remaining cases, all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. The smallest subtree exceeds the length constraint in \ahcomment{X pct} of cases.
 
-\ahcomment{hand-wavey here. Fix.}
+This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-based techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations. ILP-based methods require solving or approximating NP-complete linear programming objectives. 
 
-\ahcomment{Better job evaluating this compression. How far do you get  by pruning}
-
-\ahcomment{Better job evaluating this compression. How far do you get  by heuristic?}
-
-\ahcomment{What is the lower bound on F1 from just guessing query tokens} 
-
-\ahcomment{Some algos discussed at meeting w/ brendan: iterative bfs w/ lowering epsilon vs. predict then prunev vs. predict,prune, loop. get F1 for these.}
+While our method has lower complexity than existing approaches, we suspect that it is not a lower bound on constrained, abstractive, transition-based compression. It is possible that other future techniques might achieve linear or sublinear runtime, perhaps by setting $V$ equal to the query tokens and executing \textsc{Insert} operations to build a compression from the bottom up. We look forward to exploring such methods in future work. 
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
@@ -263,14 +262,9 @@ There are some important differences between our implementation and existing wor
 
 \ahcomment{gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
 
-\ahcomment{do you train the ILP to accept query terms? that is not really a baseline. }
-
 \ahcomment{100k in training set. we do too }
 
 \ahcomment{how to assess convergence}
-
-\ahcomment{implementing get Q prefers to get the root. }
-
 
 \ahcomment{what do they do in IR for query biased snippets? Hamed, John, Jieppu.
  (Prior study suggests that grammatical malformations cause readability errors in search results \cite{kanungo2009predicting}).
@@ -297,15 +291,13 @@ There are some important differences between our implementation and existing wor
 
 \section{computational experiments part 3: computational costs}
 
-\ahcomment{See Brendan's notes on Trapezoidal costs Nov 8th on phone during meeting. it is committed to repo}
+\ahcomment{See Brendan's notes on Trapezoidal costs Nov 8th. photos of notes committed to meetingsnotes folders}
 
 \ahcomment{this needs to be rewritten}
 
-In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations.
+Iterative deletion is quadratic in the worst case, which represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
 
-This worst case represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
-
-In section \S\ahcomment{TODO} we also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
+%In section \S\ahcomment{TODO} we also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
 
 \section{Related work}
 
@@ -317,6 +309,8 @@ Our concern with lexical constraints is better suited to applications in which u
 Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint. (Other work on query-focused summarization \cite{das} assumes softer constraints). 
 
 Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Our interest in this problem arose from constructing one such novel search system.
+
+\ahcomment{cite and attack abstractive methods. zhang.}
 
 \section{Conclusion}
 \ahcomment{TODO}
