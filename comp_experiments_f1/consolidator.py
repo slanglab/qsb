@@ -27,3 +27,12 @@ for model in results:
     print(results[model]["no_compression"])
     print(np.mean(results[model]["f1"]))
     print(np.mean(results[model]["nops"]))
+
+
+def sigfigs(val, figs="3"):
+    return str("{0:1." + figs + "f}").format(val)
+
+
+with open("latex/f1.tex", "w") as of:
+    f1_greedy_prune = sigfigs(results["nn-prune-greedy"]["f1"])
+    out = "\\textbf{Iterative deletion} &  \\textbf{}    \\ ".format(f1_greedy_prune)

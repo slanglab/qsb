@@ -225,11 +225,9 @@ We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:il
 \centering
 Approach & F1  \\ \hline
 Lower bound &  \ahcomment{TODO}    \\ 
-Human acceptability supervision \ahcomment{????}        &  X        \\
 F and A (2013)    & .79           \\
 C and L (2008)  \ahcomment{????}  & X      \\
-\textbf{iterative deletion} &  \textbf{.86}    \\ 
-\textbf{Transition-based (this work)} &  \textbf{.86}    \\   
+\textbf{Iterative deletion} &  \textbf{.86}    \\ 
 \end{tabular}
 \end{table}
 
@@ -335,22 +333,10 @@ Prior work does not specify all features in the structured perceptron model. We 
 
 \ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
 
-
-\section{Worked example}
-
-
-
-\ahcomment{TODO. Graffle}
-
-Jack and Jill went up the hill. 
-
-Jill went up.
-
-
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{worked.pdf}
-\caption{Ten operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, v|B)$. In the diagram, the tokens in $V$ are shown in bold. The token $v$ at the head of the buffer $B$ is shown set apart from the other tokens in the buffer. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram.}
+\caption{Ten operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, v|B)$. In the diagram, the tokens in $V$ are shown in bold. At each timestep, the token $v$ at the head of the buffer $B$ is shown in the third column. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram. The buffer is initialized breadth-first. Compression stops when the buffer is empty.}
 \label{f:example}
 \end{figure*}
 
