@@ -34,5 +34,6 @@ def sigfigs(val, figs="3"):
 
 
 with open("latex/f1.tex", "w") as of:
-    f1_greedy_prune = sigfigs(results["nn-prune-greedy"]["f1"])
-    out = "\\textbf{Iterative deletion} &  \\textbf{}    \\ ".format(f1_greedy_prune)
+    f1_greedy_prune = sigfigs(np.mean(results["nn-prune-greedy"]["f1"]))
+    out = " \\textbf{{Iterative deletion}} &  \\textbf{{{}}}    \\\\ ".format(f1_greedy_prune)
+    of.write(out + "\n")
