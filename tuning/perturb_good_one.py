@@ -22,19 +22,19 @@ def make_rando():
         dt = json.load(inf)
 
     if random.uniform(0, 1) < .5:
-        dt['trainer']['optimizer']["lr"] += dt['trainer']['optimizer']["lr"] * random.uniform(.01,.05)
+        dt['trainer']['optimizer']["lr"] += dt['trainer']['optimizer']["lr"] * random.uniform(.01,.03)
     else:
-        dt['trainer']['optimizer']["lr"] -= dt['trainer']['optimizer']["lr"] * random.uniform(.01,.05)
+        dt['trainer']['optimizer']["lr"] -= dt['trainer']['optimizer']["lr"] * random.uniform(.01,.03)
 
     if random.uniform(0, 1) < .5:
-        dt['trainer']['optimizer']['weight_decay'] += dt['trainer']['optimizer']['weight_decay'] * random.uniform(.01,.05)
+        dt['trainer']['optimizer']['weight_decay'] += dt['trainer']['optimizer']['weight_decay'] * random.uniform(.01,.03)
     else:
-        dt['trainer']['optimizer']['weight_decay'] -= dt['trainer']['optimizer']['weight_decay'] * random.uniform(.01,.05)
+        dt['trainer']['optimizer']['weight_decay'] -= dt['trainer']['optimizer']['weight_decay'] * random.uniform(.01,.03)
 
     if random.uniform(0, 1) < .5:
-        dt['iterator']['batch_size'] += int(dt['iterator']['batch_size'] * random.uniform(.01,.05))
+        dt['iterator']['batch_size'] += int(dt['iterator']['batch_size'] * random.uniform(.01,.03))
     else:
-        dt['iterator']['batch_size'] -= int(dt['iterator']['batch_size'] * random.uniform(.01,.05))
+        dt['iterator']['batch_size'] -= int(dt['iterator']['batch_size'] * random.uniform(.01,.03))
 
     import uuid
 
