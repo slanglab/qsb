@@ -7,20 +7,34 @@ results = defaultdict(lambda: defaultdict(list))
 
 
 for fn in glob.glob("comp_experiments_f1/output/*"):
-    with open(fn, "r") as inf:
-        dt = json.load(inf)
-        results[dt["algorithm"] + dt["archive_loc"]] = np.mean([float(dt[v]["f1"]) for v in dt.keys() if "sentence" in v])
-        print([o for o in dt.keys() if "sente" not in o]) 
-        results["archive"] = dt["archive_loc"]
+    if "fast" not in fn:
+        with open(fn, "r") as inf:
+            dt = json.load(inf)
+            arch = dt["archive_loc"].replace("model.tar.gz", "metrics.json")
+            with open(arch, "r") as inf:
+                metrics =json.load(inf)
+            metrics["f1"] = np.mean([float(dt[v]["f1"]) for v in dt.keys() if "sentence" in v])
+            metrics["archive"] = dt["archive_loc"]
+            results[dt["algorithm"] + dt["archive_loc"]] = metrics
 
-for model in results:
-    print("***")
-    print(model)
-    print(results[model]) 
+import json
+with open("/tmp/opt.csv", "w") as of:
+    first = True
+    for ln in results:
+        ln = results[ln]
+        if first:
+            of.write(",".join(ln.keys()) + "\n")
+            first = False
+        v = [str(ln[o]) for o in ln.keys()]
+        of.write(",".join(v) + "\n")   
 
+with open("/tmp/optimize.jsonl", "w") as of:
+    for r in results:
+        of.write(json.dumps(results[r]) + "\n")
 
 def sigfigs(val, figs="3"):
     return str("{0:1." + figs + "f}").format(val)
+
 
 import os;os._exit(0)
 

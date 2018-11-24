@@ -40,7 +40,7 @@ def get_model(config):
         model_name = config["model_name"]
         predictor_name = config["predictor_name"]
         return NeuralNetworkTransitionBFS(archive_loc=config["archive_loc"],
-                                          model_name=model_name,
+                                          model_name=model_name,T=args.T,
                                           predictor_name=predictor_name)
 
     if config["algorithm"] == "fmcsearch":
@@ -107,7 +107,11 @@ if __name__ == "__main__":
     parser.add_argument("-fast", action="store_true", default=False)
     parser.add_argument("-config", type=str)
     parser.add_argument("-verbose", action="store_true", default=False)
+
+    parser.add_argument("-T", type=str, default=".5")
     args = parser.parse_args()
+
+    args.T = float(args.T)
 
     with open(args.config, "r") as inf:
         config = json.load(inf)

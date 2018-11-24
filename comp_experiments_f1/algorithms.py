@@ -27,10 +27,11 @@ import_submodules('nn')
 
 
 class NeuralNetworkTransitionGreedy:
-    def __init__(self, archive_loc, model_name, predictor_name, query_focused=True):
+    def __init__(self, archive_loc, model_name, predictor_name, T=.5, query_focused=True):
         assert type(archive_loc) == str
         archive = load_archive(archive_file=archive_loc)
         self.archive = archive
+        self.T = T
         self.query_focused = query_focused
         self.predictor = Predictor.from_archive(archive, predictor_name)
 
@@ -261,10 +262,11 @@ class NeuralNetworkTransitionBFS:
     It is mostly used to see what kind of F1 we get on oracle options
     '''
 
-    def __init__(self, archive_loc, model_name, predictor_name):
+    def __init__(self, archive_loc, model_name, predictor_name, T=.5):
         assert type(archive_loc) == str
         archive = load_archive(archive_file=archive_loc)
         self.archive = archive
+        self.T = T
         self.predictor = Predictor.from_archive(archive, predictor_name)
 
     def get_char_length(self, jdoc):
@@ -316,9 +318,9 @@ class NeuralNetworkTransitionBFS:
 
             prob = self.predict_proba(original_s, vertex, state, is_prune)
 
-            if is_prune and prob > .5:
+            if is_prune and prob > self.T:
                 prune(g=state, v=vertex)
-            if not is_prune and prob > .5:
+            if not is_prune and prob > self.T:
                 proposed = get_proposed(original_s, vertex, state)
                 state["tokens"] = proposed["tokens"]
                 state["basicDependencies"] = proposed["basicDependencies"]
