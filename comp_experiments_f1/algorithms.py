@@ -143,7 +143,7 @@ class NeuralNetworkTransitionGreedyPlusLength:
         self.archive = archive
         self.T = T
         self.query_focused = query_focused
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.predictor = Predictor.from_archive(archive, predictor_name)
 
     def predict_proba(self, original_s, vertex, state):
@@ -163,15 +163,15 @@ class NeuralNetworkTransitionGreedyPlusLength:
                               if _["index"] in
                               dfs(state, hop_s=vertex, D=[])]))
 
-        with open("/tmp/save", "wb") as of:
-            import pickle
-            pickle.dump((vertex, state), of)
-            import os; os._exit(0)
+        total_pruned = len(" ".join([_["word"] for _ in state["tokens"]]))
+
+        pct_pruned = would_be_pruned/total_pruned
 
         pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
         op2n = {v:k for k,v in pred_labels.items()}
         pred = self.predictor.predict_instance(instance)
-        return pred["class_probabilities"][op2n["1"]]
+        return np.mean([self.alpha * pred["class_probabilities"][op2n["1"]],
+                       (1 - self.alpha) * pct_pruned])
 
     def predict_vertexes(self, jdoc, state):
         '''

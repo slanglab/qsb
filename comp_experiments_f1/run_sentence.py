@@ -40,9 +40,11 @@ def get_model(config):
         query_focused = config["query"]
         model_name = config["model_name"]
         predictor_name = config["predictor_name"]
+        alpha = float(config["alpha"])
         return NeuralNetworkTransitionGreedyPlusLength(archive_loc=config["archive_loc"],
                                                        query_focused=query_focused,
                                                        predictor_name=predictor_name,
+                                                       alpha=alpha,
                                                        model_name=model_name)
 
 
@@ -146,7 +148,7 @@ if __name__ == "__main__":
     fast = "fast" if args.fast else "full"
     archive = config["archive_loc"].split("/")[1]
     out_ = config["results_dir"] + "/{}-{}-{}".format(str(fast), archive,
-                                                   config["algorithm"])
+                                                      config["algorithm"])
     config["no_compression"] = no_compression 
     print(config.keys())
     with open(out_, "w") as of:
