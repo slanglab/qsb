@@ -164,6 +164,58 @@ def get_labeled_toks(node, jdoc, op_proposed):
     return labeled_toks
 
 
+def get_labeled_toks_revised(node, state_jdoc, op_proposed, original_jdoc):
+    if len(state_jdoc["tokens"]) == 0:
+        labeled_toks = [{"word": "α", "index": -1000},{"word": "Ω", "index":1000}]
+        return labeled_toks
+
+    dep = [_["dep"] for _ in state_jdoc["basicDependencies"] if _["dependent"] == node][0]
+
+    #learning curve seems to be capping at 4M examples. but if you add more, uncomment this line to fill any unseen deps before rerunning.    
+    #with open("preproc/ud.txt", "a") as of:
+    #    of.write(dep + "\n")
+
+    START = "β" + ud2symbols[dep] + op_proposed   # BETA is BracketStart
+    END = "γ" + ud2symbols[dep] + op_proposed  # gamma is BracketEnd
+    
+    cut = dfs(g=state_jdoc, hop_s=node, D=[])
+    cut.sort()
+    mint = min(cut)
+    maxt = max(cut)
+
+    V = [i["index"] for i in state_jdoc["tokens"]]
+
+    labeled_toks = [{"word": i["word"] + "τ", "index":i["index"]}
+                    for i in original_jdoc["tokens"] if i["index"] not in V]
+
+    labeled_toks = labeled_toks + [{"word": i["word"], "index":i["index"]}
+                                   for i in original_jdoc["tokens"]
+                                   if i["index"] in V]
+
+    # the indexes are added w/ +.5 and -.5 so toks get sorted in right order downstream
+
+    # alpha is SOS tag for compression
+    labeled_toks = labeled_toks + [{"word": "α", "index": mint - .5}]
+
+    # δ is start of entire sequence
+    labeled_toks = labeled_toks + [{"word": "δ", "index": -10000}]
+
+    # λ is end of entire sequence
+    labeled_toks = labeled_toks + [{"word": "λ", "index": 100000}]
+
+    # omega is EOS tag for compression
+    labeled_toks = labeled_toks + [{"word": "Ω", "index": maxt + .5}]
+
+    # add bracket tags
+    labeled_toks.append({"word": START, "index": mint - .5})
+
+    labeled_toks.append({"word": END, "index": mint + .5})
+
+    labeled_toks.sort(key=lambda x: float(x["index"]))
+
+    return labeled_toks
+
+
 def prune_deletes_q(vertex, jdoc):
     '''would pruning this vertex delete any query items?'''
     q = jdoc["q"]
