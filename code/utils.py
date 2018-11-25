@@ -195,7 +195,7 @@ def get_labeled_toks_revised(node, state_jdoc, op_proposed, original_jdoc):
     # the indexes are added w/ +.5 and -.5 so toks get sorted in right order downstream
 
     # alpha is SOS tag for compression
-    labeled_toks = labeled_toks + [{"word": "α", "index": mint - .5}]
+    labeled_toks = labeled_toks + [{"word": "α", "index": min(V) - .5}]
 
     # δ is start of entire sequence
     labeled_toks = labeled_toks + [{"word": "δ", "index": -10000}]
@@ -204,7 +204,7 @@ def get_labeled_toks_revised(node, state_jdoc, op_proposed, original_jdoc):
     labeled_toks = labeled_toks + [{"word": "λ", "index": 100000}]
 
     # omega is EOS tag for compression
-    labeled_toks = labeled_toks + [{"word": "Ω", "index": maxt + .5}]
+    labeled_toks = labeled_toks + [{"word": "Ω", "index": max(V) + .5}]
 
     # add bracket tags
     labeled_toks.append({"word": START, "index": mint - .5})
