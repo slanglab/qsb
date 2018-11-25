@@ -161,7 +161,7 @@ class NeuralNetworkTransitionGreedyPlusLength:
                                                                    "1")
         would_be_pruned = len(" ".join([_["word"] for _ in state["tokens"]
                               if _["index"] in
-                              dfs(state["tokens"], v=vertex, D=[])]))
+                              dfs(state, hop_s=vertex, D=[])]))
 
         with open("/tmp/save", "wb") as of:
             import pickle
