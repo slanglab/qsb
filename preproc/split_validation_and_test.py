@@ -67,9 +67,9 @@ def load_dataset():
 
 if __name__ == "__main__":
     data = load_dataset()
-    random.shuffle(data)
+    from random import Random
+    Random(42).shuffle(data)
     data = [d for d in data if len(d["q"]) > 0]
-    print "[*] dataset loaded"
 
     # this is for validation. note: no tree transform.
     # this will go to human experiments
@@ -78,20 +78,16 @@ if __name__ == "__main__":
         dt = "\n".join([json.dumps(_) for _ in data[-validation_size:]])
         of.write(dt)
 
-    print "[*] dumped validation examples"
     # this is to train lstm taggers 
     with open("preproc/training.jsonl", "w") as of:
         dt = [json.dumps(_) for _ in data[0:-validation_size]]
-        print len(dt)
         of.write("\n".join(dt))
 
-    print "[*] dumped validation examples"
     # this is to train the ILP from F & A
     with open("preproc/100k", "w") as of:
         dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:100000]] 
         pickle.dump(dt, of)
 
-    print "[*] building vocab"
 
     def get_toks(jdoc):
         for t in jdoc['tokens']:
