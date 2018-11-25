@@ -192,6 +192,13 @@ def get_labeled_toks_revised(node, state_jdoc, op_proposed, original_jdoc):
                                    for i in original_jdoc["tokens"]
                                    if i["index"] in V]
 
+
+    # if the proposed op is extract then the proposed tokens are NOT in compression
+    if op_proposed == "ε":  # i.e. extract
+        for vno, v in labeled_toks:
+            if v["index"] in cut:
+                labeled_toks[vno]["word"] = labeled_toks[vno]["word"] + "τ"
+
     # the indexes are added w/ +.5 and -.5 so toks get sorted in right order downstream
 
     # alpha is SOS tag for compression
