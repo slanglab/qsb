@@ -1,3 +1,5 @@
+'''just a tmp workaround to fix an issue w/ preproc for ilp'''
+
 from preproc import *
 from unidecode import unidecode
 from ilp2013.fillipova_altun_supporting_code import get_tok
