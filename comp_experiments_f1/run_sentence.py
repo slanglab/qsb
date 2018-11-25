@@ -10,6 +10,7 @@ from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
 from comp_experiments_f1.algorithms import NeuralNetworkPredictThenPrune
+from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedyPlusLength
 from comp_experiments_f1.algorithms import BaselineCompressor
 from comp_experiments_f1.algorithms import FA2013Compressor
 from comp_experiments_f1.algorithms import FMCSearch
@@ -34,6 +35,16 @@ def get_model(config):
 
     if config["algorithm"] == "min-compression":
         return BaselineCompressor()
+
+    if config["algorithm"] == "nn-prune-greedy-w-length":
+        query_focused = config["query"]
+        model_name = config["model_name"]
+        predictor_name = config["predictor_name"]
+        return NeuralNetworkTransitionGreedyPlusLength(archive_loc=config["archive_loc"],
+                                                       query_focused=query_focused,
+                                                       predictor_name=predictor_name,
+                                                       model_name=model_name)
+
 
     if config["algorithm"] == "transition-based-compressor":
         query_focused = config["query"]
