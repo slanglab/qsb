@@ -107,11 +107,8 @@ if __name__ == "__main__":
         for t in get_toks(ln2):
             V.add(t["word"])
             pos_v.add(unidecode(t["pos"]))
-            assert type(t["pos"]) != str
             ner_v.add(unidecode(t['ner']))
-            assert type(t["ner"]) != str
             lemma_v.add(unidecode(t['lemma']))
-            assert type(t["lemma"]) != str
         for d in ln2["enhancedDependencies"]:
             try:
                 lemma = get_tok(d["governor"], jdoc=ln2)["lemma"]
