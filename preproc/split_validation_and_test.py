@@ -84,7 +84,7 @@ if __name__ == "__main__":
         of.write("\n".join(dt))
 
     # this is to train the ILP from F & A
-    with open("preproc/100k", "w") as of:
+    with open("preproc/100k", "wb") as of:
         dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:100000]] 
         pickle.dump(dt, of)
 
