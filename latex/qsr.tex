@@ -202,9 +202,9 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 For instance, in Figure \ref{f:example}, $\bm{x}$ ``shows'' the  effect of a proposed \textsc{Prune} of the subtree governed by $v=$\textit{risk}. Tokens in $V$ are shown in bold. The symbols, $\langle \textsc{Prune} \texttt{dobj} \rangle$  and $\langle / \textsc{Prune} \texttt{dobj} \rangle$ mark the start and end of the span of tokens in $T(v)$.
 \ahcomment{TODO details: class weighting, stopping criteria}
 
-Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and an activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. Word vectors are updated during training. 
+Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and an activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. Word vectors are updated during training.
 
-We initialize with GloVe embeddings \cite{pennington2014glove} and train using cross entropy loss with Adam \cite{Kingma2014AdamAM}. Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate \ahcomment{where is the dropout? extraneous param. fix} and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve validation accuracies higher than 97\% with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase scores in the future.} 
+We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set.\footnote{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_k}{2 * T_{k,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_k$ is the total number of training examples of operation type $k$ (e.g. $T_k$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{k,i}$ is the total number of training operations labeled $y_i$ for operations of type $k$ (e.g. $T_{i,k}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). 2 is the total number of classes. Alternative weighting methods are left for future work.}. Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate \ahcomment{where is the dropout? extraneous param. fix} and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve validation accuracies higher than 97\% with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase scores in the future.} 
 
 We tuned all of these parameters on varying sized subsets of the training data by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. The learning rate and weight decay parameter each have clear, observable effects on validation accuracy. 
 The importance of other parameters is less clear. The final parameters are included in a table in the appendix. \ahcomment{TODO} 
@@ -230,13 +230,16 @@ We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:il
 \centering
 Approach & F1  \\ \hline
 Query terms only (lower bound) & 0.384    \\
-\citet{filippova2013overcoming}   & .79           \\
+\citet{filippova2013overcoming}   & 0.810           \\
  \textbf{Iterative deletion} &  \textbf{0.897}    \\
 \end{tabular}
-\caption{\ahcomment{TODO, explain lower bound}}
+\caption{F1 scores for our transition-based approach to sentence compression, compared to a traditional ILP-based approach. Our method achieves an F1 score of \ahcomment{TODO}.  Selecting only query terms for a compression achieves an F1 of 0.384, which is the lower bound for this task.}
 \end{table}
 
 \ahcomment{todo p-values}
+
+\ahcomment{Low priority, but would be interesting to see what the penalty is for prune only methods}
+
 
 \subsection{Implementation: transition-based compression}\label{s:transition}
 
@@ -246,7 +249,7 @@ $$\argmaxA_{v \in V,q\not\in T(v)}   p(y = 1 | \bm{x})$$
 
 \noindent where $\bm{x}$ is the markup and the binary decision is for \textsc{Prune} or \textsc{NoPrune} (\S\ref{s:modeling}). We continue pruning subtrees until the length of the linearized tokens in $V$ is less than $b$, in which case we stop compression. 
 
-Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $(V_c, E_c)$ is simply equal to $(V_s, E_s)$. \ahcomment{update notation} In the remaining cases, all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. The smallest subtree exceeds the length constraint in \ahcomment{X pct} of cases.
+Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $V$ is simply equal to all tokens in the original sentence. \ahcomment{update notation} In the remaining cases, all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. The smallest subtree exceeds the length constraint in \ahcomment{X pct} of cases.
 
 This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-based techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations. ILP-based methods require solving or approximating NP-complete linear programming objectives. 
 
