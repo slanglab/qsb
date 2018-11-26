@@ -36,7 +36,7 @@ def get_model(config):
     if config["algorithm"] == "min-compression":
         return BaselineCompressor()
 
-    if config["algorithm"] == "nn-prune-greedy-w-length":
+    if "nn-prune-greedy-w-length" in config["algorithm"]:
         query_focused = config["query"]
         model_name = config["model_name"]
         predictor_name = config["predictor_name"]
