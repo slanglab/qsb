@@ -348,12 +348,12 @@ class FA2013Compressor:
 
         transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
 
-        print("***")
-        print(original_s["q"])
-        print(original_indexes)
-        print([_["index"] for _ in original_s["tokens"]])
-        print([_["index"] for _ in transformed_s["tokens"]])
-        print("000")
+        #print("***")
+        #print(original_s["q"])
+        #print(original_indexes)
+        #print([_["index"] for _ in original_s["tokens"]])
+        #print([_["index"] for _ in transformed_s["tokens"]])
+        #print("000")
 
         output = run_model(transformed_s,
                            vocab=self.vocab,
