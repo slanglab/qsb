@@ -4,5 +4,5 @@
   "archive_loc": "tests/fixtures/891477193/model.tar.gz",
   "algorithm": "ilp",
   "query": true,
-  "weights": "snapshots/4"
+  "weights": "snapshots/1"
 }
