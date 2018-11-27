@@ -571,11 +571,11 @@ class WorstCaseCompressor:
 
     def predict_len(self, original_s, vertex, state):
         '''
-        what is probability that this vertex is prunable,
-        according to transition-based nn model
+        the length is just the number of children
         '''
-        tok = [o["word"] for o in original_s["tokens"] if o["index"] == vertex][0]
-        return len(tok)
+        children = [o for o in original_s["basicDependencies"]
+                    if o["governor"] == vertex]
+        return len(children)
 
     def predict_vertexes(self, jdoc, state):
         '''
@@ -645,8 +645,7 @@ class WorstCaseCompressor:
             prunes += 1
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
             nops.append(len(vertexes))
-            vertexes.sort(key=lambda x: x[1], reverse=False)
-            import ipdb;ipdb.set_trace()
+            vertexes.sort(key=lambda x: x[1])
             if len(vertexes) == 0:
                 print("huh")
                 break
