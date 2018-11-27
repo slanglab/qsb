@@ -65,7 +65,7 @@ def get_model(config):
                          model_name=model_name,
                          nsamples=config["nsamples"])
 
-    if config["algorithm"] == "ilp":
+    if config["algorithm"][0:3] == "ilp":
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
         return FA2013Compressor(weights=weights)
