@@ -100,7 +100,11 @@ class NeuralNetworkTransitionGreedy:
         else:
             state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
 
-        logger.info("V init sentence ", len(jdoc["tokens"]) == len(state["tokens"]))
+        # this line is needed for the "For roughly two-thirds of sentences ..."
+        # logger.info("V init sentence ", len(jdoc["tokens"]) == len(state["tokens"]))
+
+        r = " ".join([o["word"] for o in state["tokens"]])
+        logger.info("init > r {}".format(len(r) > int(jdoc["r"])))
         return state
 
     def predict(self, jdoc):
