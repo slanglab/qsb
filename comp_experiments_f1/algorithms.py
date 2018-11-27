@@ -6,6 +6,7 @@ import math
 from allennlp.predictors.predictor import Predictor
 from allennlp.models.archival import load_archive
 from code.treeops import prune
+from code.log import logger
 from code.utils import prune_deletes_q
 from code.treeops import get_walk_from_root
 from code.utils import get_pred_y
@@ -98,6 +99,8 @@ class NeuralNetworkTransitionGreedy:
             state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         else:
             state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
+
+        logger.info("V init sentence ", len(jdoc["tokens"]) == len(state["tokens"]))
         return state
 
     def predict(self, jdoc):

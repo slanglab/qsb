@@ -36,7 +36,7 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
+%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
@@ -63,6 +63,9 @@
 
 % \ahcomment{Proposed revision: In this work we present a new, transition-based framework for extractive sentence compression. We use this framework to construct a sentence compression system based on a very simple neural network, which achieves large gains in automatic evaluation measures over previous state-of-the-art approaches. Unlike prior techniques, our method also allows accommodates lexical and length constraints without incurring exponential computational costs. This makes our method better suited to user-facing search applications, where length and lexical constraints are paramount.}
 
+% \ahcomment{note: gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
+
+
 \begin{abstract}
 Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based compression method which can accommodate such requirements.  Our technique is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings under constraints. 
 \end{abstract}
@@ -85,6 +88,14 @@ Traditional study of extractive sentence compression seeks to create short, read
 \label{f:qf}
 \end{figure}
 
+\ahcomment{
+major todos
+\begin{enumerate}
+\item v. simple human experiment: readability / informativeness w/ likert
+\item stat sig experiments
+\item one more comp experiment
+\end{enumerate}
+}
 
 This study examines the compression problem with such length and lexical requirements: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
@@ -174,7 +185,7 @@ Because it is only possible to prune $v_j$ if $v_j \in V$, and only possible to 
 
 We use a large corpus of sentence--compression pairs \cite{filippova2013overcoming} to train an LSTM to predict $p(y=1 | \bm{x})$, the probability of a binary oracle decision (\S\ref{s:oracle}), given a collection of input symbols $\bm{x}$.
 
-Loosely following \citet{D14-1082}, we define a set of tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, where $\bm{x}$ is a sequence of symbols reflecting some configuration of the compression system at some step $j$ on some oracle path and $y_j \in \{0,1\}$ is a binary variable indicating the oracle choice at timestep $j$. 
+Loosely following \citet{D14-1082}, we define a set of tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, where $\bm{x}$ is a sequence of symbols reflecting some configuration of the compression system at some step $j$ on some oracle path and $y_j \in \{0,1\}$ is a binary variable indicating the oracle choice at timestep $j$. We train on a corpus of 8 million such tuples. 
 
 A markup function, $m(V,v,o)=\bm{x}$, generates the sequence of input symbols for the LSTM. This function ``shows'' the model what a compressed sentence would ``look'' like if the compression system were to execute the operation $o \in \{\textsc{Prune}, \textsc{Insert}\}$ given the state $(V, v|B)$. In the case of insert operations, the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were to be copied  into $V$; in the case of prune operations, the function ``shows'' what the compression would be if $T(v)$ were to be removed from $V$.
 
@@ -193,20 +204,17 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
+\caption{\ahcomment{REDO w/ final markup} Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
 \label{f:example}
 \end{figure*}
 
-
-
 For instance, in Figure \ref{f:example}, $\bm{x}$ ``shows'' the  effect of a proposed \textsc{Prune} of the subtree governed by $v=$\textit{risk}. Tokens in $V$ are shown in bold. The symbols, $\langle \textsc{Prune} \texttt{dobj} \rangle$  and $\langle / \textsc{Prune} \texttt{dobj} \rangle$ mark the start and end of the span of tokens in $T(v)$.
-\ahcomment{stopping criteria}
 
 Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and an activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. Word vectors are updated during training.
 
-We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set.\footnote{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_k}{2 * T_{k,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_k$ is the total number of training examples of operation type $k$ (e.g. $T_k$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{k,i}$ is the total number of training operations labeled $y_i$ for operations of type $k$ (e.g. $T_{i,k}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). 2 is the total number of classes. Alternative weighting methods are left for future work.}. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs. \ahcomment{redo w/ final numbers}
+We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set.\footnote{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_k}{2 * T_{k,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_k$ is the total number of training examples of operation type $k$ (e.g. $T_k$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{k,i}$ is the total number of training operations labeled $y_i$ for operations of type $k$ (e.g. $T_{i,k}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). 2 is the total number of classes. Alternative weighting methods are left for future work.}. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs. \ahcomment{redo w/ final numbers} We use the network parameters from the highest-performing epoch for F1 evaluation..
 
-Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate \ahcomment{where is the dropout? extraneous param. fix} and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve validation accuracies higher than 97\% with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase scores in the future.} 
+Our model includes several hyper parameters \ahcomment{HP: one word or two? check} including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate \ahcomment{LSTM dropout is extraneous param if 1 layer. fix in code to silence warning} and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve validation accuracies higher than 97\% with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase scores in the future.} 
 
 We tuned all of these parameters on varying sized subsets of the training data by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. The learning rate and weight decay parameter each have clear, observable effects on validation accuracy. 
 The importance of other parameters is less clear. The final parameters are included in a table in the appendix. \ahcomment{TODO}  We implement with AllenNLP \cite{Gardner2017AllenNLP}.
@@ -225,7 +233,7 @@ We use a large, standard dataset of sentence--compression pairs from \citet{fili
 
 We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. We describe each method in the following sections.
 
-\ahcomment{human eval?}
+\ahcomment{human eval. I think this is a high priority thing that can/should be done in the week before submission.}
     
 \begin{table}[htb!]
 \begin{tabular}{ll}
@@ -251,7 +259,7 @@ $$\argmaxA_{v \in V,q\not\in T(v)}   p(y = 1 | \bm{x})$$
 
 \noindent where $\bm{x}$ is the markup and the binary decision is for \textsc{Prune} or \textsc{NoPrune} (\S\ref{s:modeling}). We continue pruning subtrees until the length of the linearized tokens in $V$ is less than $b$, in which case we stop compression. 
 
-Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $V$ is simply equal to all tokens in the original sentence. \ahcomment{update notation} In the remaining cases, all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. The smallest subtree exceeds the length constraint in \ahcomment{X pct} of cases.
+Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. In \ahcomment{TODO \%} of cases $V$ is simply equal to all tokens in the original sentence. In the remaining cases, all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. The smallest subtree exceeds the length constraint in \ahcomment{X pct} of cases.
 
 This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-based techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations. ILP-based methods require solving or approximating NP-complete linear programming objectives. 
 
@@ -262,10 +270,6 @@ While our method has lower complexity than existing approaches, we suspect that 
 We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, the authors did not release code for this model. We reimplement from scratch, achieving a similar a token-level F1 score as the original authors \ahcomment{.72, roughly}. We use a leading off-the-shelf optimizer \cite{gurobi} to solve the ILP.\footnote{We use version 7.} 
 
 There are some important differences between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work \ahcomment{See comment in appendix. talk to brendan. stanford??}. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
-
-\ahcomment{gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
-
-\ahcomment{100k in training set. we do too }
 
 \ahcomment{how to assess convergence}
 
@@ -325,7 +329,7 @@ In this work, we reimplement the method of \citet{filippova2013overcoming}, who 
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{worked.pdf}
-\caption{Ten operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, v|B)$. In the diagram, the tokens in $V$ are shown in bold. At each timestep, the token $v$ at the head of the buffer $B$ is shown in the third column. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram. The buffer is initialized breadth-first. Compression stops when the buffer is empty.}
+\caption{Nine operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, v|B)$. In the diagram, the tokens in $V$ are shown in bold. At each timestep, the token $v$ at the head of the buffer $B$ is shown in the third column. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram. The buffer is initialized breadth-first. Compression stops when the buffer is empty.}
 \label{f:example}
 \end{figure*}
 
