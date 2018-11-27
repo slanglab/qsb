@@ -19,8 +19,9 @@ max_ = max([len(i) for i in dt])
 
 
 with open("output/" + out, "w") as of:
-    of.write(",".join([str(i) for i in range(max_)]) + "\n")
-    for o in dt:
-        of.write(",".join([str(i) for i in o]) + "\n") 
+    of.write("sentence,epoch,ops\n")
+    for sno, s in enumerate(dt):
+        for opno, nops in enumerate(s):
+            of.write("{},{},{}\n".format(sno,opno,nops)) 
 
 #print(dt)
