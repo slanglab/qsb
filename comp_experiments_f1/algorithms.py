@@ -103,8 +103,9 @@ class NeuralNetworkTransitionGreedy:
         # this line is needed for the "For roughly two-thirds of sentences ..."
         # logger.info("V init sentence ", len(jdoc["tokens"]) == len(state["tokens"]))
 
-        r = " ".join([o["word"] for o in state["tokens"]])
-        logger.info("init > r {}".format(len(r) > int(jdoc["r"])))
+        # this line is needed for the "In more than 95% of sentences, the compression system..."
+        #r = " ".join([o["word"] for o in state["tokens"]])
+        #logger.info("init > r {}".format(len(r) > int(jdoc["r"])))
         return state
 
     def predict(self, jdoc):
@@ -114,14 +115,14 @@ class NeuralNetworkTransitionGreedy:
         prev_length = 0
         length = self.get_char_length(jdoc)
         orig_toks = jdoc["original_ix"]
-        nops = 0
+        nops = []
 
         state = self.init_state(jdoc)
         prunes = 0
         while length != prev_length and length > int(jdoc["r"]):
             prunes += 1
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
-            nops += len(vertexes)
+            nops.append(len(vertexes))
             vertexes.sort(key=lambda x: x[1], reverse=True)
             if len(vertexes) == 0:
                 print("huh")
