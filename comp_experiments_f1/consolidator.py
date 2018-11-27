@@ -15,6 +15,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
                 metrics =json.load(inf)
             metrics["f1"] = np.mean([float(dt[v]["f1"]) for v in dt.keys() if "sentence" in v])
             metrics["archive"] = dt["archive_loc"]
+            metrics['algo'] = dt['algorithm']
             results[dt["algorithm"] + dt["archive_loc"]] = metrics
 
 import json

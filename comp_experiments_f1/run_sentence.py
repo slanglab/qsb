@@ -10,6 +10,7 @@ from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
 from comp_experiments_f1.algorithms import NeuralNetworkPredictThenPrune
+from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedyPlusLength
 from comp_experiments_f1.algorithms import BaselineCompressor
 from comp_experiments_f1.algorithms import FA2013Compressor
 from comp_experiments_f1.algorithms import FMCSearch
@@ -35,6 +36,18 @@ def get_model(config):
     if config["algorithm"] == "min-compression":
         return BaselineCompressor()
 
+    if "nn-prune-greedy-w-length" in config["algorithm"]:
+        query_focused = config["query"]
+        model_name = config["model_name"]
+        predictor_name = config["predictor_name"]
+        alpha = float(config["alpha"])
+        return NeuralNetworkTransitionGreedyPlusLength(archive_loc=config["archive_loc"],
+                                                       query_focused=query_focused,
+                                                       predictor_name=predictor_name,
+                                                       alpha=alpha,
+                                                       model_name=model_name)
+
+
     if config["algorithm"] == "transition-based-compressor":
         query_focused = config["query"]
         model_name = config["model_name"]
@@ -52,7 +65,7 @@ def get_model(config):
                          model_name=model_name,
                          nsamples=config["nsamples"])
 
-    if config["algorithm"] == "ilp":
+    if config["algorithm"][0:3] == "ilp":
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
         return FA2013Compressor(weights=weights)
@@ -135,7 +148,7 @@ if __name__ == "__main__":
     fast = "fast" if args.fast else "full"
     archive = config["archive_loc"].split("/")[1]
     out_ = config["results_dir"] + "/{}-{}-{}".format(str(fast), archive,
-                                                   config["algorithm"])
+                                                      config["algorithm"])
     config["no_compression"] = no_compression 
     print(config.keys())
     with open(out_, "w") as of:

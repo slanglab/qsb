@@ -1,6 +1,6 @@
 {
   "results_dir": "comp_experiments_f1/output/",
-  "archive_loc": "models/831508229/model.tar.gz",
+  "archive_loc": "models/813281894/model.tar.gz",
   "algorithm": "nn-prune-greedy",
   "predictor_name": "split_classifier",
   "model_name": "split_classifier",

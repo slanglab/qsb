@@ -323,8 +323,6 @@ def get_q_word_and_governor(word_, jdoc):
         e(tuple): the index of the relation from the word's head to
                   the word in the jdoc
     '''
-    print(word_)
-    print([_["index"] for _ in jdoc["tokens"]])
     
     assert word_ in (i["index"] for i in jdoc["tokens"])
 
@@ -521,21 +519,31 @@ def lexical(e, jdoc, vocabs):
     col = []
     data = []
 
-    row.append(0)
-    col.append(vocabs["lemma_v2n"][lemma(n, jdoc)])
-    data.append(1)
+    try:
+        col.append(vocabs["lemma_v2n"][lemma(n, jdoc)])
+        row.append(0)
+        data.append(1)
+    except KeyError:
+        pass # oov. test time
 
     for sib in get_siblings(e=e, jdoc=jdoc):
         turn_on = lemma(index=h, jdoc=jdoc) + "-" + label(h=h,n=sib,jdoc=jdoc)
-        row.append(0)
-        col.append(len(vocabs["lemma_v2n"]) + vocabs["lemma_v_dep_v2n"][turn_on])
-        data.append(1)
+        try: 
+            col.append(len(vocabs["lemma_v2n"]) + vocabs["lemma_v_dep_v2n"][turn_on])
+            row.append(0)
+            data.append(1)
+        except KeyError:
+            pass # oov 
+            
 
     turn_on = lemma(h, jdoc) + "-" + label(h,n,jdoc)
 
-    row.append(0)
-    col.append(len(vocabs["lemma_v2n"]) + len(vocabs["lemma_v_dep_v2n"]) + vocabs["lemma_v_dep_v2n"][turn_on])
-    data.append(1)
+    try:
+        col.append(len(vocabs["lemma_v2n"]) + len(vocabs["lemma_v_dep_v2n"]) + vocabs["lemma_v_dep_v2n"][turn_on])
+        row.append(0)
+        data.append(1)
+    except KeyError:
+        pass # oov, possible at test time
 
     sparse = csr_matrix((data, (row, col)), shape=(1, row_size), dtype=np.int8)
 

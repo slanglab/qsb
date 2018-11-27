@@ -9,6 +9,7 @@ from code.treeops import get_walk_from_root
 from code.treeops import extract_for_state
 from collections import Counter
 from code.utils import get_labeled_toks
+from code.utils import get_labeled_toks_revised
 
 PP = "π"  # "proposedprune"
 PE = "ε"  # 'proposedextract'
@@ -67,10 +68,10 @@ def get_proposed(original_s, node, state):
 
 def get_encoded_tokens(label, state, original_s, node):
     if label in ["p", "np"]:
-        encoded_tokens = get_labeled_toks(node, state, PP)
+        encoded_tokens = get_labeled_toks_revised(node, state, PP, original_s)
     elif label in ["e", "ne"]:
         proposed = get_proposed(original_s, node, state)
-        encoded_tokens = get_labeled_toks(node, proposed, PE)
+        encoded_tokens = get_labeled_toks_revised(node, proposed, PE,original_s)
     else:
         assert "bad" == "thing"
     return encoded_tokens
@@ -169,17 +170,16 @@ if __name__ == "__main__":
 
     train = train[val_ix:]
 
-    N = 2000000
+    N = 1000000
 
     save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
+    #N = 8000000
 
-    N = 8000000
-
-    save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
+    #save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
     # this is for the LSTM
-    save_split('preproc/lstm_validation_3way.jsonl', val1, cap=10000, keep_deps=True)
+    save_split('preproc/lstm_validation_100k.jsonl', val1, cap=100000, keep_deps=True)
    
     # this if for the compression systems 
     just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val2, cap=10000)
