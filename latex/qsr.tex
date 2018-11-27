@@ -227,7 +227,7 @@ The importance of other parameters is less clear. The final parameters are inclu
 
 %\ahcomment{sentences vs. operations is maybe interesting. basically we get more training data b/c we have more ops per sentence. }
 
-\section{Experiment: Automatic Evaluation of Constrained Compression}
+\section{Experiment: Automatic Evaluation of Constrained Compression}\label{s:autoeval}
 
 We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to evaluate different approaches to length and lexically constrained compression. Using the dataset in this manner requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP 3.8.0 \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $q$ is a list of tokens. We also define the character length of the gold-standard compression as the character budget, $b$. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints.  \ahcomment{Note: these Q and r are going to be well-behaved! I.e. there is usually a good compression here. Should be revisited.}
 
@@ -296,13 +296,15 @@ There are some important differences between our implementation and existing wor
 
 ILP-based approaches to sentence compression formalize the task as a linear programming objective, a well-known NP-complete problem with exponential worst-case complexity (\S\ref{s:ilps}). One advantage of our transition-based framework is that it can perform query-focused, budget-constrained compression in worst-case quadratic time. 
 
-We define one unit of computational cost to be the computation required to evaluate one subtree for possible pruning; i.e. the cost of computing $p(y=1 | \bm{x})$. In the worst-case, our method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ possible operations. 
+We define one unit of computational cost to be the computation required to evaluate one subtree for possible pruning. This cost scales with the token length of the sentence: the more tokens in a sentence, the more subtrees must be considered for deletion.  %One unit of computational cost i i.e. the cost of computing $p(y=1 | \bm{x})$. 
 
+In the worst-case, our method will prune one singleton subtree (i.e. a subtree with one vertex) at each of the $N$ timesteps during compression.\footnote{Intuitively, pruning in this manner would remove a leaf from the (modified) parse tree at each timestep.} If a dependency parse of $s$ contains $|s|$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^{|s|} |s_i | = O(|s|^2)}$ possible operations to reach any arbitrarily small budget constraint and empty query (i.e. no required words specified), where $|s_i|$ refers to the token length of the sentence at timestep $i$ and where $|s_{i + 1}| = |s_{i}|  - 1$ because one token is removed at each step. This quadratic cost is lower than exponential costs from ILPs.
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
-However, we analyze the empirical costs of our algorithm and find that it has much smaller computational requirements. The quadratic worst-case overestimates our algorithm's costs.
 
-If a sentence $s$ has $|s|$ tokens, then in the worst case one single (shortest) token is removed at each timestep until the compression satisifies the c 
+This theoretical worst-case performance of our transition-based compression method is a poor description of the empirical costs of our algorithm. In worst-case, the algorithm only prunes one vertex from a singleton subtree at each timestep, but in practice our method often prunes large subtrees which remove many vertexes in a single step. In the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. In the worst case, the query will be empty (i.e. no required words specified), but in practice practitioners using our method will specify specific words which must be included in shortened sentences. \ahcomment{these arguments also apply to ILPs}
+
+We therefore measure the empirical costs of our algorithm during the experiment described in \S\ref{s:autoeval}. We compare the actual number of operations executed to the theoretical worst-case performance.
 
 \subsection{Syntactic shortcuts}
 
