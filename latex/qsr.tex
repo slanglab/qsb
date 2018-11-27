@@ -137,7 +137,7 @@ This integer linear programming approach also easily accommodates constrained co
 
 In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints, inspired by transition-based parsing techniques \cite{Earley1970AnEC,nivre2003}. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
 
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. However, transition-based methods have linear instead of exponential computational costs \ahcomment{ref location of this argument}
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. However, transition-based methods have quadratic instead of exponential computational costs in the worst-case. We examine their empirical costs in Section \ref{s:empiricalcost}).
 
 \begin{table*}[]
 \centering
@@ -261,7 +261,7 @@ $$\argmaxA_{v \in V,q\not\in T(v)}   p(y = 1 | \bm{x})$$
 
 Because \textsc{Prune} only removes tokens from the state, we initialize $(V, v|B)$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. For roughly two-thirds of sentences $V$ is simply equal to all tokens in the original sentence. In the remaining cases, all tokens in $q$ are contained in some sub-clause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. In more than 95\% of sentences, the compression system must make additional \textsc{Prune} decisions after removing the smallest subtree.
 
-This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-based techniques. In the worst case, an iterative deletion method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations. ILP-based methods require solving or approximating NP-complete linear programming objectives. 
+This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-based techniques. In the worst case, an iterative deletion method requires quadratic runtime for constrained compression. We include a detailed analysis of these costs in Section \ref{s:empiricalcosts}.
 
 While our method has lower complexity than existing approaches, we suspect that it is not a lower bound on constrained, abstractive, transition-based compression. It is possible that other future techniques might achieve linear or sublinear runtime, perhaps by setting $V$ equal to the query tokens and executing \textsc{Insert} operations to build a compression from the bottom up. We look forward to exploring such methods in future work. 
 
@@ -275,11 +275,10 @@ There are some important differences between our implementation and existing wor
 
 \ahcomment{what do they do in IR for query biased snippets? see email to john,hamed and Daniel w/ links to lucene docs \cite{kanungo2009predicting}).
  Find out what they do in lucene. Argue about open source search engines. }
+ 
+%\section{Computational experiments part 2: investigating properties of q,s,r compression}
 
-
-\section{Computational experiments part 2: investigating properties of q,s,r compression}
-
-\ahcomment{include?}
+%\ahcomment{include?}
 
 %\ahcomment{only outline / notes here}
 
@@ -295,13 +294,17 @@ There are some important differences between our implementation and existing wor
 %\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
 %\end{enumerate}
 
-\section{computational experiments part 3: computational costs}
+\section{Computational costs of transition-based compression}\label{s:empiricalcost}
 
-\ahcomment{See Brendan's notes on Trapezoidal costs Nov 8th. photos of notes committed to meetingsnotes folders}
+ILP-based approaches to sentence compression formalize the task as a linear programming objective, a well-known NP-complete problem with exponential worst-case complexity (\S\ref{s:ilps}). One advantage of our transition-based framework is that it can perform query-focused, budget-constrained compression in worst-case quadratic time (\S\ref{s:transition}). We define one unit of computational cost to be the computation required to evaluate one subtree for possible pruning; i.e. the cost of computing $p(y=1 | \bm{x})$. In the worst-case, our method will prune one singleton subtree (consisting of only one vertex) at each of the $N$ timesteps during compression. (Starting from the leaves and proceeding to the root of the original dependency parse). If a dependency parse contains $V$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^N V - i = O(V^2)}$ operations. 
+
+However, we analyze the empirical costs of our algorithm and find that it has much smaller computational requirements. 
+
+If a sentence $s$ has $|s|$ tokens, then in the worst case one single (shortest) token is removed at each timestep until the compression satisifies the c 
 
 \ahcomment{this needs to be rewritten}
 
-Iterative deletion is quadratic in the worst case, which represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences. 
+Iterative deletion is quadratic in the worst case, which represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences.  \ahcomment{look at some deps which are never pruned in FA}
 
 %In section \S\ahcomment{TODO} we also examine how the order of subtree deletion affects performance: intuitively, pruning large trees early in deletion removes the need to evaluate their many subtrees later in the deletion process.
 
