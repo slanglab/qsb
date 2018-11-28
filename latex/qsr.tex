@@ -240,10 +240,10 @@ We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:il
 \centering
 Approach & Constrained F1  \\ \hline
 Query terms only (lower bound) & 0.384    \\
-\citet{filippova2013overcoming}   & 0.810           \\
+Supervised ILP  & 0.810           \\
  \textbf{Iterative deletion} &  \textbf{0.897}    \\
 \end{tabular}
-\caption{F1 scores for our transition-based approach to sentence compression, compared to a traditional ILP-based approach. Our method achieves an F1 score of \ahcomment{TODO}.  Selecting only query terms for a compression achieves an F1 of 0.384, which is the lower bound for this task.}
+\caption{The F1 score for our iterative deletion approach to length and lexically constrained sentence compression, along with the F1 score for our reimplementation of a traditional ILP-based approach \cite{filippova2013overcoming}. Our method achieves an F1 score which is nine points higher. Selecting only query terms for a compression achieves an F1 = 0.384, which is the lower bound for this task.}
 \end{table}
 
 \ahcomment{todo p-values}
@@ -296,7 +296,7 @@ ILP-based approaches to sentence compression formalize the task as a linear prog
 
 We define one unit of computational cost to be the computation required to evaluate one subtree for possible pruning. This cost scales with the token length of the sentence: the more tokens in a sentence, the more subtrees must be considered for deletion.  %One unit of computational cost i i.e. the cost of computing $p(y=1 | \bm{x})$. 
 
-In the worst-case, our method will prune one singleton subtree (i.e. a subtree with one vertex) at each of the $N$ timesteps during compression.\footnote{Intuitively, pruning in this manner would remove a leaf from the (modified) parse tree at each timestep.} If a dependency parse of $s$ contains $|s|$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^{|s|} |s_i | = O(|s|^2)}$ possible operations to reach any arbitrarily small budget constraint when the query $=[]$, where $|s_i|$ refers to the token length of the sentence at timestep $i$ and where $|s_{i + 1}| = |s_{i}|  - 1$ because one token is removed at each step. This quadratic cost is lower than exponential costs from ILPs.
+In the worst-case, our method will prune one singleton subtree (i.e. a subtree with one vertex) at each of the $N$ timesteps during compression.\footnote{Intuitively, pruning in this manner would remove a leaf from the (modified) parse tree at each timestep.} If a dependency parse of $s$ contains $|s|$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^{|s|} |s_i | = O(|s|^2)}$ possible operations to reach any arbitrarily small budget constraint when the query does not specify any required tokens. $|s_i|$ refers to the token length of the sentence at timestep $i$. In the worst case, $|s_{i + 1}| = |s_{i}|  - 1$ because one token is removed at each step. This quadratic cost is lower than exponential costs from ILPs.
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
 
