@@ -93,7 +93,10 @@ major todos
 \begin{enumerate}
 \item v. simple human experiment: readability / informativeness w/ likert
 \item stat sig experiments
-\item one more comp experiment
+\item todo p-values
+\item update markup
+\item Note: these Q and r are going to be well-behaved! I.e. there is usually a good compression here. Should be revisited.
+\item Low priority, but would be interesting to see what the penalty is for prune only methods. What is the F1 cost of not doing insert?
 \end{enumerate}
 }
 
@@ -189,8 +192,6 @@ Loosely following \citet{D14-1082}, we define a set of tuples $\{(\bm{x}_j, y_j)
 
 A markup function, $m(V,v,o)=\bm{x}$, generates the sequence of input symbols for the LSTM. This function ``shows'' the model what a compressed sentence would ``look'' like if the compression system were to execute the operation $o \in \{\textsc{Prune}, \textsc{Insert}\}$ given the state $(V, v|B)$. In the case of insert operations, the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were to be copied  into $V$; in the case of prune operations, the function ``shows'' what the compression would be if $T(v)$ were to be removed from $V$.
 
-\ahcomment{update markup}
-
 More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle {o \cdot d} \rangle$, $T(v)$, $\langle{/o\cdot d}\rangle$, $V_R$, \texttt{EOS}], where:
 
 \begin{itemize}
@@ -204,7 +205,7 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{\ahcomment{REDO w/ final markup} Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
+\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,\textsc{Prune})=\bm{x}$ ``shows'' a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
 \label{f:example}
 \end{figure*}
 
@@ -212,20 +213,18 @@ For instance, in Figure \ref{f:example}, $\bm{x}$ ``shows'' the  effect of a pro
 
 Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer, consisting of an affine layer and an activation function. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. Word vectors are updated during training.
 
-We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set.\footnote{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_k}{2 * T_{k,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_k$ is the total number of training examples of operation type $k$ (e.g. $T_k$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{k,i}$ is the total number of training operations labeled $y_i$ for operations of type $k$ (e.g. $T_{i,k}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). 2 is the total number of classes. Alternative weighting methods are left for future work.}. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs. \ahcomment{redo w/ final numbers} We use the network parameters from the highest-performing epoch for F1 evaluation..
+We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set.\footnote{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_k}{2 * T_{k,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_k$ is the total number of training examples of operation type $k$ (e.g. $T_k$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{k,i}$ is the total number of training operations labeled $y_i$ for operations of type $k$ (e.g. $T_{i,k}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). 2 is the total number of classes. Alternative weighting methods are left for future work.}. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs. We use the network parameters from the highest-performing epoch for F1 evaluation..
 
 Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate in the fully-connected layers and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve similar validation accuracies with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase performance in the future.} 
 
 We tuned all of these parameters on varying sized subsets of the training data by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. The learning rate and weight decay parameter each have clear, observable effects on validation accuracy. 
-The importance of other parameters is less clear. The final parameters are included in a table in the appendix. \ahcomment{TODO}  We implement with AllenNLP \cite{Gardner2017AllenNLP}.
+The importance of other parameters is less clear. The final parameters are included in a table in the appendix. We implement with AllenNLP \cite{Gardner2017AllenNLP}.
 
 \section{Experiment: Automatic Evaluation of Constrained Compression}\label{s:autoeval}
 
-We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to evaluate different approaches to length and lexically constrained compression. Using the dataset in this manner requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP 3.8.0 \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $q$ is a list of tokens. We also define the character length of the gold-standard compression as the character budget, $b$. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints.  \ahcomment{Note: these Q and r are going to be well-behaved! I.e. there is usually a good compression here. Should be revisited.}
+We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to evaluate different approaches to length and lexically constrained compression. Using the dataset in this manner requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans with Stanford CoreNLP 3.8.0 \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the query, $q$. Formally, $q$ is a list of tokens. We also define the character length of the gold-standard compression as the character budget, $b$. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some readable compression which satisfies the length and lexical constraints.  
 
 We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. We describe each method in the following sections.
-
-\ahcomment{human eval. I think this is a high priority thing that can/should be done in the week before submission.}
     
 \begin{table}[htb!]
 \begin{tabular}{ll}
@@ -237,11 +236,6 @@ Supervised ILP  & 0.810           \\
 \end{tabular}
 \caption{The F1 score for our iterative deletion approach to length and lexically constrained sentence compression, along with the F1 score for our reimplementation of a traditional ILP-based approach \cite{filippova2013overcoming}. Our method achieves an F1 score which is nine points higher. Selecting only query terms for a compression achieves an F1 = 0.384, which is the lower bound for this task.}
 \end{table}
-
-\ahcomment{todo p-values}
-
-\ahcomment{Low priority, but would be interesting to see what the penalty is for prune only methods}
-
 
 \subsection{Implementation: transition-based compression}\label{s:transition}
 
@@ -259,7 +253,7 @@ This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-
 
 We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, the authors did not release code for this model. We reimplement from scratch, achieving a similar a token-level F1 score as the original authors \ahcomment{.72, roughly}. We use a leading off-the-shelf optimizer \cite{gurobi} to solve the ILP.\footnote{We use version 7.} 
 
-There are some important differences between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work \ahcomment{See comment in appendix. talk to brendan. stanford??}. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
+There are some important differences between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
 
 \ahcomment{how to assess convergence}
 
@@ -292,7 +286,7 @@ In the worst-case, our method will prune one singleton subtree (i.e. a subtree w
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
 
-This theoretical worst-case performance of our transition-based compression method is a poor description of the empirical costs of our algorithm. In worst-case, the algorithm only prunes one vertex from a singleton subtree at each timestep, but in practice our method often prunes large subtrees which remove many vertexes in a single step. In the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, the query will be empty (i.e. no required words specified), but in practice practitioners using our method will specify specific words which must be included in shortened sentences. \ahcomment{these arguments also apply to ILPs}
+This theoretical worst-case performance of our transition-based compression method is a poor description of the empirical costs of our algorithm. In worst-case, the algorithm only prunes one vertex from a singleton subtree at each timestep, but in practice our method often prunes large subtrees which remove many vertexes in a single step. In the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, the query will be empty (i.e. no required words are specified, requiring more possible operations), but in practice practitioners using our method will specify specific words which must be included in shortened sentences. \ahcomment{these arguments also apply to ILPs}
 
 We therefore measure the empirical costs of our algorithm during the experiment described in \S\ref{s:autoeval}. We compare the actual number of operations executed to the theoretical worst-case performance.
 
@@ -307,9 +301,7 @@ We therefore measure the empirical costs of our algorithm during the experiment 
 
 \ahcomment{redo this argument but using the dataset}
 
-Iterative deletion is quadratic in the worst case, which represents the theoretical upper bound of iterative deletion approaches. In practice, there is a substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. Coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. In section \S\ahcomment{TODO} we examine how a dataset of human judgements of the well-formedness of shortened sentences can dramatically reduce the empirical complexity of the iterative deletion algorithm by blocking obviously terrible prunes. While in principle there are an exponential number of possible sentence compressions, in practice there is a much smaller set of fluid or coherent shortened sentences.  \ahcomment{look at some deps which are never pruned in FA}
-
-While our method has lower complexity than existing approaches, we suspect that it is not a lower bound on constrained, abstractive, transition-based compression. It is possible that other future techniques might achieve linear or sublinear runtime, perhaps by setting $V$ equal to the query tokens and executing \textsc{Insert} operations to build a compression from the bottom up. We look forward to exploring such methods in future work. 
+Iterative deletion is quadratic in the worst case. In Section \ref{s:empiricalcost}, we show that the theoretical worst case is a poor predictor of the empirical runtime of iterative deletion. In this section, we examine the substantial gap between the mathematical properties of the iterative deletion algorithm and the linguistic properties of English syntax. While in principle any vertex may be pruned from a syntax tree, coherent english sentences require verbs and subjects. Coordinated English phrases must be joined with a conjunction. Prepositions cannot be removed from the start of an English prepositional phrase. ILPs consider an exponential number of possible sentence compressions, but in practice there is a much smaller set of fluid or coherent shortened sentences. \ahcomment{look at some deps which are never pruned in FA}
 
 \section{Related work}
 
@@ -352,6 +344,8 @@ Other differences between arise from diverging output from part-of-speech tagger
 Prior work does not specify all features in the structured perceptron model. We implement every feature discussed in the published work, except in cases where the feature or constraint assumes a syntactic formalism which is not compatible with UD.
 
 %\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
+
+ \ahcomment{Todo table with final parameters of the neural network} 
 
 
 \bibliography{abe}
