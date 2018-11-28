@@ -649,7 +649,8 @@ class WorstCaseCompressor:
             if len(vertexes) == 0:
                 print("huh")
                 break
-            vertex, prob = vertexes[0]
+            vertex, length = vertexes[0]
+            assert length == 1
             prune(g=state, v=vertex)
             prev_length = length
             length = self.get_char_length(state)
