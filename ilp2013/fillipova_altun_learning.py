@@ -89,6 +89,9 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
         if snapshot:
             with open("snapshots/{}".format(epoch), "wb") as of:
                 pickle.dump(avg_weights, of)
+            with open("checkpoints/{}".format(epoch), "wb") as of:
+                pickle.dump(weights, of)
+
     return {"avg_weights":avg_weights, "final_weights":weights}
 
 
