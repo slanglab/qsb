@@ -12,6 +12,7 @@ from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
 from comp_experiments_f1.algorithms import NeuralNetworkPredictThenPrune
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedyPlusLength
 from comp_experiments_f1.algorithms import BaselineCompressor
+from comp_experiments_f1.algorithms import WorstCaseCompressor
 from comp_experiments_f1.algorithms import FA2013Compressor
 from comp_experiments_f1.algorithms import FMCSearch
 
@@ -35,6 +36,9 @@ def get_model(config):
 
     if config["algorithm"] == "min-compression":
         return BaselineCompressor()
+
+    if config["algorithm"] == "worst-case-compressor":
+        return WorstCaseCompressor()
 
     if "nn-prune-greedy-w-length" in config["algorithm"]:
         query_focused = config["query"]

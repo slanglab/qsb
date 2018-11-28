@@ -560,14 +560,13 @@ class NeuralNetworkPredictThenPrune:
 
 
 class WorstCaseCompressor:
-    '''performs the absolutely worst number of ops'''
-    def __init__(self, archive_loc, model_name, predictor_name, T=.5, query_focused=True):
-        assert type(archive_loc) == str
-        archive = load_archive(archive_file=archive_loc)
-        self.archive = archive
-        self.T = T
-        self.query_focused = query_focused
-        self.predictor = Predictor.from_archive(archive, predictor_name)
+    '''
+    Performs the absolutely worst number of ops
+
+    Prunes only a singleton vertex
+    '''
+    def __init__(self):
+        pass
 
     def predict_len(self, original_s, vertex, state):
         '''
