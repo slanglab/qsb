@@ -12,24 +12,32 @@ len2observedops <- inner_join(sentence2ops, sentence2len) %>% group_by(len) %>% 
 len2observedops$theory <- len2observedops$len * len2observedops$len
 
 observed <- len2observedops %>% select(len, `mean(observed_ops)`)
-observed$kind <- "observed"
+observed$kind <- "Observed operations"
 observed$ops <- observed$`mean(observed_ops)`
 observed <- observed %>% select(len, kind, ops)
 
 
 theory <- len2observedops %>% select(len, theory)
-theory$kind <- "Worst-Case"
+theory$kind <- "Worst-case operations"
 theory$ops <- theory$theory
 theory <- theory %>% select(len, kind, ops)
 
 all_ <- rbind(observed,theory)
 
-ggplot(all_, aes(x=len, y=ops, color=kind, shape=kind)) + geom_point()
+# The palette with black:
+cbPalette <- c("#000000", "red", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+ggplot(all_ %>% filter(len < 30), aes(x=len, y=ops, color=kind, shape=kind)) + geom_line(size = 3) + ylab("Operations") + xlab("Sentence length") + 
+       theme_bw() + theme(legend.title=element_blank(),
+                            legend.position = "bottom",
+                            legend.spacing.x = unit(.5, 'cm'),
+                            axis.title=element_text(size=13,face="bold"),
+                            legend.text=element_text(size=13,face="bold"), 
+                           axis.text=element_text(size=13, face="bold")) + scale_colour_manual(values=cbPalette)
 
 ggsave("latex/observed.pdf")
 
-z <- a %>% filter(sentence == 14)
-
-ggplot(z, aes(x=epoch, y=ops)) + geom_point()
-
-ggsave("latex/single.pdf")
+#z <- a %>% filter(sentence == 14)
+#ggplot(z, aes(x=epoch, y=ops)) + geom_point()
+#ggsave("latex/single.pdf")

@@ -255,26 +255,7 @@ We compare our transition-based compression system to the state-of-the-art ILP-b
 
 There are some important differences between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
 
-\ahcomment{how to assess convergence}
-
- 
-%\section{Computational experiments part 2: investigating properties of q,s,r compression}
-
-%\ahcomment{include?}
-
-%\ahcomment{only outline / notes here}
-
-%\begin{enumerate}
-%\item{q = a list of 1 to 3 NER}
-%\item{r = random}
-%\item{What is the size of the minimum compression?}
-%\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}%
-%\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
-%\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
-%\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
-%\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
-%\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
-%\end{enumerate}
+\ahcomment{TODO: describe assessing convergence w/ epoch level F1}
 
 \section{Computational costs of transition-based compression}\label{s:costs}
 
@@ -286,14 +267,14 @@ In the worst-case, our method will prune one singleton subtree (i.e. a subtree w
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
 
-This theoretical worst-case performance of our transition-based compression method is a poor description of the empirical costs of our algorithm. In worst-case, the algorithm only prunes one vertex from a singleton subtree at each timestep, but in practice our method often prunes large subtrees which remove many vertexes in a single step. In the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, the query will be empty (i.e. no required words are specified, requiring more possible operations), but in practice practitioners using our method will specify specific words which must be included in shortened sentences. \ahcomment{these arguments also apply to ILPs}
+This theoretical worst-case performance of our transition-based compression method is a poor description of the empirical costs of our algorithm. In worst-case, the algorithm only prunes one vertex from a singleton subtree at each timestep, but in practice our method often prunes large subtrees which remove many vertexes in a single step. In the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, the query will be empty (i.e. no required words are specified, requiring more possible operations), but in practice practitioners using our method will specify specific words which must be included in shortened sentences. 
 
-We therefore measure the empirical costs of our algorithm during the experiment described in \S\ref{s:autoeval}. We compare the actual number of operations executed to the theoretical worst-case performance.
+We therefore measure the empirical costs of our algorithm during the experiment described in \S\ref{s:autoeval}, and compare the actual number of operations executed to the theoretical worst-case performance. We find that while iterative deletion is theoretically quadratic in the worst case, in practice the computational cost scales linearly in the token length of the input sentence (Figure \ref{f:example}). 
 
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=.5\textwidth]{observed.pdf}
-\caption{\ahcomment{TODO. perhaps also single sentence}}
+\caption{Number of possible worst-case operations vs. mean observed operations for the iterative deletion algorithm, at different sentence lengths. In the worst case (top), iterative deletion is quadratic in the token length of the input sentence (\S\ref{s:costs}). In practice (bottom), empirical costs scale linearly for constrained compression (\S\ref{s:empiricalcost}).}
 \label{f:example}
 \end{figure}
 
@@ -343,12 +324,32 @@ Other differences between arise from diverging output from part-of-speech tagger
 
 Prior work does not specify all features in the structured perceptron model. We implement every feature discussed in the published work, except in cases where the feature or constraint assumes a syntactic formalism which is not compatible with UD.
 
-%\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
-
- \ahcomment{Todo table with final parameters of the neural network} 
+ \ahcomment{TODO: table with final parameters of the neural network} 
 
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
 
 \end{document}
+
+%\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
+
+% other ideas... 
+ 
+%\section{Computational experiments part 2: investigating properties of q,s,r compression}
+
+%\ahcomment{include?}
+
+%\ahcomment{only outline / notes here}
+
+%\begin{enumerate}
+%\item{q = a list of 1 to 3 NER}
+%\item{r = random}
+%\item{What is the size of the minimum compression?}
+%\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}%
+%\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
+%\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
+%\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
+%\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
+%\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
+%\end{enumerate}
