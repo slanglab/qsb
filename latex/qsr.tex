@@ -214,7 +214,7 @@ Our architecture follows recent work on LSTM classification for sentence-level t
 
 We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set.\footnote{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_k}{2 * T_{k,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_k$ is the total number of training examples of operation type $k$ (e.g. $T_k$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{k,i}$ is the total number of training operations labeled $y_i$ for operations of type $k$ (e.g. $T_{i,k}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). 2 is the total number of classes. Alternative weighting methods are left for future work.}. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs. \ahcomment{redo w/ final numbers} We use the network parameters from the highest-performing epoch for F1 evaluation..
 
-Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate \ahcomment{LSTM dropout is extraneous param if 1 layer. fix in code to silence warning. running job 4412183 for config tuning/last.json to fix this} and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve validation accuracies higher than 97\% with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase scores in the future.} 
+Our model includes several hyperparameters including: the width of the max pooling layer, the learning rate, the Adam weight decay setting, the activation function, the dropout rate in the fully-connected layers and the dimensionality of input embeddings.\footnote{We also experimented with ELMo vectors \cite{Peters:2018}, but found that they slowed training dramatically. We were able to achieve similar validation accuracies with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase performance in the future.} 
 
 We tuned all of these parameters on varying sized subsets of the training data by first searching coarsely and at random \cite{Bergstra2012RandomSF} over the parameter space; and then searching finely and at random over smaller regions of the parameter space which achieve high decision-level accuracy. The learning rate and weight decay parameter each have clear, observable effects on validation accuracy. 
 The importance of other parameters is less clear. The final parameters are included in a table in the appendix. \ahcomment{TODO}  We implement with AllenNLP \cite{Gardner2017AllenNLP}.
@@ -271,8 +271,6 @@ There are some important differences between our implementation and existing wor
 
 \ahcomment{how to assess convergence}
 
-\ahcomment{what do they do in IR for query biased snippets? see email to john,hamed and Daniel w/ links to lucene docs \cite{kanungo2009predicting}).
- Find out what they do in lucene. Argue about open source search engines. }
  
 %\section{Computational experiments part 2: investigating properties of q,s,r compression}
 
@@ -298,7 +296,7 @@ ILP-based approaches to sentence compression formalize the task as a linear prog
 
 We define one unit of computational cost to be the computation required to evaluate one subtree for possible pruning. This cost scales with the token length of the sentence: the more tokens in a sentence, the more subtrees must be considered for deletion.  %One unit of computational cost i i.e. the cost of computing $p(y=1 | \bm{x})$. 
 
-In the worst-case, our method will prune one singleton subtree (i.e. a subtree with one vertex) at each of the $N$ timesteps during compression.\footnote{Intuitively, pruning in this manner would remove a leaf from the (modified) parse tree at each timestep.} If a dependency parse of $s$ contains $|s|$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^{|s|} |s_i | = O(|s|^2)}$ possible operations to reach any arbitrarily small budget constraint and empty query (i.e. no required words specified), where $|s_i|$ refers to the token length of the sentence at timestep $i$ and where $|s_{i + 1}| = |s_{i}|  - 1$ because one token is removed at each step. This quadratic cost is lower than exponential costs from ILPs.
+In the worst-case, our method will prune one singleton subtree (i.e. a subtree with one vertex) at each of the $N$ timesteps during compression.\footnote{Intuitively, pruning in this manner would remove a leaf from the (modified) parse tree at each timestep.} If a dependency parse of $s$ contains $|s|$ original vertexes, and each remaining vertex is evaluated for possible deletion at each timestep, then the iterative deletion method requires at most ${\sum_{i = 0}^{|s|} |s_i | = O(|s|^2)}$ possible operations to reach any arbitrarily small budget constraint when the query $=[]$, where $|s_i|$ refers to the token length of the sentence at timestep $i$ and where $|s_{i + 1}| = |s_{i}|  - 1$ because one token is removed at each step. This quadratic cost is lower than exponential costs from ILPs.
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
 
@@ -314,12 +312,12 @@ We therefore measure the empirical costs of our algorithm during the experiment 
 \end{figure}
 
 
-\begin{figure}[htb!]
-\centering
-\includegraphics[width=.5\textwidth]{single.pdf}
-\caption{\ahcomment{include?}}
-\label{f:example}
-\end{figure}
+%\begin{figure}[htb!]
+%\centering
+%\includegraphics[width=.5\textwidth]{single.pdf}
+%\caption{\ahcomment{include?}}
+%\label{f:example}
+%\end{figure}
 
 \subsection{Syntactic shortcuts}
 
@@ -331,16 +329,18 @@ While our method has lower complexity than existing approaches, we suspect that 
 
 \section{Related work}
 
-Traditional study of sentence compression is closely aligned with text summarization techniques that select and  shorten sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,clarke2008global,martins2009summarization,Nenkova2012ASO}. 
+Traditional study of sentence compression is closely aligned with text summarization techniques that create synopses by selecting and then shortening sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,clarke2008global,martins2009summarization,Nenkova2012ASO}. 
 In these settings, it is important for compressions to retain ``important'' information from source sentences because they must stand-in for longer sentences within summaries.
 
-Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-based snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS}. Often, such snippets must contain query terms, as in Figure \ref{f:qf}.
+Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-biased snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS}. Often, such snippets must contain query terms, as in Figure \ref{f:qf}. 
 
-Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint. Other work on query-focused summarization \cite{das} assumes softer interpretations of query requirements. 
+Apache Lucene 7.5.0, the leading open source search engine, does not perform sentence compression in generating snippets using its default Fragmenter, Highlighter and Scorer modules.\footnote{https://lucene.apache.org/core/documentation.html} We plan to apply and adapt our work for use in such systems; avoiding grammatical disfluencies from naive snippet generation techniques could make search engine results more readable \cite{kanungo2009predicting}.
 
-Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Our interest in this problem arose from constructing one such novel search system.
+Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint.  Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. 
 
-Finally, we note that our current compression method is strictly extractive, we follow a line of research \cite{clarke2008global,filippova2008dependency,filippova2015sentence} in which compressions are formed from subsequences extracted from the original sentence. Other line of research on sentence compression uses abstractive techniques \cite{cohn2008sentence,rush2015neural,mallinson18}. Our method might be extended with paraphrase operations in future work, following other approaches to summarization which blend abstractive and extractive methods \cite{P17-1099}.
+Finally, we note that our compression method is a strictly extractive technique. We follow a line of research \cite{clarke2008global,filippova2008dependency,filippova2015sentence} in which compressions are formed from subsequences extracted from the original sentence. Other research on sentence compression uses abstractive methods to which compress sentences via paraphrasing \cite{cohn2008sentence,rush2015neural,mallinson18}. Some research in machine translation and sentence generation considers how to create paraphrased token sequences with lexical constraints \cite{N18-1119,aaimh}. 
+
+Our method might be extended with paraphrase operations in future work, following other approaches which blend abstractive and extractive summarization \cite{P17-1099}. However, deploying such abstractive  compression is a far-off goal: even minor semantic errors from abstractive methods will destroy user trust in an automated summary \cite{Handler17,Zhang}.
 
 \section{Conclusion}
 \ahcomment{Daume's comments on Dagger method from podcast. The F1 method is trained on oracle decisions. Some way of minimally bad decisions off the oracle path would improve the system. RL in general would be good}
