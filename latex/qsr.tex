@@ -319,9 +319,9 @@ While our method has lower complexity than existing approaches, we suspect that 
 Traditional study of sentence compression is closely aligned with text summarization techniques that select and  shorten sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,clarke2008global,martins2009summarization,Nenkova2012ASO}. 
 In these settings, it is important for compressions to retain ``important'' information from source sentences because they must stand-in for longer sentences within summaries.
 
-Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-based snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS}. Often, such snippets must contain query terms. \ahcomment{screenshot?}
+Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-based snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS}. Often, such snippets must contain query terms, as in Figure \ref{f:qf}.
 
-Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint. (Other work on query-focused summarization \cite{das} assumes softer constraints). 
+Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint. Other work on query-focused summarization \cite{das} assumes softer interpretations of query requirements. 
 
 Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Our interest in this problem arose from constructing one such novel search system.
 
