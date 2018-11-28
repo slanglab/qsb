@@ -17,6 +17,7 @@ from code.treeops import dfs
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
+from code.printers import pretty_print_conl
 from math import log
 import numpy as np
 import copy
@@ -572,7 +573,7 @@ class WorstCaseCompressor:
         '''
         the length is just the number of children
         '''
-        children = [o for o in original_s["basicDependencies"]
+        children = [o for o in state["basicDependencies"]
                     if o["governor"] == vertex]
         return len(children)
 
@@ -581,7 +582,6 @@ class WorstCaseCompressor:
         what is probability that this vertex is prunable,
         according to transition-based nn model
         '''
-        assert self.query_focused
         return {_["index"]: self.predict_len(original_s=jdoc,
                                              vertex=_["index"],
                                              state=state)
@@ -649,7 +649,7 @@ class WorstCaseCompressor:
                 print("huh")
                 break
             vertex, length = vertexes[0]
-            assert length == 1
+            assert length == 0
             prune(g=state, v=vertex)
             prev_length = length
             length = self.get_char_length(state)

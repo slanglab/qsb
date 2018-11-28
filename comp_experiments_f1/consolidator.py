@@ -7,7 +7,7 @@ results = defaultdict(lambda: defaultdict(list))
 
 
 for fn in glob.glob("comp_experiments_f1/output/*"):
-    if "fast" not in fn:
+    if "fast" not in fn and "worst" not in fn:
         with open(fn, "r") as inf:
             dt = json.load(inf)
             arch = dt["archive_loc"].replace("model.tar.gz", "metrics.json")
