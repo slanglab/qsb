@@ -349,9 +349,9 @@ Some differences arise from differences in syntactic formalisms. To begin, prior
 
 Other differences between arise from diverging output from part-of-speech taggers. Prior work modifies a dependency tree by adding an edge between the root note and all verbs in a sentence, as a preprocessing step. This ensures that subclauses can be removed from parse trees to form compressions. However, we found that replicating this transform made it impossible for the ILP to create some gold compressions in the \citet{filippova2013overcoming} dataset; likely because different part-of-speech taggers disagree on some verb tags. We therefore add an edge between the root node and \textit{all} tokens in a sentence; we confirm that with this change the ILP can always output the gold compression.
 
-Prior work does not specify all features in the structured perceptron model. We implement every feature discussed in the published work.
+Prior work does not specify all features in the structured perceptron model. We implement every feature discussed in the published work, except in cases where the feature or constraint assumes a syntactic formalism which is not compatible with UD.
 
-\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
+%\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
 
 
 \bibliography{abe}
