@@ -27,3 +27,9 @@ all_ <- rbind(observed,theory)
 ggplot(all_, aes(x=len, y=ops, color=kind, shape=kind)) + geom_point()
 
 ggsave("latex/observed.pdf")
+
+z <- a %>% filter(sentence == 14)
+
+ggplot(z, aes(x=epoch, y=ops)) + geom_point()
+
+ggsave("latex/single.pdf")
