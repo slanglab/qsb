@@ -252,9 +252,16 @@ In the worst-case, our method will prune one singleton subtree (i.e. a subtree w
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
 
-The theoretical worst-case is a poor representation of the empirical costs of our iterative deletion algorithm. In worst-case, iterative deletion only prunes one vertex from a singleton subtree at each timestep, but in practice the method often prunes large subtrees which remove many vertexes in a single step. Similarly, in the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, $q$ will be empty (i.e. no lexical constraints are specified, so all operations must be considered at each timestep), but in practice practitioners using our query-focused method will likely specify at least one query term which must be included in shortened sentences. 
+The theoretical worst-case is a poor representation of the empirical costs of our iterative deletion algorithm. In the worst-case, iterative deletion only prunes one vertex from a singleton subtree at each timestep. But in practice, the method often prunes large subtrees which remove many vertexes in a single step. 
 
-We therefore measure the empirical costs of our algorithm during the experiment described in Section \ref{s:autoeval}, and compare the actual number of operations executed to the theoretical worst-case performance. We find that while iterative deletion is theoretically quadratic in the worst case (\S\ref{s:costs}), in practice the computational cost scales linearly in the token length of the input sentence (Figure \ref{f:example}). 
+%Similarly, in the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, $q$ will be empty (i.e. no lexical constraints are specified, so all operations must be considered at each timestep), but in practice practitioners using our query-focused method will likely specify at least one query term which must be included in shortened sentences. 
+
+We therefore measure the empirical costs of our algorithm during the experiment described in Section \ref{s:autoeval}. We count the total number of vertexes considered for possible pruning during the actual compression process, for each sentence in the experiment. We also compute the total number of such operations during an actual, worst-case run of the algorithm. In a worst case run, only a single token is removed at each timestep (without removing query tokens) until the character budget is satisfied.\footnote{Tokens will have different character lengths. We choose the single vertex for removal at random, from among all pruneable singleton subtrees.} This actual worst case is roughly.... \ahcomment{gauss method}, the closed form for a sequence of numbers.
+
+\ahcomment{factorial growth? how to say that}
+This actual $O(|s|^2)$ is an upper bound on actual worst case complexity of the algorithm.
+
+We find that while iterative deletion is theoretically quadratic in the worst case (\S\ref{s:costs}), in practice the computational cost scales linearly in the token length of the input sentence (Figure \ref{f:example}). 
 
 \begin{figure}[htb!]
 \centering
