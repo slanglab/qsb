@@ -34,7 +34,7 @@ sentence2len <- sentence2len %>% select(sentence, len)
 len2observedops <- inner_join(sentence2ops, sentence2len) %>% group_by(len) %>% summarize(mean(observed_ops))
 len2observedops$theory <- len2observedops$len * len2observedops$len
 observed_worst <- len2observedops %>% select(len, `mean(observed_ops)`)
-observed_worst$kind <- "Worst-case"
+observed_worst$kind <- "Worst-case performance"
 observed_worst$ops <- observed_worst$`mean(observed_ops)`
 observed_worst <- observed_worst %>% select(len, kind, ops)
 
