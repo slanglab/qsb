@@ -1,3 +1,5 @@
 {
-  "algorithm": "worst-case-compressor"
+  "algorithm": "worst-case-compressor",
+  "archive_loc": "o/worst-case/0",
+  "results_dir": "comp_experiments_f1/output/"
 }
