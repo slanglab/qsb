@@ -45,7 +45,7 @@ all_ <- rbind(observed, observed_worst)  # ,theory
 # The palette with black:
 cbPalette <- c("black", "red") #red", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-ggplot(all_ %>% filter(len < 30), aes(x=len, y=ops, color=kind, shape=kind)) + geom_line(size = 3, aes(linetype=kind, color=kind)) + ylab("Operations") + xlab("Sentence length") + 
+ggplot(all_ %>% filter(len < 30), aes(x=len, y=ops, color=kind, shape=kind)) + geom_line(size = 3, aes(linetype=kind, color=kind)) + ylab("Total vertexes evaluated for pruning") + xlab("Sentence length") + 
        theme_bw() + theme(legend.title=element_blank(),
                             legend.position = "bottom",
                             legend.spacing.x = unit(.5, 'cm'),

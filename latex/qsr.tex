@@ -15,6 +15,7 @@
 \usepackage[hyperref]{naaclhlt2019}
 \usepackage{times}
 \usepackage{graphicx}
+
 \usepackage{latexsym}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -82,10 +83,16 @@ Traditional approaches to extractive sentence compression seek to reduce the len
 \section{Introduction}
 
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface, and often must contain a user's query term. An example of such a compression is shown in Figure \ref{f:qf}.
+
+
 \begin{figure}[htb!]
-\includegraphics[width=8cm]{qf.pdf}
-\caption{Search interfaces often require compressions with length and lexical constraints. In this case, the user has queried for ``Pemex contracts". A system returns a related link and a short compression which contains the query terms.}
+\fbox{
+\begin{minipage}{7.6 cm}
+\includegraphics[width=7.5cm]{qf.pdf}
+\caption{Search interfaces often require compressions with length and lexical constraints. In this case, a system returns a related link (top) above a constrained compression (bottom). The constrained compression must contain the users' query terms (shown in bold), and obey a 60-character maximum length constraint.}
 \label{f:qf}
+\end{minipage}
+}
 \end{figure}
 
 This study examines the English-language compression problem with such length and lexical requirements: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
@@ -95,7 +102,7 @@ This study examines the English-language compression problem with such length an
 \begin{tabular}{lccc}
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained}  \\ \hline
 LSTM taggers \cite{filippova2015sentence}   & linear              & no         \\   
-Iterative deletion (this work)  & quadratic     &      yes   \\
+\textbf{Iterative deletion (this work)}  & \textbf{quadratic}     &      \textbf{yes}   \\
 ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & yes      \\
 \end{tabular}
 \caption{Three algorithms for sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints in quadratic time.} 
@@ -188,7 +195,7 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,o)=\bm{x}$ ``shows'' the LSTM a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens $V$ (\S\ref{s:formal}) are shown in bold.}
+\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,o)=\bm{x}$ ``shows'' the LSTM a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens in $V$ (\S\ref{s:formal}) are displayed in bold in the original sentence (top).}
 \label{f:example}
 \end{figure*}
 
@@ -234,7 +241,7 @@ This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, the authors did not release code for this model. We reimplement from scratch, achieving a similar a token-level F1 score as the original authors \ahcomment{.75, roughly. Add final number}. We use a leading off-the-shelf optimizer \cite{gurobi} to solve the ILP.\footnote{We use version 7.} 
+We compare our transition-based compression system to the state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement from scratch, achieving a similar a token-level F1 score as the original authors \ahcomment{.75, roughly. Add final number}. We use the leading \citet{gurobi} system (v7) to solve the ILP.
 
 There are some important differences between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
 
@@ -263,13 +270,13 @@ We find that while iterative deletion is polynomial in the worst case (\S\ref{s:
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=.5\textwidth]{observed.pdf}
-\caption{Number of observed operations in a worst case run vs. mean observed operations in an average run of the iterative deletion algorithm, at different sentence lengths. In the worst case (top), iterative deletion is polynomial in the token length of the input sentence (\S\ref{s:costs}). In practice (bottom), empirical costs scale linearly for constrained compression (\S\ref{s:empiricalcost}). The observed worst case observes the theoretical upper bound of $O(|s|^2)$ operations.}
+\caption{Mean observed operations in a worst case run vs. mean observed operations in an average run of the iterative deletion algorithm, at different sentence lengths. In the worst case (top), iterative deletion is polynomial in the token length of the input sentence (\S\ref{s:costs}). In practice (bottom), empirical costs scale linearly for constrained compression (\S\ref{s:empiricalcost}). The observed worst case observes the theoretical upper bound of $O(|s|^2)$ operations.}
 \label{f:example}
 \end{figure}
 
-\subsection{Cutting complexity with syntax}
+\subsection{Reducing computational complexity with syntax}
 
-\ahcomment{Possibly, redo this argument but using the FA dataset rather than the Brian dataset. Cut section if not enough time or space.}
+\ahcomment{Possibly, redo this argument but using the Fillipova/Altun dataset rather than the Brian Dillon dataset. Cut section if not enough time or space.}
 
 In Section \ref{s:empiricalcost}, we show that the theoretical worst case performance of iterative deletion is a poor representation of the algorithm's empirical performance. In this section, we examine the substantial gap between the mathematical description of the iterative deletion algorithm and the linguistic properties of English syntax. While in principle any vertex may be pruned from a syntax tree, in practice coherent english sentences will require verbs and subjects. Similarly, while in principle any collection of subtrees is a plausible compression, in practice coordinated English phrases must be joined with a conjunction, and prepositions (almost always) cannot be removed from the start of an English prepositional phrase. \ahcomment{look at some deps which are never pruned in FA}
 
@@ -286,7 +293,7 @@ Our method could also be used for particular forms of query-focused summarizatio
 
 Finally, we note that our compression method is a strictly extractive technique. We follow a line of research \cite{clarke2008global,filippova2008dependency,filippova2015sentence} in which compressions are formed from subsequences extracted from the original sentence. Other research on sentence compression uses abstractive methods to which compress sentences via paraphrasing \cite{cohn2008sentence,rush2015neural,mallinson18}. Some research in machine translation and sentence generation considers how to create paraphrased token sequences with lexical constraints \cite{N18-1119,aaimh}. 
 
-Our method might be extended with paraphrase operations in future work, following other approaches which blend abstractive and extractive summarization \cite{P17-1099}. However, deploying such abstractive  compression is a far-off goal: even minor semantic errors from abstractive methods will destroy user trust in an automated summary \cite{Handler17,Zhang}.
+Our method might be extended with paraphrase operations in future work, following other approaches which blend abstractive and extractive summarization \cite{P17-1099}. However, in our opinion, deploying such abstractive compression is a far-off goal. We suspect that users will not trust an abstractive summarizer which commits even slight semantic or syntactic errors \cite{Handler17,Zhang}.
 
 \section{Conclusion and Future Work}
 
