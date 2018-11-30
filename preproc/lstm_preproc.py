@@ -77,7 +77,7 @@ def get_encoded_tokens(label, state, original_s, node):
     return encoded_tokens
 
 
-def save_split(fn, data, cap=None, keep_deps=False):
+def save_split(fn, data, cap=None, keep_deps=False, corpus="preproc/training.jsonl"):
     '''
     note, avoiding pulling a whole big corpus into memory
     inputs:
@@ -86,7 +86,7 @@ def save_split(fn, data, cap=None, keep_deps=False):
         cap (int): maximum number of examples to generate
     '''
     total_so_far = 0
-    with open(CORPUS, 'r') as inf:
+    with open(corpus, 'r') as inf:
         with open(fn, 'w') as of:
             for ino, original_s in enumerate(inf):
                 if cap is not None and total_so_far > cap:
@@ -120,7 +120,7 @@ def save_split(fn, data, cap=None, keep_deps=False):
                     assert set(transition) == set(original_s["compression_indexes"])
 
 
-def just_save_sentences(fn, data, cap=None):
+def just_save_sentences(fn, data, cap=None, corpus="preproc/training.jsonl"):
     '''
     note, avoiding pulling a whole big corpus into memory
     inputs:
@@ -129,7 +129,7 @@ def just_save_sentences(fn, data, cap=None):
         cap (int): maximum number of examples to generate
     '''
     total_so_far = 0
-    with open(CORPUS, 'r') as inf:
+    with open(corpus, 'r') as inf:
         with open(fn, 'w') as of:
             for ino, original_s in enumerate(inf):
                 if cap is not None and total_so_far > cap:
@@ -172,14 +172,17 @@ if __name__ == "__main__":
 
     N = 1000000
 
-    save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
+    #save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
     #N = 8000000
 
     #save_split('preproc/lstm_train_{}.jsonl'.format(N), train, cap=N)
 
     # this is for the LSTM
-    save_split('preproc/lstm_validation_100k.jsonl', val1, cap=100000, keep_deps=True)
+    #save_split('preproc/lstm_validation_100k.jsonl', val1, cap=100000, keep_deps=True)
    
     # this if for the compression systems 
-    just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val2, cap=10000)
+    #just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val2, cap=10000)
+
+    # this is so the test data has the same format
+    assert "to" == "do"; just_save_sentences("")
