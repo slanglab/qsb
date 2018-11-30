@@ -76,6 +76,8 @@ Traditional approaches to extractive sentence compression seek to reduce the len
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface and often must contain a user's query term, which defines the ``important'' information in the sentence. An example of such a compression is shown in Figure \ref{f:qf}.
 
 
+This study examines the English-language compression problem with such length and lexical requirements: compressions which must include a list of query words $q$, and must have a character length which is less than or equal to $b \in \mathbb{Z}^{+}$. While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work has focused on neural network techniques \cite{filippova2015sentence} which achieve similar performance without handcrafted linguistic features, but which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
+
 \begin{figure}[htb!]
 \fbox{
 \begin{minipage}{7.6 cm}
@@ -85,8 +87,6 @@ Traditional study of extractive sentence compression seeks to create short, read
 \end{minipage}
 }
 \end{figure}
-
-This study examines the English-language compression problem with such length and lexical requirements: compressions which must include a list of query words $q$, and must have a character length which is less than or equal to $b \in \mathbb{Z}^{+}$. While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work has focused on neural network techniques \cite{filippova2015sentence} which achieve similar performance without handcrafted linguistic features, but which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
 \begin{table*}[htb!]
 \begin{tabular}{lccc}
