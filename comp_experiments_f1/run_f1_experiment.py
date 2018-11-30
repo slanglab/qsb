@@ -144,7 +144,7 @@ if __name__ == "__main__":
         fn = "preproc/lstm_validation_sentences_3way.jsonl"
         dataset = "validation"
     else:
-        fn = "sentence-compression/data/comp-data.eval.source"
+        fn = "sentence-compression/data/test_set.jsonl" 
         dataset = "test"
 
     with open(fn, "r") as inf:
