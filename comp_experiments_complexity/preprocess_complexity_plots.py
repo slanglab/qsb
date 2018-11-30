@@ -1,6 +1,7 @@
 # coding: utf-8
 
 # example useage $python comp_experiments_part_1/trapezoid.py comp_experiments_f1/output/fast-813281894-nn-prune-greedy 
+# this does the preprocessing for the complexity experiments
 
 import json
 
