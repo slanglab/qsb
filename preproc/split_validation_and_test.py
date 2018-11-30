@@ -46,10 +46,11 @@ def get_oracle(sentence, compresion_ixs, trees):
     return oracle
 
 
-def load_dataset():
+# important. glob_string for the *training data* starts sent-comp. test data is comp-data-eval in same folder. glob won't get it by default, which is important as otherwise you are training on test ! 
+def load_dataset(glob_string="sentence-compression/data/sent-comp*source"):
     sources = []
 
-    for source in glob.glob("sentence-compression/data/*sent-comp*source"):
+    for source in glob.glob(glob_string):
         with open(source, "r") as inf:
             for ln in inf:
                 ln = json.loads(ln)
