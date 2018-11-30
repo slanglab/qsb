@@ -204,7 +204,7 @@ The importance of other parameters is less clear. The final parameters are inclu
 
 We use a large, standard dataset of sentence--compression pairs from \citet{filippova2013overcoming} to evaluate different approaches to length and lexically constrained compression. Using the dataset in this manner requires reinterpreting gold standard data, which does not specify either a query or length constraint. After re-tokenizing, parsing and tagging NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}, we define all NER tokens\footnote{We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations.} which lie within the gold compression as the list of query tokens, $q$. We also define the character length of the gold-standard compression as the character budget, $b$. This interpretation allows us to redefine the corpus of $(s,c)$ pairs as a corpus of 4-tuples $(q,s,b,c)$, where $q$ is the query, $s$ is the original sentence, $b$ is the character budget and $c$ is some known-good compression which satisfies the length and lexical constraints. 
 
-We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. \ahcomment{TODO: human eval}. We describe each method in the following sections.
+We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given $q,s$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. We also consider how to apply readability and informativeness evaluations to constrained compression (\S\ref{s:readabilityinformativeness}). We describe each method in the following sections.
     
 \begin{table}[htb!]
 \begin{tabular}{ll}
@@ -235,9 +235,17 @@ We compare our transition-based compression system to the state-of-the-art ILP-b
 
 There are some important differences between our implementation and existing work, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We detail these differences in the appendix. Following \citet{filippova2013overcoming}, we set the weights of the ILP with a structured perception trained on the 100,000 sentence--compression pairs from the corpus.
 
-\section{Experiment: Human Evaluation of Constrained Compression}\label{s:humaneval}
+\subsection{Readability and importance}\label{s:readabilityinformativeness}
 
-\ahcomment{Standard likert scale readability / informativeness w. the 100 sentences. Complain about power analysis and stat sig in compression papers, including this one.}
+Extractive sentence compression models are traditionally evaluated automatically, and with human ``readability'' and ``importance'' measures on a Likert scale \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In a traditional importance evaluation, the human annotator has to decide if the compression retains the most ``important'' information from the source, based on their own subjective judgement. 
+
+In our constrained compression setting, the user's query determines the ``important'' information in the source sentence. The system must then create a compression which respects these query-defined lexical requirements. This makes the traditional ``informativeness'' evaluation unsuitable for constrained compression so we do not complete such an evaluation. 
+
+However, we note that in some cases, shortened sentences will modify the meaning of a sentence. Identifying such cases is an active area of research, connected to textual entailment and set theoretic semantics \cite{Nayak2014ADO,Pavlick2016SoCalledNA,linzencompression}. How to solicit human judgements about such cases at scale is also an active research question \cite{snli_bowman,annotation_artifacts_snli}. In the future, we hope to adapt this evolving work for applications which require sentence shortening.  
+ 
+As a check on the readability of the compressions produced by each system, we do \ahcomment{3-gm LM and report inline}.
+
+\ahcomment{Comment on why scores are higher for modified task}
 
 \section{Computational costs of transition-based compression}\label{s:costs}
 
