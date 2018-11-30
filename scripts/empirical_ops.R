@@ -49,9 +49,9 @@ ggplot(all_ %>% filter(len < 30), aes(x=len, y=ops, color=kind, shape=kind)) + g
        theme_bw() + theme(legend.title=element_blank(),
                             legend.position = "bottom",
                             legend.spacing.x = unit(.5, 'cm'),
-                            axis.title=element_text(size=13,face="bold"),
-                            legend.text=element_text(size=13,face="bold"), 
-                           axis.text=element_text(size=13, face="bold")) +
+                            axis.title=element_text(size=19,face="bold"),
+                            legend.text=element_text(size=15.5,face="bold"), 
+                           axis.text=element_text(size=16, face="bold")) +
                             scale_colour_manual(values=cbPalette)
 
 ggsave("latex/observed.pdf")
