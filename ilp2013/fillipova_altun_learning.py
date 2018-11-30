@@ -21,16 +21,17 @@ from code.utils import get_gold_y,get_pred_y
 random.seed(1)
 
 
-def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
+def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False, weights=None):
     '''
     Do learning for a dataset of compression data
     '''
-    weights = zero_weights(vocab)
+    if weights is None:
+        weights = zero_weights(vocab)
     avg_weights = np.copy(weights) # a running average of the weights
     t = 0
     print("[*] running on ", len(dataset))
 
-    for epoch in range(1, epochs):
+    for epoch in range(start_epoch, epochs):
         if verbose:
             print("[*] epoch {}".format(epoch))
         random.shuffle(dataset)
