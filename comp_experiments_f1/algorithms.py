@@ -70,6 +70,8 @@ class NeuralNetworkTransitionGreedy:
                                                                 jdoc)}
 
     def get_char_length(self, jdoc):
+        if len(jdoc["tokens"]) == 0:
+            return 0
         assert type(jdoc["tokens"][0]["word"]) == str
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 

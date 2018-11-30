@@ -7,7 +7,7 @@ results = defaultdict(lambda: defaultdict(list))
 
 
 for fn in glob.glob("comp_experiments_f1/output/*"):
-    if "fast" not in fn and "worst" not in fn:
+    if "worst" not in fn:
         with open(fn, "r") as inf:
             dt = json.load(inf)
             arch = dt["archive_loc"].replace("model.tar.gz", "metrics.json")
@@ -17,6 +17,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
             metrics["archive"] = dt["archive_loc"]
             metrics['algo'] = dt['algorithm']
             results[dt["algorithm"] + dt["archive_loc"]] = metrics
+            print(fn, metrics["f1"])
 
 import json
 with open("/tmp/opt.csv", "w") as of:
