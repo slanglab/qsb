@@ -47,7 +47,7 @@ def preproc():
         # you need to run server in stanford-corenlp-full-2017-06-09/run_server.sh
         local("ls sentence-compression/data/*jsonl | parallel -j 5 --eta 'python preproc/proc_filipova.py {}'") # do corenlp processing
         local("ls sentence-compression/data/*sent-comp.train*jsonl | parallel rm")
-        local("python preproc/split_validation_and_test.py")
+        local("python preproc/split_validation_and_training.py")
         print("[*] preprocessed done")
     else:
         print("[*] Can't find data. Do you need to run download? Try $fab download")
