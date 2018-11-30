@@ -125,7 +125,7 @@ if __name__ == "__main__":
     parser.add_argument("-verbose", action="store_true", default=False)
 
     parser.add_argument("-T", type=str, default=".5")
-    parser.add_argument("-test", type=bool, action="store_true", default=False)
+    parser.add_argument("-test", action="store_true", default=False)
     args = parser.parse_args()
 
     args.T = float(args.T)
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         fn = "preproc/lstm_validation_sentences_3way.jsonl"
         dataset = "validation"
     else:
-        fn = "sentence-compression/data/comp-data.eval.jsonl"
+        fn = "sentence-compression/data/comp-data.eval.source"
         dataset = "test"
 
     with open(fn, "r") as inf:
