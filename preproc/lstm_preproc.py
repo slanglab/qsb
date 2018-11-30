@@ -180,9 +180,3 @@ if __name__ == "__main__":
 
     # this is for the LSTM
     #save_split('preproc/lstm_validation_100k.jsonl', val1, cap=100000, keep_deps=True)
-   
-    # this if for the compression systems 
-    #just_save_sentences('preproc/lstm_validation_sentences_3way.jsonl', val2, cap=10000)
-
-    # this is so the test data has the same format
-    assert "to" == "do"; just_save_sentences("")
