@@ -125,6 +125,7 @@ if __name__ == "__main__":
     parser.add_argument("-verbose", action="store_true", default=False)
 
     parser.add_argument("-T", type=str, default=".5")
+    parser.add_argument("-test", type=bool, action="store_true", default=False)
     args = parser.parse_args()
 
     args.T = float(args.T)
@@ -138,7 +139,15 @@ if __name__ == "__main__":
         range_ = range(0, 1000)
 
     model = get_model(config)
-    with open("preproc/lstm_validation_sentences_3way.jsonl", "r") as inf:
+
+    if not args.test:
+        fn = "preproc/lstm_validation_sentences_3way.jsonl"
+        dataset = "validation"
+    else:
+        fn = "sentence-compression/data/comp-data.eval.jsonl"
+        dataset = "test"
+
+    with open(fn, "r") as inf:
         no_compression = 0
         for vno, _ in tqdm(enumerate(inf)):
             print(vno)
@@ -150,8 +159,9 @@ if __name__ == "__main__":
 
     fast = "fast" if args.fast else "full"
     archive = config["archive_loc"].split("/")[1]
-    out_ = config["results_dir"] + "/{}-{}-{}".format(str(fast), archive,
-                                                      config["algorithm"])
+    out_ = config["results_dir"] + "/{}-{}-{}-{}".format(str(fast), archive,
+                                                         config["algorithm"],
+                                                         dataset)
     config["no_compression"] = no_compression 
     print(config.keys())
     with open(out_, "w") as of:
