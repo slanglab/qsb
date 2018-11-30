@@ -71,15 +71,6 @@
 Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based compression method which can accommodate such requirements.  Our technique is more computationally efficient than classical ILP-based approaches, and more accurately reconstructs known-good shortenings under constraints. 
 \end{abstract}
 
-%\section{General comment}
-%Nobody cares about Rookie. Make the argument for open source search engines. 
-
-%\section{Unknowns}
-
-%\ahcomment{How will we deal with semantics? Brendan email about subsective adjectives ellie pavlik work. Right now we just use the gold data for this I guess. Future work?}
-
-%\ahcomment{How to use data from Brian, if at all. It uses dep type info + LM info + worker info. We use dep type info already. Can we use LM info?}
-
 \section{Introduction}
 
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface, and often must contain a user's query term. An example of such a compression is shown in Figure \ref{f:qf}.
@@ -89,14 +80,13 @@ Traditional study of extractive sentence compression seeks to create short, read
 \fbox{
 \begin{minipage}{7.6 cm}
 \includegraphics[width=7.5cm]{qf.pdf}
-\caption{Search interfaces often require compressions with length and lexical constraints. In this case, a system returns a related link (top) above a constrained compression (bottom). The constrained compression must contain the users' query terms (shown in bold), and obey a 60-character maximum length constraint.}
+\caption{Search interfaces often require compressions with length and lexical constraints. In this case, a system returns a related link (top) above a constrained compression from a retrieved document (bottom). The constrained compression must contain the users' query terms (shown in bold), and must be shorter than 60 characters, a maximum length constraint.}
 \label{f:qf}
 \end{minipage}
 }
 \end{figure}
 
-This study examines the English-language compression problem with such length and lexical requirements: shortened sentences must meet a given character budget, and must include particular words. While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work has focused on neural network techniques \cite{filippova2015sentence} which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
-
+This study examines the English-language compression problem with such length and lexical requirements: compressions which must include a list of query words $q$, and must have a character length which is less than or equal to $b \in \mathbb{Z}^{+}$, a character budget. While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work has focused on neural network techniques \cite{filippova2015sentence} which achieve similar performance without handcrafted features, but do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
 \begin{table*}[htb!]
 \begin{tabular}{lccc}
@@ -110,11 +100,11 @@ ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & y
 \end{table*}
 
 
-Therefore, in this work: we present a new, transition-based method for compressing sentences, which efficiently accommodates lexical and length constraints.  We compare our transition-based technique to traditional ILP-based methods, which also accommodate such restrictions. We show that our method has lower computational costs, while better reconstructing known-good shortenings. 
+Therefore, in this work, we present a new method for compressing sentences, which efficiently accommodates lexical and length constraints. Our transition-based, stateful compression method is inspired by similar approaches to transition-based dependency parsing \cite{nivre2003,D14-1082}. We compare this transition-based technique to traditional ILP-based methods, which also accommodate such restrictions. We show that our method has lower computational costs while better reconstructing known-good shortenings, as measured by token-level F1 score. 
 
 \section{Compression and constraints}
 
-This work discusses contrasts traditional ILP-based compression with our novel transition-based framework. We also briefly discuss compression with LSTM taggers, which do not accommodate length or lexical requirements. Table \ref{t:algos} provides a summary of the strengths and weaknesses of each method.
+This work contrasts traditional ILP-based compression with our novel transition-based framework. We also briefly discuss compression with LSTM taggers, which do not accommodate length or lexical requirements. Table \ref{t:algos} provides a summary of the strengths and weaknesses of each method.
 
 \subsection{Constrained compression with ILPs}\label{s:ilps}
 
@@ -128,7 +118,7 @@ This integer linear programming approach also easily accommodates constrained co
 
 In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints, inspired by transition-based parsing techniques \cite{Earley1970AnEC,nivre2003}. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. This method recalls early solutions to the compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
 
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain subtrees, until identifying a compression which satisfies the length constraints. However, we show that transition-based methods have lower computational costs (\S\ref{s:costs}).
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain query terms, until identifying a compression which satisfies the length constraints. However, we show that transition-based methods have lower computational costs (\S\ref{s:costs}).
 
 \begin{table*}[]
 \centering
@@ -167,7 +157,7 @@ In our transition-based compressor, only some operations are valid for some conf
 
 \subsection{Oracle paths}\label{s:oracle}
 
-We identified the operations in our compression system via empirical experiment: we found that for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|s|$ operations which can fully reconstruct the shortened sentence. $|s|$ denotes the token length of the original sentence.
+We identified the operations in our compression system empirically: we found that for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|s|$ operations which can fully reconstruct the shortened sentence. $|s|$ denotes the token length of the original sentence.
 
 We identify the oracle path by executing  a sequence of operations. Let $(V_j, v_j | B)$ denote the state at timestep $j$. The oracle operation at step $j$ is unambiguously determined by $c_g$, the vertexes in the gold compression. For instance, if $v_j \in V_j$ but $v_j \notin c_g$, then the oracle must execute \textsc{Prune}: $B$ is arranged breadth-first, so our system can only remove $v_j$ at timesteps $j^{\prime} \leq j$. Similarly, if $v_j \in c_g, v_j \in V$ then the oracle operation at timestep $j$ must be $\textsc{NoPrune}$. If the system were to prune $v_j$ at timestep $j$, it will not have the opportunity to insert the vertex at a later timestep. We use analogous reasoning to identify oracle $\textsc{Insert}$ and $\textsc{NoInsert}$ operations. By executing each oracle operation in sequence, we compress $s$ to $c_g$ and identify the oracle path.
 
