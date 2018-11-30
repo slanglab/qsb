@@ -136,7 +136,7 @@ if __name__ == "__main__":
     if args.fast:
         range_ = range(0, 100)
     else:
-        range_ = range(0, 1000)
+        range_ = range(0, 100000)
 
     model = get_model(config)
 
