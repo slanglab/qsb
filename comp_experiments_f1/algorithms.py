@@ -70,9 +70,6 @@ class NeuralNetworkTransitionGreedy:
                                                                 jdoc)}
 
     def get_char_length(self, jdoc):
-        if len(jdoc["tokens"]) == 0:
-            return 0
-        assert type(jdoc["tokens"][0]["word"]) == str
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 
     def heuristic_extract(self, jdoc):
@@ -129,8 +126,10 @@ class NeuralNetworkTransitionGreedy:
             nops.append(len(vertexes))
             vertexes.sort(key=lambda x: x[1], reverse=True)
             if len(vertexes) == 0:
-                print("huh")
-                break
+                print("ending pruning")
+                pretty_print_conl(jdoc) 
+                break # this is a case where there is no compression. there are no vertexes
+                      # that you can prune w/o removing a query term
             vertex, prob = vertexes[0]
             prune(g=state, v=vertex)
             prev_length = length
@@ -142,8 +141,11 @@ class NeuralNetworkTransitionGreedy:
                     "nops": nops,
                     "prunes": prunes
                     }
-        else:
-            return {"y_pred": "could not find a compression",
+        else:  
+            # in rare cases (5 of 1000) this method will not be able to prune 
+            # to below the length constraint. In these cases just return q.
+            # TODO add to paper
+            return {"y_pred": [_ in jdoc["q"] for _ in orig_toks],  
                     "nops": nops
                     }
 
