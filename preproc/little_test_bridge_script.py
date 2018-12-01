@@ -12,6 +12,8 @@ with open("preproc/test.jsonl", "w") as of:
     of.write("\n".join(dt))
 
 
+data = [d for d in data if len(d["q"]) > 0]
+
 just_save_sentences('sentence-compression/data/test_set.jsonl',
                     range(1, 1000000),
                     corpus="preproc/test.jsonl",
