@@ -11,7 +11,6 @@ preproc/*jsonl
 sentence-compression/*
 latex/qsr.synctex.gz
 cache/*
-klm/*
 .cache/*
 *pyc
 *pdf
