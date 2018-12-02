@@ -397,9 +397,16 @@ class FA2013CompressorStandard:
 
         transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
 
+        # "To get comparable
+        # results, the unsupervised and our systems used
+        # the same compression rate: for both, the requested
+        # maximum length was set to the length of the headline."
+        r = len(original_s["headline"])
+
         output = run_model(transformed_s,
                            vocab=self.vocab,
-                           weights=self.weights)
+                           weights=self.weights,
+                           r=r)
 
         predicted_compression = [o['dependent'] for o in output["get_Xs"]]
         y_pred = get_pred_y(predicted_compression=predicted_compression,
