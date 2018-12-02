@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-N', nargs="?", default=None, type=int)
-    parser.add_argument('-epochs', nargs="?", default=7, type=int)
+    parser.add_argument('-epochs', nargs="?", default=20, type=int)
     parser.add_argument("-file", default="preproc/100k")
     args = parser.parse_args()
     vocab = get_all_vocabs()
@@ -108,7 +108,10 @@ if __name__ == "__main__":
         data = pickle.load(of)
     if args.N is not None:
         data = data[0:args.N]
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
+
+    with open("checkpoints/{}".format(7), "rb") as of:
+        weights = pickle.load(of)
+    averaged_weights = learn(dataset=data, vocab=vocab, weights=weights, start_epoch=8, snapshot=True,
                              epochs=args.epochs, verbose=False)
     with open("output/{}".format(args.epochs), "wb") as of:
         pickle.dump(averaged_weights, of)

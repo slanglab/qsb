@@ -448,17 +448,22 @@ def syntactic(e, jdoc, vocabs):
 
     row_size = len(vocabs["pos_v"]) * 2 + len(vocabs['dep_v'])
 
-    row = np.array([0, 0, 0])
-    col = np.array([vocabs['pos_v2n'][pos(h, jdoc)],
-                    len(vocabs['pos_v2n']) + vocabs['pos_v2n'][pos(n, jdoc)],
-                    len(vocabs['pos_v2n']) * 2 + vocabs["dep_v2n"][label(h, n, jdoc)]
-                    ])
-    data = np.array([1, 1, 1])
+    try:
+        row = np.array([0, 0, 0])
+        col = np.array([vocabs['pos_v2n'][pos(h, jdoc)],
+                        len(vocabs['pos_v2n']) + vocabs['pos_v2n'][pos(n, jdoc)],
+                        len(vocabs['pos_v2n']) * 2 + vocabs["dep_v2n"][label(h, n, jdoc)]
+                        ])
+        data = np.array([1, 1, 1])
 
-    sparse = csr_matrix((data, (row, col)), shape=(1, row_size), dtype=np.int8)
+        sparse = csr_matrix((data, (row, col)), shape=(1, row_size), dtype=np.int8)
 
-    return sparse
-
+        return sparse
+    except KeyError: #oov test
+        row = np.array([0,0,0])
+        col = np.array([0,0,0])
+        return csr_matrix((np.array([0,0,0]),(row, col)), shape=(1,row_size), dtype=np.int8)
+    
 
 def semantic(e, jdoc, vocabs):
     '''
