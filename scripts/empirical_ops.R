@@ -45,14 +45,17 @@ all_ <- rbind(observed, observed_worst)  # ,theory
 # The palette with black:
 cbPalette <- c("black", "red") #red", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
+
 ggplot(all_ %>% filter(len < 30), aes(x=len, y=ops, color=kind, shape=kind)) + geom_line(size = 3, aes(linetype=kind, color=kind)) + ylab("Total vertexes evaluated for pruning") + xlab("Sentence length") + 
        theme_bw() + theme(legend.title=element_blank(),
                             legend.position = "bottom",
                             legend.spacing.x = unit(.5, 'cm'),
                             axis.title=element_text(size=19,face="bold"),
-                            legend.text=element_text(size=15.5,face="bold"), 
+                            legend.text=element_text(size=15.5,face="bold"),
+                            plot.title=element_text(size=17,face="bold"), 
                            axis.text=element_text(size=16, face="bold")) +
-                            scale_colour_manual(values=cbPalette)
+                            scale_colour_manual(values=cbPalette) +
+        ggtitle("Empirical complexity by sentence length")
 
 ggsave("latex/observed.pdf")
 
