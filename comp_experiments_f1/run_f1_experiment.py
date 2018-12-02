@@ -9,7 +9,6 @@ from tqdm import tqdm
 from sklearn.metrics import f1_score
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedy
 from comp_experiments_f1.algorithms import NeuralNetworkTransitionBFS
-from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedyPlusLength
 from comp_experiments_f1.algorithms import BaselineCompressor
 from comp_experiments_f1.algorithms import WorstCaseCompressor
 from comp_experiments_f1.algorithms import FA2013Compressor

@@ -138,6 +138,7 @@ class NeuralNetworkTransitionGreedy:
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in state["tokens"]]
             compression = " ".join([_["word"] for _ in jdoc["tokens"] if _["index"] in remaining_toks])
+            assert all([o in remaining_toks for o in jdoc["q"]]) 
             return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                     "compression": compression,
                     "nops": nops,
