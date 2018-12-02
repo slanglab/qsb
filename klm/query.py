@@ -7,15 +7,12 @@ import numpy as np
 
 logistic = linear_model.LogisticRegression()
 
-model = kenlm.LanguageModel('nyt.klm')
+model = kenlm.LanguageModel('fa.klm')
 
-print "*"
+print("*")
 
-print model.score("the boys")/2
-print model.score("boys")
+print(model.score("I am a student"))
 
-print "*"
+print("*")
 
-
-print model.score("the rudeness")/2
-print model.score("rudeness")
+print(model.score("student I a am"))
