@@ -231,9 +231,11 @@ This \textsc{Prune}-only iterative deletion is computationally simpler than ILP-
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a similar a token-level F1 score as the original authors \ahcomment{.75, roughly. Add final number}. We use the leading \citet{gurobi} system (v7) to solve the ILP.
+We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a token-level F1 score of  0.712 on the standard compression task. 
 
-There are some important differences between our implementation and \cite{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
+We implement with \citet{gurobi}, and assess convergence using validation F1 score at the end of each pass through the training data. After eight epochs, validation F1 score changes by less than $10^{-4}$ and we terminate training. 
+
+The F1 score in our reimplementation is slightly lower than the than the result reported by the original authors. There are some important differences between our implementation and \citet{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
 
 \subsection{Readability and importance}\label{s:readabilityinformativeness}
 
@@ -319,9 +321,9 @@ Some discrepancies arise from differences in syntactic formalisms. To begin, pri
 Other possible discrepancies arise from differences in part-of-speech taggers. In particular, prior work modifies a dependency tree by adding an edge between the root note and all verbs in a sentence, as a preprocessing step. This ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence. However, we found that replicating this transform literally (i.e. only adding edges from the original root to all ``verbs'') made it impossible for the ILP to recreate some of the gold compressions in the dataset. (We suspect that this is because our part-of-speech tagger and the original part-of-speech tagger employed in \citet{filippova2013overcoming} sometimes return different part-of-speech tags). Our tree transform therefore adds an edge between the root node and \textit{all} tokens in a sentence. With this change, it is always possible for the ILP to output the gold compression.
 
 We use \citet{gurobi} (v7) to solve the liner program. \citet{filippova2008dependency} report using LPsolve.\footnote{\url{http://
-sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults nondeterminsitically during training, so we create checkpoints after each epoch to restore computation after a Gurobi crash. We assess validation F1 score after each epoch. F1 score increases for the first seven epochs.  On the eighth epoch, F1 score decreases and we terminate training.  
+sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults nondeterminsitically during training, so we create checkpoints after each epoch to restore computation after a Gurobi crash. 
 
-Lastly, \citet{filippova2013overcoming} provide examples of syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features implemented in their model (but not not described in their paper) almost certainly affect performance.
+Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features implemented in their model (but not not described in their overview) almost certainly affect performance. 
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
