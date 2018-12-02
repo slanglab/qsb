@@ -252,10 +252,15 @@ class FA2013Compressor:
                            Q=original_s["q"],
                            r=r)
 
-        predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+        # note: not necessarily a unique set b/c multi edges possible to same
+        # vertex after the transform. Set() should not affect eval, if you look
+        # at the code in get_pred_y
+        predicted_compression = set([o['dependent'] for o in output["get_Xs"]])
         y_pred = get_pred_y(predicted_compression=predicted_compression,
                             original_indexes=original_indexes)
 
+        assert all([i in predicted_compression for i in original_s["q"]])
+        print(len(output["compressed"]) < original_s['r'])
         return {"y_pred": y_pred,
                 "compression": output["compressed"],
                 "nops": -19999999  # whut to do here????
