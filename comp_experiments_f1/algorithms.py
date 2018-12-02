@@ -377,6 +377,38 @@ class FA2013Compressor:
                 }
 
 
+class FA2013CompressorStandard:
+
+    '''
+    This implements a standard version of F and A
+    '''
+
+    def __init__(self, weights):
+        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+        self.weights = weights
+        self.vocab = get_all_vocabs()
+
+    def predict(self, original_s):
+        '''
+        run the ILP
+        '''
+
+        original_indexes = [_["index"] for _ in original_s["tokens"]]
+
+        transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
+
+        output = run_model(transformed_s,
+                           vocab=self.vocab,
+                           weights=self.weights)
+
+        predicted_compression = [o['dependent'] for o in output["get_Xs"]]
+        y_pred = get_pred_y(predicted_compression=predicted_compression,
+                            original_indexes=original_indexes)
+
+        return {"y_pred": y_pred,
+                "nops": -19999999  # whut to do here????
+                }
+
 # This one is mostly a technical curiousity.
 # Just a transition-based compressor that does
 # traditional sentence compression

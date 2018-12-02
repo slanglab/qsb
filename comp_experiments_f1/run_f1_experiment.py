@@ -13,6 +13,7 @@ from comp_experiments_f1.algorithms import NeuralNetworkTransitionGreedyPlusLeng
 from comp_experiments_f1.algorithms import BaselineCompressor
 from comp_experiments_f1.algorithms import WorstCaseCompressor
 from comp_experiments_f1.algorithms import FA2013Compressor
+from comp_experiments_f1.algorithms import FA2013CompressorStandard
 from comp_experiments_f1.algorithms import FMCSearch
 
 
@@ -38,6 +39,11 @@ def get_model(config):
 
     if config["algorithm"] == "worst-case-compressor":
         return WorstCaseCompressor()
+
+    if config['algorithm'][0:11] == "vanilla-ilp":
+        with open(config["weights"], "rb") as of:
+            weights = pickle.load(of)
+        return FA2013CompressorStandard(weights=weights)
 
     if "nn-prune-greedy-w-length" in config["algorithm"]:
         query_focused = config["query"]
@@ -72,15 +78,6 @@ def get_model(config):
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
         return FA2013Compressor(weights=weights)
-
-    if config['algorithm'] == "predict-then-prune":
-        query_focused = config["query"]
-        model_name = config["model_name"]
-        predictor_name = config["predictor_name"]
-        return NeuralNetworkPredictThenPrune(archive_loc=config["archive_loc"],
-                                             query_focused=query_focused,
-                                             predictor_name=predictor_name,
-                                             model_name=model_name)
 
     assert "unknown" == "model"
 
