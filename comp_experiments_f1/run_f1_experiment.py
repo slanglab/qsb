@@ -44,18 +44,6 @@ def get_model(config):
             weights = pickle.load(of)
         return FA2013CompressorStandard(weights=weights)
 
-    if "nn-prune-greedy-w-length" in config["algorithm"]:
-        query_focused = config["query"]
-        model_name = config["model_name"]
-        predictor_name = config["predictor_name"]
-        alpha = float(config["alpha"])
-        return NeuralNetworkTransitionGreedyPlusLength(archive_loc=config["archive_loc"],
-                                                       query_focused=query_focused,
-                                                       predictor_name=predictor_name,
-                                                       alpha=alpha,
-                                                       model_name=model_name)
-
-
     if config["algorithm"] == "transition-based-compressor":
         query_focused = config["query"]
         model_name = config["model_name"]
