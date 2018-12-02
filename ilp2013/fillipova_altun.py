@@ -196,7 +196,6 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
                         "solved": True,
                         "ws": ws,
                         "get_Xs": Xs_final,
-                        "get_Xs2": list(get_Xs_fix())
                         "predicted": predicted,
                         "compressed": compressed})
         if k == 1: # if k = 1 just return the best

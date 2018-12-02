@@ -260,8 +260,7 @@ class FA2013Compressor:
                             original_indexes=original_indexes)
 
         assert all([i in predicted_compression for i in original_s["q"]])
-        if len(output["compressed"]) > original_s["r"]:
-            import ipdb;ipdb.set_trace()
+        assert len(output["compressed"]) <= original_s["r"]
         return {"y_pred": y_pred,
                 "compression": output["compressed"],
                 "nops": -19999999  # whut to do here????
