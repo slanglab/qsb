@@ -114,9 +114,7 @@ if __name__ == "__main__":
     if args.N is not None:
         data = data[0:args.N]
 
-    with open("checkpoints/{}".format(7), "rb") as of:
-        weights = pickle.load(of)
-    averaged_weights = learn(dataset=data, vocab=vocab, weights=weights, start_epoch=8, snapshot=True,
+    averaged_weights = learn(dataset=data, vocab=vocab, start_epoch=1, snapshot=True,
                              epochs=args.epochs, verbose=False)
     with open("output/{}".format(args.epochs), "wb") as of:
         pickle.dump(averaged_weights, of)
