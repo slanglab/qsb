@@ -29,7 +29,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
     avg_weights = checkpoint["avg_weights"]
     dataset_queue = checkpoint["dataset_queue"]
     t = checkpoint["t"]
-    start_epoch = checkpoint["start_epoch"]
+    start_epoch = checkpoint["epoch"]
 
     print("[*] running on ", len(dataset))
 
@@ -116,7 +116,7 @@ def init_checkpoints(dataset, vocab):
     with open("checkpoints/latest", "wb") as of:
         checkpoint = {"weights": zero_weights(vocab),
                       "t": 0,
-                      "start_epoch": 0,
+                      "epoch": 0,
                       "avg_weights": zero_weights(vocab),
                       "dataset_queue": dataset_queue}
         pickle.dump(checkpoint, of)
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     with open(args.file, "rb") as of:
         data = pickle.load(of)
 
-    init_checkpoints(data, vocab)
+    #init_checkpoints(data, vocab)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)
