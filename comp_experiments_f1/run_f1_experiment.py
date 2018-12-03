@@ -95,6 +95,9 @@ def do_sentence(_, no_compression, config):
             print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"])
                             if y_pred[ino]]))
     assert f1 <= 1 and f1 >= 0
+    compression = [o["word"] for ono, o in enumerate(sentence['tokens'])
+                   if y_pred[ono]]
+    import ipdb;ipdb.set_trace()
     config["sentence{}".format(vno)] = {'f1': f1,
                                         "nops": ops,
                                         "prunes": prunes,
