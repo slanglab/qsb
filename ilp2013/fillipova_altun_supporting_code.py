@@ -42,6 +42,7 @@ def get_oracle_r(source_jdoc):
 
     return r
 
+
 def rand_weights(vocab):
     '''
     This is used for testing. It returns random weights.
@@ -50,6 +51,7 @@ def rand_weights(vocab):
     weights = np.random.rand( len(namer.lexical_names)+  len(namer.semantic_names) + len(namer.structural_names) + len(namer.syntactic_names))
     weights *= 50
     return weights
+
 
 def zero_weights(vocab):
     '''

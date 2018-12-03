@@ -14,6 +14,7 @@ from comp_experiments_f1.algorithms import WorstCaseCompressor
 from comp_experiments_f1.algorithms import FA2013Compressor
 from comp_experiments_f1.algorithms import FA2013CompressorStandard
 from comp_experiments_f1.algorithms import FMCSearch
+from klm.query import LM
 
 
 def strip_tags(tokens):
@@ -97,8 +98,14 @@ def do_sentence(_, no_compression, config):
     assert f1 <= 1 and f1 >= 0
     compression = [o["word"] for ono, o in enumerate(sentence['tokens'])
                    if y_pred[ono]]
-    import ipdb;ipdb.set_trace()
+    compression = " ".join(compression)
+
+    model = LM()
+
+    lm_score = model.score(compression)
+
     config["sentence{}".format(vno)] = {'f1': f1,
+                                        "lm": lm_score,
                                         "nops": ops,
                                         "prunes": prunes,
                                         "y_pred": y_pred,
