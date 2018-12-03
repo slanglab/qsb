@@ -18,7 +18,7 @@ from code.utils import get_gold_y,get_pred_y
 random.seed(1)
 
 
-def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False, weights=None):
+def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False):
     '''
     Do learning for a dataset of compression data
     '''
@@ -111,14 +111,13 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
 
 
 def init_checkpoints(dataset, vocab):
-    weights = zero_weights(vocab)
     dataset_queue = list(range(len(dataset)))
     random.shuffle(dataset_queue)
     with open("checkpoints/latest", "wb") as of:
-        checkpoint = {"weights": weights,
+        checkpoint = {"weights": zero_weights(vocab),
                       "t": 0,
                       "start_epoch": 0,
-                      "avg_weights": weights,
+                      "avg_weights": zero_weights(vocab),
                       "dataset_queue": dataset_queue}
         pickle.dump(checkpoint, of)
 
