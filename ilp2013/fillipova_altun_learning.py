@@ -37,12 +37,12 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
         if verbose:
             print("[*] epoch {}".format(epoch))
         epoch_scores = []
-        dataset_queue = range(len(dataset))
         random.shuffle(dataset_queue)
         while len(dataset_queue) > 0:
             t += 1
-            source_jdoc = dataset_queue[ix]
+            source_jdoc = dataset[dataset_queue[0]]
             dataset_queue = dataset_queue[1:]
+            random.shuffle(dataset_queue)
             gold = get_gold_edges(source_jdoc)
 
             # "The maximum permitted compression length is set to be the same as the
@@ -101,7 +101,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
                                   "t": t,
                                   "epoch": epoch,
                                   "avg_weights": avg_weights,
-                                  "queue": dataset_queue}
+                                  "dataset_queue": dataset_queue}
                     pickle.dump(checkpoint, of)
         if snapshot:
             with open("snapshots/{}".format(epoch), "wb") as of:
@@ -112,14 +112,14 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
 
 def init_checkpoints(dataset, vocab):
     weights = zero_weights(vocab)
-    dataset_queue = range(len(dataset))
+    dataset_queue = list(range(len(dataset)))
     random.shuffle(dataset_queue)
-    with open("checkpoints/latest", "w") as of:
+    with open("checkpoints/latest", "wb") as of:
         checkpoint = {"weights": weights,
                       "t": 0,
                       "start_epoch": 0,
                       "avg_weights": weights,
-                      "queue": dataset_queue}
+                      "dataset_queue": dataset_queue}
         pickle.dump(checkpoint, of)
 
 if __name__ == "__main__":
