@@ -100,9 +100,9 @@ def do_sentence(_, no_compression, config):
                    if y_pred[ono]]
     compression = " ".join(compression)
 
-    model = LM()
+    lm = LM()
 
-    lm_score = model.score(compression)
+    lm_score = lm.score(compression)
 
     config["sentence{}".format(vno)] = {'f1': f1,
                                         "lm": lm_score,
