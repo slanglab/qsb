@@ -2,17 +2,25 @@ from __future__ import division
 from sklearn import linear_model
 
 import kenlm
-import pickle
-import numpy as np
 
-logistic = linear_model.LogisticRegression()
+LOC = "/home/ahandler/qsr/klm/fa.klm"
 
-model = kenlm.LanguageModel('fa.klm')
+class LM:
 
-print("*")
+    def __init__(self):
 
-print(model.score("I am a student"))
+        self.model = kenlm.LanguageModel(LOC)
 
-print("*")
 
-print(model.score("student I a am"))
+    def score(self, str_):
+        # str_ is a " "-delimited string, e.g. "I am a student"
+
+        return self.model.score(str_)
+
+
+if __name__ == "__main__":
+
+    model = LM()
+
+    print(model.score("I am a student"))
+    print(model.score("student I a am"))
