@@ -107,6 +107,10 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
             with open("snapshots/{}".format(epoch), "wb") as of:
                 pickle.dump(avg_weights, of)
 
+        # refresh dataset queue at end of epoch
+        dataset_queue = list(range(len(dataset)))
+        random.shuffle(dataset_queue)
+
     return {"avg_weights": avg_weights, "final_weights": weights}
 
 
@@ -131,7 +135,7 @@ if __name__ == "__main__":
     with open(args.file, "rb") as of:
         data = pickle.load(of)
 
-    #init_checkpoints(data, vocab)
+    init_checkpoints(data, vocab)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)
