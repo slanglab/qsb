@@ -69,8 +69,6 @@
 
 \begin{abstract}
 Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based, neural compression method which accommodates such requirements by pruning syntactic dependency subtrees.  We show that our technique is more computationally efficient than previous ILP-based approaches, and achieves competitive performance in reconstructing known-good shortenings under constraints.
-
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based, neural compression model which accommodates such requirements by pruning syntactic dependency subtrees.  We show that our technique is more computationally efficient than previous ILP-based approaches, and achieves competitive performance in reconstructing known-good shortenings under constraints.
 \end{abstract}
 
 \section{Introduction}
@@ -187,7 +185,7 @@ More concretely, $\bm{x}$ is the symbol sequence [\texttt{SOS}, $V_L$, $\langle 
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{example.pdf}
-\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,o)=\bm{x}$ ``shows'' the LSTM a proposed change to the state of the compression system.  In this case, the model must decide whether or not to \textsc{Prune} the subtree headed at $v$ = \textit{limiting}, governed by a $\texttt{dobj}$ relation. The tokens in $V$ (\S\ref{s:formal}) are displayed in bold in the original sentence (top).}
+\caption{Our Bi-LSTM classification model, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with two separate fully-connected layers. One layer is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate binary choice (prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V,v,o)=\bm{x}$ ``shows'' the LSTM what a proposed change to the state of the compression system would ``look'' like if the operation were to be carried out.  The LSTM must then decide to execute (or not execute) the operation. In this case, the model must decide if it should execute an $o$= \textsc{Prune} on the subtree headed at $v$ = \textit{risk}, which is governed by a $\texttt{dobj}$ relation. The tokens in $V$ (\S\ref{s:formal}) are displayed in bold in the original parse of the sentence (bottom).}
 \label{f:example}
 \end{figure*}
 
@@ -276,11 +274,11 @@ We find that while iterative deletion is polynomial in the worst case (\S\ref{s:
 \label{f:example}
 \end{figure}
 
-\subsection{Reducing computational complexity with syntax}
+%\subsection{Reducing computational complexity with syntax}
 
-\ahcomment{Possibly, redo this argument but using the Fillipova/Altun dataset rather than the Brian Dillon dataset. Cut section if not enough time or space.}
+%\ahcomment{Possibly, redo this argument but using the Fillipova/Altun dataset rather than the Brian Dillon dataset. Cut section if not enough time or space.}
 
-In Section \ref{s:empiricalcost}, we show that the theoretical worst case performance of iterative deletion is a poor representation of the algorithm's empirical performance. In this section, we examine the substantial gap between the mathematical description of the iterative deletion algorithm and the linguistic properties of English syntax. While in principle any vertex may be pruned from a syntax tree, in practice coherent english sentences will require verbs and subjects. Similarly, while in principle any collection of subtrees is a plausible compression, in practice coordinated English phrases must be joined with a conjunction, and prepositions (almost always) cannot be removed from the start of an English prepositional phrase. \ahcomment{look at some deps which are never pruned in FA}
+%In Section \ref{s:empiricalcost}, we show that the theoretical worst case performance of iterative deletion is a poor representation of the algorithm's empirical performance. In this section, we examine the substantial gap between the mathematical description of the iterative deletion algorithm and the linguistic properties of English syntax. While in principle any vertex may be pruned from a syntax tree, in practice coherent english sentences will require verbs and subjects. Similarly, while in principle any collection of subtrees is a plausible compression, in practice coordinated English phrases must be joined with a conjunction, and prepositions (almost always) cannot be removed from the start of an English prepositional phrase. \ahcomment{look at some deps which are never pruned in FA}
 
 \section{Related work}
 
