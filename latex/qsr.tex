@@ -79,13 +79,13 @@ Traditional study of extractive sentence compression seeks to create short, read
 This study examines the English-language compression problem with such length and lexical requirements. Compressions must include a list of query words $q$, which define the ``important'' information in the sentence. They must also be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work has focused on neural network techniques \cite{filippova2015sentence} which achieve similar performance using learned features, but which do not give practitioners such control. This makes existing neural methods unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
 
 \begin{figure}[htb!]
-\fbox{
-\begin{minipage}{7.6 cm}
-\includegraphics[width=7.5cm]{qf.pdf}
-\caption{Search interfaces often require compressions with length and lexical constraints. In this case, a system returns a related link (top) above a constrained compression from a retrieved document (bottom). The constrained compression must contain the users' query terms (shown in bold), and must be shorter than the maximum length constraint of 60 characters.}
+%\fbox{
+%\begin{minipage}{7.6 cm}
+\includegraphics[width=8cm]{qf.pdf}
+\caption{Search interfaces often require compressions with length and lexical constraints. In this case, a search interface (boxed, top) returns a headline $h$ above a constrained compression $c$, shortened from a sentence $s$ in a query-relevant document (italics, bottom). The constrained compression must contain the users' query terms (bold), and must not exceed 75 characters in length.}
 \label{f:qf}
-\end{minipage}
-}
+%\end{minipage}
+%}
 \end{figure}
 
 \begin{table*}[htb!]
@@ -323,7 +323,7 @@ Some discrepancies arise from differences in syntactic formalisms. To begin, pri
 Other possible discrepancies arise from differences in part-of-speech taggers. In particular, prior work modifies a dependency tree by adding an edge between the root note and all verbs in a sentence, as a preprocessing step. This ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence. However, we found that replicating this transform literally (i.e. only adding edges from the original root to all ``verbs'') made it impossible for the ILP to recreate some of the gold compressions in the dataset. (We suspect that this is because our part-of-speech tagger and the original part-of-speech tagger employed in \citet{filippova2013overcoming} sometimes return different part-of-speech tags). Our tree transform therefore adds an edge between the root node and \textit{all} tokens in a sentence. With this change, it is always possible for the ILP to output the gold compression.
 
 We use \citet{gurobi} (v7) to solve the liner program. \citet{filippova2008dependency} report using LPsolve.\footnote{\url{http://
-sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults nondeterminsitically during training, so we create checkpoints after each epoch to restore computation after a Gurobi crash. 
+sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults nondeterminsitically during training. We implement checkpoints which save and restore the state of computation, allowing us to stop and then resume training when such errors occur. 
 
 Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features implemented in their model (but not not described in their overview) almost certainly affect performance. 
 
