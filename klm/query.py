@@ -5,12 +5,12 @@ import kenlm
 
 LOC = "/home/ahandler/qsr/klm/fa.klm"
 
+
 class LM:
 
     def __init__(self):
 
         self.model = kenlm.LanguageModel(LOC)
-
 
     def score(self, str_):
         # str_ is a " "-delimited string, e.g. "I am a student"
