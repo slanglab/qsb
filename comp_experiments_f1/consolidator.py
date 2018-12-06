@@ -1,5 +1,6 @@
 import glob
 import json
+import json
 import numpy as np
 from collections import defaultdict
 
@@ -16,10 +17,10 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
             metrics["f1"] = np.mean([float(dt[v]["f1"]) for v in dt.keys() if "sentence" in v])
             metrics["archive"] = dt["archive_loc"]
             metrics['algo'] = dt['algorithm']
+            metrics['lm'] = np.mean([float(dt[v]["lm"]) for v in dt.keys() if "sentence" in v])
             results[dt["algorithm"] + dt["archive_loc"]] = metrics
             print(fn, metrics["f1"])
 
-import json
 with open("output/results.csv", "w") as of:
     first = True
     for ln in results:
@@ -28,8 +29,4 @@ with open("output/results.csv", "w") as of:
             of.write(",".join(ln.keys()) + "\n")
             first = False
         v = [str(ln[o]) for o in ln.keys()]
-        of.write(",".join(v) + "\n")   
-
-with open("/tmp/optimize.jsonl", "w") as of:
-    for r in results:
-        of.write(json.dumps(results[r]) + "\n")
+        of.write(",".join(v) + "\n")
