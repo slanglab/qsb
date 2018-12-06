@@ -179,10 +179,10 @@ The markup uses three sets of inline bracket symbols to represent the following 
 \begin{enumerate}
 \item{The start and end of the original, uncompressed sentence $s$. These bracket symbols are shown with \texttt{<s>} and \texttt{</s>} in Figure \ref{f:example}.}
 \item{The start and end of the tokens $V_{j+1}$ within $s$, where $V_{j+1}$ is all tokens in the state of the compression system if the system were to execute operation $o$ at timestep $j$. These bracket symbols are shown with \texttt{<c>} and \texttt{</c>} in Figure \ref{f:example} \ahcomment{In oracle mode, this span will never be gappy. but it can be in greedy prune mode}}
-\item{The start and end of the tokens which would be pruned or inserted by the operation $o$. These bracket symbols, called \textit{subtree tags} have a more complex structure which encodes $(i)$ the type of the proposed operation $(ii)$ the syntactic role of the tokens to be pruned or inserted within the original sentence $s$. Figure \ref{f:example} shows the example subtree tags, $\langle \textsc{Prune} \texttt{dobj} ? \rangle$ and $\langle \textsc{Prune} \texttt{dobj} ? \rangle$. More details of the structure of subtree tags is included in the appendix}
+\item{The start and end of the tokens which would be pruned or inserted by the operation $o$. These bracket symbols, called \textit{subtree tags} have a more complex structure which encodes $(i)$ the type of the proposed operation $(ii)$ the syntactic role of the tokens to be pruned or inserted within the original sentence $s$. Figure \ref{f:example} shows the example subtree tags, $\langle \textsc{Prune} \texttt{dobj} ? \rangle$ and $\langle \textsc{Prune} \texttt{dobj} ? \rangle$. More details of the structure of subtree tags is included in the appendix (\S\ref{s:subtree})}
 \end{enumerate}
 
-The markup also attaches special indicator tags to tokens which are in $s$ but are not in $V_j$. (These indicator tags are denoted with strikethrough text in Figure \ref{f:example}.) Including the  three sets of inline bracket tags, along with the indicator tags, allows the LSTM to model the relationship between the tokens to be pruned or inserted, the current compression, the proposed operation type, and the original sentence. Prior work shows that LSTMs have the capacity to model bracketing within a sentence \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}.
+In addition to the three inline bracket symbols, the markup also includes special indicator tags which are concatenated to tokens from $s$ which are not in $V_j$. (These indicator tags are denoted with strikethrough text in Figure \ref{f:example}.) Including the  three sets of inline bracket tags, along with the indicator tags, allows the LSTM to model the relationship between the tokens to be pruned or inserted, the current compression, the proposed operation type, and the original sentence. Prior work shows that LSTMs have the capacity to model bracketing within a sentence \cite{Vinyals2015GrammarAA,Aharoni2017TowardsSN}.
 
 
 Our architecture follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict the binary, oracle operation using a Bi-LSTM layer, a max pooling layer, and a fully-connected classification layer. We maintain two separate fully-connected layers: one for the \textsc{Prune} operation and one for the \textsc{Insert} operation. We interpret the shared Bi-LSTM layer as learning deep features from the markup \textbf{x}, and each fully-connected layer as using those features to perform a different kind of binary classification. Figure \ref{f:example} shows the architecture of the network. 
@@ -337,25 +337,9 @@ sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults non
 
 Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features implemented in their model (but not not described in their overview) almost certainly affect performance. 
 
-\subsection{Structure of subtree tags}\label{s:markup}
+\subsection{Structure of subtree tags}\label{s:subtree}
 
-The markup is the deterministic output of a function $m(V,v,o)=\bm{x}$. $\bm{x}$ is formed by inserting three sets of bracket tags into the original sequence of tokens in the sentence, along with indicator markers which 
-
-The markup also uses rich inline
-
-
-
-6 extra symbols to the sequences of tokens in $s$, and adding marker symbols to the tokens in $s$ which are not in $V$. More concretely, $\bm{x}$ is the symbol sequence [\texttt{<s>}, $T_1$, \texttt{<c>}, $T_2$, $\langle o \cdot d \rangle$,  $T(v)$,  $\langle / o \cdot d \rangle$, $T_3$, \texttt{</c>}, $T_4$ \texttt{</s>}] where:
-
-\begin{itemize}
-\item{\texttt{<s>} and \texttt{</s>} are tags denoting the start and end of the original sentence $s$. These tags are always the first and last symbols in the markup, respectively.}
-\item{ \texttt{<c>} and \texttt{</c>} are tags denoting the start and end of the compression, if the compression system were to execute the proposed operation. The start and end of the compression are defined by left-most and right-most tokens in $V \cup T(v)$, by position in $s$.}
-\item{The symbols $\langle o \cdot d \rangle$ and $\langle / o \cdot d \rangle$ denote the position of $T(v)$ within in the markup sequence, in addition to the dependency type governing $T(v)$. These symbols are formed by concatenating three different markers: (1) a symbol $o$ indicating the type of the proposed operation (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$ (e.g. \texttt{dobj}) and (3) a start tree or end tree symbol, indicating that the next token in the markup is the first token in $T(v)$ or that the previous token in the markup was the last token in $T(v)$. The start tree and end tree symbols are shown here using bracket tags. For instance in Figure \ref{f:example}, $\langle o, d \rangle$ is $\langle \textsc{Prune} \texttt{dobj} ? \rangle$, where we show a question mark to emphasize that the LSTM must decide if the compression system should execute this operation.}
-\item{$T(v)$ and $T_j$, for $j \in \{1,2,3,4\}$ are sequences of tokens from $s$, positioned in their original order. (In some cases $T_j$ may be empty). For instance, $T_1$ is all tokens from $s$ which occur before the start of the current compression, based on the original token order of $s$.} 
-\end{itemize}
-
-In Figure \ref{f:example}, $\bm{x}$ ``shows'' the  effect of a proposed \textsc{Prune} of the subtree governed by $v=$\textit{risk}. Tokens in $V$ are shown in bold. The symbols, $\langle \textsc{Prune} \texttt{dobj} \rangle$  and $\langle / \textsc{Prune} \texttt{dobj} \rangle$ mark the start and end of the span of tokens in $T(v)$. 
-
+Our markup input to our LSTM, $\bm{x}$, includes bracket symbols called \textit{subtree} tags with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o$ indicating the type of the proposed operation (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
