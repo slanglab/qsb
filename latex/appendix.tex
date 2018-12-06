@@ -1,4 +1,6 @@
+
 \section{Appendix}
+
 
 \subsection{Reimplementation of \citet{filippova2013overcoming}: additional details}
 
@@ -23,3 +25,20 @@ Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} prov
 \subsection{Structure of subtree tags}\label{s:subtree}
 
 Our markup input to our LSTM, $\bm{x}$, includes bracket symbols called \textit{subtree} tags with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o$ indicating the type of the operation proposal (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
+
+\subsection{Hyperparameter settings}\label{s:params}
+
+\begin{table}[]
+\begin{tabular}{@{}ll@{}}
+\toprule
+Batch size         & 135                      \\ \midrule
+Hidden size        &                          \\
+Embeddings dim.    & 300                      \\
+Hidden size        & 907                      \\
+Feedforward layers & 2                        \\
+Dropout            & {[}0.30933, 0.4078029{]} \\
+Activations        & Relu, Linear             \\
+Learning rate      & 0.00045926179535781854   \\
+Weight decay       & 2.4209957265082087e-08   \\ \bottomrule
+\end{tabular}
+\end{table}
