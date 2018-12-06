@@ -174,7 +174,7 @@ In our framework (\S\ref{s:oracle}), oracle compression is a series of binary de
 
 To train the LSTM, we deterministically encode both the state of the compression system and the proposed operation into a sequence of input symbols $\bm{x}$, called the markup. The LSTM predicts $p(y=1 | \bm{x})$, the probability of a binary oracle decision, given the markup. 
 
-The markup is the deterministic (not learned) output of a markup function $m(V,v,o,s)=\bm{x}$, which inserts three sets of matched, inline bracket symbols into $s$, the original sequence of tokens in the sentence. The bracket symbols represent the following information:
+The markup is the deterministic (rather than learned) output of a markup function $m(V,v,o,s)=\bm{x}$, which inserts three sets of matched, inline bracket symbols into $s$, the original sequence of tokens in the sentence. The bracket symbols represent the following information:
 
 \begin{enumerate}
 \item{The start and end of the original, uncompressed sentence $s$. These bracket symbols are shown with \texttt{<s>} and \texttt{</s>} in Figure \ref{f:example}.}
