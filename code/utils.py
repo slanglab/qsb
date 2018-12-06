@@ -130,6 +130,9 @@ ud2symbols = getUD2symbols()
 
 
 def get_labeled_toks(node, jdoc, op_proposed):
+
+    ########### DEPRECATED ###########
+
     if len(jdoc["tokens"]) == 0:
         labeled_toks = [{"word": "α", "index": -1000},{"word": "Ω", "index":1000}]
         return labeled_toks
