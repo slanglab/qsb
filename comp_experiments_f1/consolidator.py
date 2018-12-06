@@ -20,7 +20,7 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
             print(fn, metrics["f1"])
 
 import json
-with open("/tmp/opt.csv", "w") as of:
+with open("output/results.csv", "w") as of:
     first = True
     for ln in results:
         ln = results[ln]
@@ -33,22 +33,3 @@ with open("/tmp/opt.csv", "w") as of:
 with open("/tmp/optimize.jsonl", "w") as of:
     for r in results:
         of.write(json.dumps(results[r]) + "\n")
-
-def sigfigs(val, figs="3"):
-    return str("{0:1." + figs + "f}").format(val)
-
-
-import os;os._exit(0)
-
-with open("latex/f1.tex", "w") as of:
-
-    # min compression
-    f1_only_q = sigfigs(results["min-compression"])
-    out = "Query terms only & {}    \\\\ ".format(f1_only_q)
-    of.write(out + "\n")
-
-    # prune only greedy
-    f1_greedy_prune = sigfigs(results["nn-prune-greedy"])
-    out = " \\textbf{{Iterative deletion}} &  \\textbf{{{}}}    \\\\ ".format(f1_greedy_prune)
-    of.write(out + "\n")
-
