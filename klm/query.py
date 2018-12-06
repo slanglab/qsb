@@ -20,6 +20,12 @@ def slor(sequence, lm, unigram_log_probs_):
     p_u = sum(unigram_log_probs_[u] for u in words if u in unigram_log_probs_.keys())
     p_u += sum(unigram_log_probs_['<unk>'] for u in words if u in unigram_log_probs_.keys())
 
+    p_m = lm.score(sequence)
+
+    len_s = len(words) + 0.0
+
+    return (p_m - p_u)/len_s
+
 
 class LM:
 
