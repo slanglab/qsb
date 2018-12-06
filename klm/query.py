@@ -1,9 +1,24 @@
 from __future__ import division
-from sklearn import linear_model
 
 import kenlm
+import json
 
 LOC = "/home/ahandler/qsr/klm/fa.klm"
+UNIGRAM_LOC = "/home/ahandler/qsr/klm/fa.unigrams.json"
+
+
+def get_unigrams():
+    with open(UNIGRAM_LOC, "r") as inf:
+        unigram_log_probs = json.load(inf)
+        return unigram_log_probs
+
+
+def slor(sequence, lm, unigram_log_probs_):
+    # SLOR function from Jey Han Lau, Alexander Clark, and Shalom Lappin
+
+    words = sequence.split(" ")
+    p_u = sum(unigram_log_probs_[u] for u in words if u in unigram_log_probs_.keys())
+    p_u += sum(unigram_log_probs_['<unk>'] for u in words if u in unigram_log_probs_.keys())
 
 
 class LM:
