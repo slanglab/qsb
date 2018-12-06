@@ -14,7 +14,8 @@ with open("fa.arpa", "r") as inf:
         if "1-gr" in i:
             started = True
 
+    unigram_probs = [o for o in unigram_probs if len(o) == 2]
     unigram_probs = {o[1]: o[0] for o in unigram_probs}
 
-with open("fa.unigrams.json", "wb") as of:
-    json.dump(of, unigram_probs)
+with open("fa.unigrams.json", "w") as of:
+    json.dump(unigram_probs, of)
