@@ -28,17 +28,19 @@ Our markup input to our LSTM, $\bm{x}$, includes bracket symbols called \textit{
 
 \subsection{Hyperparameter settings}\label{s:params}
 
+
 \begin{table}[]
 \begin{tabular}{@{}ll@{}}
 \toprule
 Batch size         & 135                      \\ \midrule
 Hidden size        &                          \\
 Embeddings dim.    & 300                      \\
-Hidden size        & 907                      \\
-Feedforward layers & 2                        \\
-Dropout            & {[}0.30933, 0.4078029{]} \\
-Activations        & Relu, Linear             \\
-Learning rate      & 0.00045926179535781854   \\
-Weight decay       & 2.4209957265082087e-08   \\ \bottomrule
+Total fully-connected layers & 2                        \\
+Fully-connected layers, hidden sizes & $(92, 2)$ \\
+Fully-connected layers, dropout & $(0.3093, 0.4078)$ \\
+Fully-connected layers, activations        & Relu, Linear             \\
+Learning rate      & $4.593 * 10^{-4}$   \\
+Weight decay       & $2.421 * 10^{-8}$   \\ \bottomrule
 \end{tabular}
+\caption{T} 
 \end{table}
