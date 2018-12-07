@@ -10,6 +10,7 @@ UNIGRAM_LOC = "/home/ahandler/qsr/klm/fa.unigrams.json"
 def get_unigram_probs():
     with open(UNIGRAM_LOC, "r") as inf:
         unigram_log_probs = json.load(inf)
+        unigram_log_probs = {k:float(v) for k,v in unigram_log_probs.items()}
         return unigram_log_probs
 
 
