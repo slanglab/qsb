@@ -286,14 +286,14 @@ We find that while iterative deletion is polynomial in the worst case (\S\ref{s:
 
 \section{Related work}
 
-Traditional study of sentence compression is closely aligned with text summarization techniques that create synopses by selecting and then shortening sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,clarke2008global,martins2009summarization,Nenkova2012ASO}. 
+Traditional study of sentence compression is closely aligned with text summarization techniques that create synopses by selecting and (sometimes) shortening sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,martins2009summarization}. 
 In these settings, it is important for compressions to retain ``important'' information from source sentences because they must stand-in for longer sentences within summaries.
 
 Our concern with lexical constraints is better suited to applications in which user queries define important information in documents. For instance, our length and lexically-constrained compressions could be used in information retrieval systems that summarize search results using query-biased snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS}. Often, such snippets must contain query terms, as in Figure \ref{f:qf}. 
 
 Apache Lucene 7.5.0, the leading open source search engine, does not perform sentence compression in generating snippets using its default Fragmenter, Highlighter and Scorer modules.\footnote{https://lucene.apache.org/core/documentation.html} We plan to apply and adapt our work for use in such systems; avoiding grammatical disfluencies from naive snippet generation techniques could make search engine results more readable \cite{kanungo2009predicting}.
 
-Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company} which might require a hard lexical constraint.  Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. 
+Our method could also be used for particular forms of query-focused summarization, such as summarizing people \cite{w04} or companies \cite{filippova2009company}, which might require a hard lexical constraint.  Length and lexically constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. 
 
 Finally, we note that our compression method is a strictly extractive technique. We follow a line of research \cite{clarke2008global,filippova2008dependency,filippova2015sentence} in which compressions are formed from subsequences extracted from the original sentence. Other research on sentence compression uses abstractive methods to which compress sentences via paraphrasing \cite{cohn2008sentence,rush2015neural,mallinson18}. Some research in machine translation and sentence generation considers how to create paraphrased token sequences with lexical constraints \cite{N18-1119,aaimh}. 
 
