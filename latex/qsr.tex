@@ -253,12 +253,10 @@ The F1 score in our reimplementation is slightly lower than the than the result 
 Extractive sentence compression models are traditionally evaluated automatically, and with human ``readability'' and ``importance'' measures on a Likert scale \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In a traditional importance evaluation, the human annotator has to decide if the compression retains the most ``important'' information from the source, based on their own subjective judgement. 
 
 In our constrained compression setting, the user's query determines the ``important'' information in the source sentence. The system must then create a compression which respects these query-defined lexical requirements. This makes the traditional ``importance'' evaluation unsuitable for constrained compression. 
-
-However, we note that in some cases, shortened sentences will modify the meaning of a sentence. Identifying such cases is an active area of research, connected to textual entailment and set theoretic semantics \cite{Nayak2014ADO,Pavlick2016SoCalledNA,linzencompression}. How to solicit human judgements about such cases at scale is also an active research question \cite{snli_bowman,annotation_artifacts_snli}. In the future, we hope to adapt this evolving work for applications which require sentence shortening.  
  
-As a check on the readability of the compressions produced by each system, we measure their well-formedness using an automated metric which has been shown to predict with human judgements of grammatical acceptability. Specifically, we employ the SLOR function defined by \citet{lau2015unsupervised}, who showed that this metric correlates with human acceptability judgements. \ahcomment{CITE MANN} (The appendix contains additional details of our implementation of SLOR. \ahcomment{LM}) Our iterative deletion technique achieves a SLOR score of \ahcomment{TODO}. The ILP-based approach achieves a SLOR score of \ahcomment{TODO}.
+As a check on the readability of the compressions produced by each system, we use an automated metric which has been shown to predict with human judgements of grammatical acceptability, both in general settings \cite{lau2015unsupervised} and specifically for the sentence compression task \cite{kannConl}. Specifically, we employ the SLOR function studied by \citet{lau2015unsupervised}, which normalizes the probability of a token sequence assigned from a language model by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length. (Longer sentences will always be less probable than shorter sentences; rarer words make an overall sequence less probable). 
 
- \ahcomment{3-gm LM and report inline}.
+who showed that this metric correlates with human acceptability judgements. \ahcomment{CITE MANN} (The appendix contains additional details of our implementation of SLOR. \ahcomment{LM}) Our iterative deletion technique achieves a SLOR score of \ahcomment{TODO}. The ILP-based approach achieves a SLOR score of \ahcomment{TODO}.
 
 \ahcomment{Comment on why scores are higher for modified task}
 
@@ -314,7 +312,11 @@ This work introduces a novel, neural, transition-based method for extractive sen
 
 Our two principle operations, \textsc{Prune} and \textsc{Insert} can reconstruct all gold compressions in a standard compression dataset \cite{filippova2013overcoming}. However, we suspect that other operation sets can also reconstruct standard gold compressions. In particular, our method proceeds top-down, adding and removing subtrees by visiting the vertexes from the original sentence in breadth-first order. But it is also possible to imagine a bottom-up compression system which creates compressed sentences by building up compressions, starting from the leaves of the original sentence and proceeding to the root. We suspect that this bottom-up method might be more computationally efficient than our top-down approach, because at each timestep it requires a smaller number of local decisions about adding (or not adding) vertexes which are connected to the current compression in the original parse tree. We look forward to examining bottom-up compression in future work. 
 
+In some cases, shortened sentences will modify the meaning of a sentence. Identifying such cases is an active area of research \cite{Nayak2014ADO,Pavlick2016SoCalledNA,linzencompression}. How to solicit human judgements about such cases at scale is also an active research question \cite{snli_bowman,annotation_artifacts_snli}. In the future, we hope to adapt this evolving work for applications which require sentence shortening.  
+
 Finally, our method performs sequential decision making by learning from oracle path operations at training time. When we use this oracle guidance to compress sentences, our transition-based compressor inevitably makes mistakes and diverges from the oracle path, limiting the usefulness of training data. We might apply existing research on similar sequential decision problems with oracle guidance to improve our transition-based compressor \cite{Ross2011ARO}. 
+
+
 
 \include{appendix}
 
