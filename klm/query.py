@@ -19,7 +19,7 @@ def slor(sequence, lm, unigram_log_probs_):
 
     words = sequence.split(" ")
     p_u = sum(unigram_log_probs_[u] for u in words if u in unigram_log_probs_.keys())
-    p_u += sum(unigram_log_probs_['<unk>'] for u in words if u in unigram_log_probs_.keys())
+    p_u += sum(unigram_log_probs_['<unk>'] for u in words if u not in unigram_log_probs_.keys())
 
     p_m = lm.score(sequence)
 
@@ -44,5 +44,7 @@ if __name__ == "__main__":
 
     model = LM()
 
-    print(model.score("I am a student"))
-    print(model.score("student I a am"))
+    ug = get_unigram_probs() 
+
+    print(slor(sequence="I am a student", lm=model, unigram_log_probs_=ug))
+    print(slor(sequence="student I am", lm=model, unigram_log_probs_=ug))
