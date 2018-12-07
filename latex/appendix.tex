@@ -22,7 +22,10 @@ sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults non
 
 Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features implemented in their model (but not not described in their overview) almost certainly affect performance. 
 
-\subsection{Structure of subtree tags}\label{s:subtree}
+
+\subsection{Implementation of SLOR: additional details}
+
+\subsection{Structure of subtree tags: additional details}\label{s:subtree}
 
 Our markup input to our LSTM, $\bm{x}$, includes bracket symbols called \textit{subtree} tags with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o$ indicating the type of the operation proposal (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
 
@@ -44,3 +47,4 @@ Weight decay       & $2.421 * 10^{-8}$   \\ \bottomrule
 \end{tabular}
 \caption{The hyperparameters for our model. We optimize hyperparameters via random search \cite{Bergstra2012RandomSF}. The learning rate and weight decay parameter each have clear, observable effects on validation accuracy. The importance of other parameters is less clear. } 
 \end{table}
+
