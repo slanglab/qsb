@@ -33,7 +33,7 @@ with open("output/results.csv", "w") as of:
     for ln in results:
         ln = results[ln]
         if first:
-            of.write(",".join(ln.keys()) + "\n")
+            of.write(",".join(["algo", "f1", "lm"]) + "\n")
             first = False
         v = [str(ln[o]) for o in ["algo", "f1", "lm"]]
         of.write(",".join(v) + "\n")
