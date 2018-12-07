@@ -1,9 +1,0 @@
-{
-  "results_dir": "comp_experiments_f1/output/",
-  "archive_loc": "models/729586314/model.tar.gz",
-  "algorithm": "fmcsearch",
-  "predictor_name": "split_classifier",
-  "model_name": "split_classifier",
-  "query": true,
-  "nsamples":25
-}

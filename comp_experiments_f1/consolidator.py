@@ -35,5 +35,5 @@ with open("output/results.csv", "w") as of:
         if first:
             of.write(",".join(ln.keys()) + "\n")
             first = False
-        v = [str(ln[o]) for o in ln.keys()]
+        v = [str(ln[o]) for o in ["algo", "f1", "lm"]]
         of.write(",".join(v) + "\n")
