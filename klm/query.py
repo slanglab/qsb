@@ -7,7 +7,7 @@ LOC = "/home/ahandler/qsr/klm/fa.klm"
 UNIGRAM_LOC = "/home/ahandler/qsr/klm/fa.unigrams.json"
 
 
-def get_unigrams():
+def get_unigram_probs():
     with open(UNIGRAM_LOC, "r") as inf:
         unigram_log_probs = json.load(inf)
         return unigram_log_probs
