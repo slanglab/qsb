@@ -15,11 +15,18 @@ from comp_experiments_f1.algorithms import FA2013Compressor
 from comp_experiments_f1.algorithms import FA2013CompressorStandard
 from comp_experiments_f1.algorithms import FMCSearch
 from klm.query import LM
+from klm.query import get_unigram_probs
+from klm.query import slor
 
 
 def strip_tags(tokens):
     return [_ for _ in tokens if "SOS" not in _["word"] and "EOS"
             not in _["word"] and "OOV" not in _["word"]]
+
+
+UNIGRAMS = get_unigram_probs()
+
+LANGUAGE_MODEL = LM()
 
 
 def get_model(config):
@@ -100,9 +107,9 @@ def do_sentence(_, no_compression, config):
                    if y_pred[ono]]
     compression = " ".join(compression)
 
-    lm = LM()
-
-    lm_score = lm.score(compression)
+    lm_score = slor(sequence=compression,
+                    lm=LANGUAGE_MODEL,
+                    unigram_log_probs_=UNIGRAMS)
 
     config["sentence{}".format(vno)] = {'f1': f1,
                                         "lm": lm_score,
