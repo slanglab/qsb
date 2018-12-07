@@ -25,12 +25,19 @@ Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} prov
 
 \subsection{Implementation of SLOR: additional details}
 
+We use the SLOR function to measure the readability of the shortened sentences produced by each compression system \ref{s:readabilityinformativeness}. Following \cite{lau2015unsupervised}, we define the function as 
+
+\begin{equation}
+\text{SLOR}=\frac{\text{log}P_m(\xi) - \text{log}P_u(\xi)}{|\xi|}
+\end{equation}
+
+where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of this sequence of words and $P_m(\xi)$ is the probability of the sequence, assigned by a language model.  $|\xi|$ is the length (in tokens) of the sentence.
+
+We use a 3-gram language model trained on the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}.
+
 \subsection{Structure of subtree tags: additional details}\label{s:subtree}
 
 Our markup input to our LSTM, $\bm{x}$, includes bracket symbols called \textit{subtree} tags with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o$ indicating the type of the operation proposal (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
-
-\subsection{Hyperparameter settings}\label{s:params}
-
 
 \begin{table}[]
 \begin{tabular}{@{}ll@{}}
@@ -45,6 +52,6 @@ Fully-connected layers, activations        & Relu, Linear             \\
 Learning rate      & $4.593 * 10^{-4}$   \\
 Weight decay       & $2.421 * 10^{-8}$   \\ \bottomrule
 \end{tabular}
-\caption{The hyperparameters for our model. We optimize hyperparameters via random search \cite{Bergstra2012RandomSF}. The learning rate and weight decay parameter each have clear, observable effects on validation accuracy. The importance of other parameters is less clear. } 
+\caption{The hyperparameters for our model. We optimize hyperparameters via random search \cite{Bergstra2012RandomSF}. The learning rate and weight decay parameter each clearly affect validation accuracy. The importance of other parameters is less clear. } 
 \end{table}
 
