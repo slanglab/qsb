@@ -252,11 +252,13 @@ The F1 score in our reimplementation is slightly lower than the than the result 
 
 Extractive sentence compression models are traditionally evaluated automatically, and with human ``readability'' and ``importance'' measures on a Likert scale \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In a traditional importance evaluation, the human annotator has to decide if the compression retains the most ``important'' information from the source, based on their own subjective judgement. 
 
-In our constrained compression setting, the user's query determines the ``important'' information in the source sentence. The system must then create a compression which respects these query-defined lexical requirements. This makes the traditional ``informativeness'' evaluation unsuitable for constrained compression so we do not complete such an evaluation. 
+In our constrained compression setting, the user's query determines the ``important'' information in the source sentence. The system must then create a compression which respects these query-defined lexical requirements. This makes the traditional ``importance'' evaluation unsuitable for constrained compression. 
 
 However, we note that in some cases, shortened sentences will modify the meaning of a sentence. Identifying such cases is an active area of research, connected to textual entailment and set theoretic semantics \cite{Nayak2014ADO,Pavlick2016SoCalledNA,linzencompression}. How to solicit human judgements about such cases at scale is also an active research question \cite{snli_bowman,annotation_artifacts_snli}. In the future, we hope to adapt this evolving work for applications which require sentence shortening.  
  
-As a check on the readability of the compressions produced by each system, we do \ahcomment{3-gm LM and report inline}.
+As a check on the readability of the compressions produced by each system, we measure their well-formedness using an automated metric which has been shown to predict with human judgements of grammatical acceptability. Specifically, we employ the SLOR function defined by \citet{lau2015unsupervised}, who showed that this metric correlates with human acceptability judgements. \ahcomment{CITE MANN} (The appendix contains additional details of our implementation of SLOR. \ahcomment{LM}) Our iterative deletion technique achieves a SLOR score of \ahcomment{TODO}. The ILP-based approach achieves a SLOR score of \ahcomment{TODO}.
+
+ \ahcomment{3-gm LM and report inline}.
 
 \ahcomment{Comment on why scores are higher for modified task}
 
