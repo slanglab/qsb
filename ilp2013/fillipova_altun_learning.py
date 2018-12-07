@@ -135,7 +135,9 @@ if __name__ == "__main__":
     with open(args.file, "rb") as of:
         data = pickle.load(of)
 
-    init_checkpoints(data, vocab)
+    # you need to uncomment this to start the checkpoints then uncomment
+    # after the first segfault. This is what I did when training ILP
+    #init_checkpoints(data, vocab)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)

@@ -9,9 +9,17 @@ python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/expe
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp3.json
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp4.json
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp5.json
+python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp6.json
+python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp7.json
+python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp8.json
 
+# validation performance of transition based compression
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/nn-prune-greedy.json
 
+# test performance of transition based compression
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/nn-prune-greedy.json -test
+
+# test performance of ILP
+python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp7.json
 
 python comp_experiments_f1/consolidator.py
