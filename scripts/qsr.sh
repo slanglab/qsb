@@ -10,5 +10,8 @@ python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/expe
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp4.json
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/ilp5.json
 
-python comp_experiments_f1/consolidator.py
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/nn-prune-greedy.json
+
+python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/nn-prune-greedy.json -test
+
+python comp_experiments_f1/consolidator.py
