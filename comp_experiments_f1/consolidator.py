@@ -4,8 +4,7 @@ import json
 import numpy as np
 from collections import defaultdict
 
-results = defaultdict(lambda: defaultdict(list))
-
+results = [] 
 
 def get_sentences(dt):
     return [k for k in dt.keys() if "sentence" in k]
@@ -24,15 +23,23 @@ for fn in glob.glob("comp_experiments_f1/output/*"):
                 metrics["archive"] = dt["archive_loc"]
                 metrics['algo'] = dt['algorithm']
                 metrics['lm'] = np.mean([float(dt[v]["lm"]) for v in dt.keys() if "sentence" in v])
-                results[dt["fn"]] = fn
+                metrics["fn"] = fn
                 print(fn, metrics["f1"], fn)
+                results.append(metrics)
 
-with open("output/results.csv", "w") as of:
-    first = True
-    for ln in results:
-        ln = results[ln]
-        if first:
-            of.write(",".join(["algo", "f1", "lm", "fn"]) + "\n")
-            first = False
-        v = [str(ln[o]) for o in ["algo", "f1", "lm", "fn"]]
-        of.write(",".join(v) + "\n")
+def write_results(kind, results):
+    with open("output/{}.csv".format(kind), "w") as of:
+        first = True
+        for ln in results:
+            if first:
+                of.write(",".join(["algo", "f1", "lm", "fn"]) + "\n")
+                first = False
+            v = [str(ln[o]) for o in ["algo", "f1", "lm", "fn"]]
+            of.write(",".join(v) + "\n")
+
+
+# write the results for assessing ILP convergence, discussed in the appendix
+write_results("ilp_convergence", [o for o in results if "validation" in o["fn"] and "ilp" in o["fn"] and "full" in o["fn"]])
+
+ 
+write_results("ilp_convergence", [o for o in results if "validation" in o["fn"] and "ilp" in o["fn"] and "full" in o["fn"]]) 
