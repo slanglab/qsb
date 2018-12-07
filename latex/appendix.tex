@@ -2,16 +2,16 @@
 \section{Appendix}
 
 
-\subsection{Reimplementation of \citet{filippova2013overcoming}: additional details}
-
-In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement a method partially described in \citet{filippova2008dependency}.  There are inevitable discrepancies between our implementation and the ILP methods described in these two prior papers.  
-
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{worked.pdf}
 \caption{Nine operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, [v|B])$. In the diagram, the tokens in $V$ are shown in bold. At each timestep, the token $v$ at the head of the buffer $B$ is shown in the third column. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram. The buffer is initialized breadth-first. Compression stops when the buffer is empty.}
 \label{f:example}
 \end{figure*}
+
+\subsection{Reimplementation of \citet{filippova2013overcoming}: additional details}
+
+In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement a method partially described in \citet{filippova2008dependency}.  There are inevitable discrepancies between our implementation and the ILP methods described in these two prior papers.  
 
 Some discrepancies arise from differences in syntactic formalisms. To begin, prior work uses a tree transformation method which is no longer strictly compatible with UD. For instance, the tree transformation from prior work assumes PPs are headed by prepositions, which is not true in UD \cite{Schuster2016EnhancedEU}. In implementing the ILP, we use the enhanced dependencies representation from CoreNLP \cite{Schuster2016EnhancedEU}. The augmented modifiers and augmented conjuncts in this representation create parses that are very similar to the transformed trees described in prior work. \citet{filippova2008dependency} also describe a syntactic constraint based on the \rdep{sc} relation, which is not included in UD. We therefore exclude this constraint.
 
@@ -26,7 +26,7 @@ Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} prov
 
 \subsection{Implementation of SLOR: additional details}
 
-We use the SLOR function to measure the readability of the shortened sentences produced by each compression system (\S\ref{s:readabilityinformativeness}). Following \cite{lau2015unsupervised}, we define the function as 
+We use the SLOR function to measure the readability of the shortened sentences produced by each compression system. Following \cite{lau2015unsupervised}, we define the function as 
 
 \begin{equation}
 \text{SLOR}=\frac{\text{log}P_m(\xi) - \text{log}P_u(\xi)}{|\xi|}
@@ -40,7 +40,7 @@ We use a 3-gram language model trained on the \citet{filippova2013overcoming} co
 
 Our markup input to our LSTM, $\bm{x}$, includes bracket symbols called \textit{subtree} tags with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o$ indicating the type of the operation proposal (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
 
-\begin{table}[]
+\begin{table}[htb!]
 \begin{tabular}{@{}ll@{}}
 \toprule
 Batch size         & 135                      \\ 
@@ -56,3 +56,12 @@ Weight decay       & $2.421 * 10^{-8}$   \\ \bottomrule
 \caption{The hyperparameters for our model. We optimize hyperparameters via random search \cite{Bergstra2012RandomSF}. The learning rate and weight decay parameter each clearly affect validation accuracy. The importance of other parameters is less clear. } 
 \end{table}
 
+\subsection{Neural net training: additional details}
+
+We note several additional details about our neural network training procedure.
+
+\begin{itemize}
+\item{We train on 8 million tuples. The cardinality of the training set was bounded by available hardware resources, not by the total number of oracle tuples which can be generated with the \citet{filippova2013overcoming} dataset.}
+\item{Specifically, we weight each training instance $(\bm{x}, y_i)$ using $\frac{T_o}{2 * T_{o,i}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_o$ is the total number of training examples of accepted and rejected instances of the operation proposal $o$ (e.g. $T_o$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{o,i}$ is the total number of training operations labeled $y_i$ for operations of proposal type $o$ (e.g. $T_{i,o}$ = the total \textsc{NoPrune} operations, if $y_i=0$ and instance is of type \textsc{Prune}). The 2 in the numerator denotes the total number of classes. Alternative weighting methods are left for future work.}
+\item{We also experimented with ELMo vectors \cite{Peters:2018}, but found that we were able to achieve similar validation accuracies with much smaller embeddings, and so did not pursue further work with ELMo. It is possible that ELMo-like vectors could be used to increase performance in the future.}
+\end{itemize}
