@@ -42,4 +42,4 @@ def write_results(kind, results):
 write_results("ilp_convergence", [o for o in results if "validation" in o["fn"] and "ilp" in o["fn"] and "full" in o["fn"]])
 
  
-write_results("ilp_convergence", [o for o in results if "validation" in o["fn"] and "ilp" in o["fn"] and "full" in o["fn"]]) 
+write_results("test", [o for o in results if "validation" not in o["fn"] and "full" in o["fn"]]) 
