@@ -247,7 +247,7 @@ This method is computationally simpler than ILP-based techniques. In the worst c
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a token-level F1 score of  0.712 on the standard compression task. \ahcomment{Revisit. Need for standard task.} % TODO: where number from?
+We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a test-time, token-level F1 score of  0.690 on the standard compression task. 
 
 The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our implementation and \citet{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
 
