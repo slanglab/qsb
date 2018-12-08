@@ -54,15 +54,8 @@ def run_b_samples(params):
 
 if __name__ == "__main__":
 
-    fns = glob.glob("output/*multiop*xval")
-
-    files_to_load = list(fns) + ["output/test_full",
-                                 "output/test_full-dep",
-                                 "output/test_full-worker",
-                                 "output/test_normlp",
-                                 "output/test_cola",
-                                 "output/test_normlp+dep",
-                                 "output/test_normlp+worker"]
+    files_to_load = list(fns) + ["comp_experiments_f1/output/full-fixtures-ilp8-validation",
+                                 "comp_experiments_f1/output/full-fixtures-ilp2-validation"]
 
     dt = {_: json.load(open(_)) for _ in files_to_load}
 
@@ -71,17 +64,7 @@ if __name__ == "__main__":
 
     pairs_we_care_about = []
 
-    pairs_we_care_about.append(("output/test_full", "output/test_full-dep"))
-
-    pairs_we_care_about.append(("output/test_full", "output/test_full-worker"))
-
-    pairs_we_care_about.append(("output/test_full", "output/test_normlp"))
-
-    pairs_we_care_about.append(("output/test_full", "output/test_cola"))
-
-    pairs_we_care_about.append(("output/test_full", "output/test_normlp+dep"))
-
-    pairs_we_care_about.append(("output/test_full", "output/test_normlp+worker"))
+    pairs_we_care_about.append(files_to_load[0], files_to_load[1])
 
     for _ in pairs_we_care_about:
         f1, f2 = _
