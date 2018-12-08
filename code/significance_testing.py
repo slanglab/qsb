@@ -1,12 +1,9 @@
 from __future__ import division
 import random
 import numpy as np
-import glob
-import itertools
 import json
 from code.log import logger
 from tqdm import tqdm
-from round2.model2 import get_roc_auc_from_datapoints
 
 
 class SamplingParameters(object):
@@ -52,37 +49,37 @@ def run_b_samples(params):
     return pval, samples
 
 
+def filelist2datadict(list_):
+    return {_: json.load(open(_)) for _ in files_to_load}
+
+
 if __name__ == "__main__":
 
-    files_to_load = list(fns) + ["comp_experiments_f1/output/full-fixtures-ilp8-validation",
-                                 "comp_experiments_f1/output/full-fixtures-ilp2-validation"]
+    files_to_load = ["comp_experiments_f1/output/full-fixtures-ilp7-validation",
+                     "comp_experiments_f1/output/full-fixtures-ilp8-validation"]
 
-    dt = {_: json.load(open(_)) for _ in files_to_load}
-
-    # pairs_we_care_about = list(itertools.product(fns, fns))
-    # running this all pairs  takes to long and we only care about these 5
+    dt = filelist2datadict(files_to_load)
 
     pairs_we_care_about = []
 
-    pairs_we_care_about.append(files_to_load[0], files_to_load[1])
+    pairs_we_care_about.append((files_to_load[0], files_to_load[1]))
 
     for _ in pairs_we_care_about:
-        f1, f2 = _
-        print f1, f2
-        if f1 != f2:
-            one = dt[f1]
-            two = dt[f2]
-            auc_1 = get_roc_auc_from_datapoints(one)
-            auc_2 = get_roc_auc_from_datapoints(two)
-            bigger = f1 if auc_1 > auc_2 else f2
-            smaller = f2 if auc_1 > auc_2 else f1
+        file_one, file_two = _
+        if file_one != file_two:
+            one = [dt[file_one][i]["f1"] for i in dt[file_one] if "sentence" in i]
+            two = [dt[file_two][i]["f1"] for i in dt[file_two] if "sentence" in i]
+            f1_1 = np.mean(one)
+            f1_2 = np.mean(two)
+            bigger, smaller = (one, two) if f1_1 > f1_2 else (two, one)
+            bigger_file, smaller_file = (file_one, file_two) if f1_1 > f1_2 else (file_two, file_one)
             assert bigger != smaller
-            params = SamplingParameters(model_one_data=dt[bigger],
-                                        model_two_data=dt[smaller],
-                                        f=get_roc_auc_from_datapoints,
+            params = SamplingParameters(model_one_data=bigger,
+                                        model_two_data=smaller,
+                                        f=np.mean,
                                         b=10000)
             pv, samples = run_b_samples(params)
-            logger.info("sig p" + ",".join([bigger,
-                                            smaller,
+            logger.info("sig p" + ",".join([bigger_file,
+                                            smaller_file,
                                             str(pv),
                                             str(params.delta_x)]))
