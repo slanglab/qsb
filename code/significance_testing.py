@@ -55,8 +55,8 @@ def filelist2datadict(list_):
 
 if __name__ == "__main__":
 
-    files_to_load = ["comp_experiments_f1/output/full-fixtures-ilp7-validation",
-                     "comp_experiments_f1/output/full-fixtures-ilp8-validation"]
+    files_to_load = ["comp_experiments_f1/output/full-556251071-nn-prune-greedy-test",
+                     "comp_experiments_f1/output/full-fixtures-ilp7-test"]
 
     dt = filelist2datadict(files_to_load)
 
