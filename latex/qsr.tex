@@ -231,6 +231,8 @@ We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:il
 
 We also consider how to apply readability and informativeness evaluations to constrained compression (\S\ref{s:readabilityinformativeness}). We describe each method in the following sections.
 
+We note that our constrained compression experiment passes the oracle compression rate (pct. of tokens retained) as a parameter to each compression system. Prior work shows that automatic performance of compression systems is closely tied to their compression rate \cite{napoles2011evaluating}. Accordingly, we observe that both the ILP and the transition-based compressor achieve higher automatic evaluations in the constrained task.
+
 \subsection{Implementation: transition-based compression}\label{s:transition}
 
 Our model of transition-based sentence compression (\S\ref{s:modeling}) predicts the oracle operation $y$, given the state $(V,[v|B])$. There are many possible ways to use $p(y=1| \bm{x})$ in a query-focused and length-constrained compression system. In this work, we use a simple, greedy \textbf{iterative deletion} technique: at each step $j$ we \textsc{Prune} the subtree rooted at 
@@ -248,11 +250,6 @@ This method is computationally simpler than ILP-based techniques. In the worst c
 We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a token-level F1 score of  0.712 on the standard compression task. \ahcomment{Revisit. Need for standard task.} % TODO: where number from?
 
 The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our implementation and \citet{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
-
-\ahcomment{talk about why this task is in certain ways easier. mention the compression rate.
-Argue ILPs are hard to program. SLOR not from LCL}
-
-\ahcomment{Comment on why scores are higher for modified task}
 
 \subsection{Readability and importance}\label{s:readabilityinformativeness}
 
