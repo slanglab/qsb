@@ -244,13 +244,18 @@ We compare our transition-based compression system to a state-of-the-art ILP-bas
 
 The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our implementation and \citet{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
 
+\ahcomment{talk about why this task is in certain ways easier. mention the compression rate.
+Argue ILPs are hard to program
+bootstraping. cache the values
+SLOR not from LCL}
+
 \subsection{Readability and importance}\label{s:readabilityinformativeness}
 
-Extractive sentence compression models are traditionally evaluated automatically, and with human ``readability'' and ``importance'' measures on a Likert scale \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In a traditional importance evaluation, the human annotator has to decide if the compression retains the most ``important'' information from the source, based on their own subjective judgement. 
+Researchers often use human judgements of \textit{readability} and \textit{importance} to evaluate extractive sentence compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. 
 
-In our constrained compression setting, the user's query determines the ``important'' information in the source sentence. The system must then create a compression which respects these query-defined lexical requirements. This makes the traditional ``importance'' evaluation unsuitable for constrained compression. 
+However, traditional importance judgements are inappropriate for evaluating constrained compression. In a traditional importance evaluation, humans judge the degree to which a compression retains the most ``important'' information from a source sentence. However, in our constrained compression setting, a user's query determines the ``important'' information from the source. By definition, constrained compression must obey user-defined, importance requirements.
  
-As a check on the readability of the compressions produced by each system, we use an automated metric which has been shown to predict with human judgements of grammatical acceptability, both in general settings \cite{lau2015unsupervised} and specifically for the sentence compression task \cite{kannConl}. Specifically, we employ the SLOR function \cite{lau2015unsupervised}, which normalizes the probability of a token sequence assigned from a language model by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our iterative deletion technique achieves a SLOR score of \ahcomment{TODO}. The ILP-based approach achieves a SLOR score of \ahcomment{TODO}.
+As a check on the readability of the compressions produced by each system, we use the automated SLOR metric \cite{lau2015unsupervised} which has been shown to correlate with human judgements of grammatical acceptability, both in general settings and for sentence compression tasks \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our iterative deletion technique achieves a test-time SLOR score of \ahcomment{TODO}. The ILP-based approach achieves a SLOR score of \ahcomment{TODO}.
 
 \ahcomment{Comment on why scores are higher for modified task}
 
