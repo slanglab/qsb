@@ -114,6 +114,8 @@ Such ILP methods represent the overall quality of a compression by summing the l
 
 This integer linear programming approach also easily accommodates constrained compression. Researchers will customarily add constraint terms to the ILP objective to enforce hand-build semantic restrictions \cite{clarke2008global} or syntactic requirements \cite{filippova2008dependency}. Adding additional length or lexical requirements to ILPs is trivial: practitioners must specify that optimal solutions must be shorter than some character budget, and must specify that binary variables marking inclusion of particular words must be set to 1. 
 
+In practice, translating a sentence compression objective into an integer linear program is a challenging and error-prone programming task, dependent on black-box optimization techniques. These engineering difficulties are a disadvantage of ILPs.
+
 \subsection{Transition-based constrained compression}
 
 In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints, inspired by transition-based parsing techniques \cite{Earley1970AnEC,nivre2003}. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. Our stateful approach recalls early solutions to the sentence compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
@@ -248,9 +250,7 @@ We compare our transition-based compression system to a state-of-the-art ILP-bas
 The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our implementation and \citet{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
 
 \ahcomment{talk about why this task is in certain ways easier. mention the compression rate.
-Argue ILPs are hard to program
-bootstraping. cache the values
-SLOR not from LCL}
+Argue ILPs are hard to program. SLOR not from LCL}
 
 \ahcomment{Comment on why scores are higher for modified task}
 
