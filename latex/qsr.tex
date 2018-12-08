@@ -217,14 +217,17 @@ We use a large, standard dataset of sentence--compression pairs from \citet{fili
 \centering
 Approach & Constrained F1  \\ \hline
 Query terms only {\small (lower bound)} & 0.384    \\
-Supervised ILP  & 0.856          \\
- \textbf{Iterative deletion} &  \textbf{0.876}    \\
+Supervised ILP  &  0.854          \\
+ \textbf{Iterative deletion} &  \textbf{0.875}    \\
 \end{tabular}
-\caption{The F1 score for our iterative deletion approach to length and lexically constrained sentence compression, along with the F1 score for our reimplementation of a traditional ILP-based approach \cite{filippova2013overcoming}. Selecting only query terms for a compression achieves an F1 = 0.384, which is the lower bound for this task. \ahcomment{TODO STAT SIG}}
+\caption{The F1 score for our iterative deletion approach to length and lexically constrained sentence compression, along with the F1 score for our reimplementation of a traditional ILP-based approach \cite{filippova2013overcoming}. The difference between the methods is statistically significant. Selecting only query terms for a compression achieves an F1 = 0.384, which is the lower bound for this task.}
+\label{t:results}
 \end{table}
 
 
-We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given the sentence $s$ and the constraints $q$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. We also consider how to apply readability and informativeness evaluations to constrained compression (\S\ref{s:readabilityinformativeness}). We describe each method in the following sections.
+We then use token-level F1, to measure how well an ILP-based method (\S\ref{s:ilp}) and a transition-based method (\S\ref{s:transition}) method can reconstruct each known-good compression $c$, given the sentence $s$ and the constraints $q$ and $b$. Token-level F1 is the standard automatic evaluation metric for the sentence compression task. Our method better reconstructs known-good compressions. We show results for each in Table \ref{t:results}. We evaluate the significance of the difference in scores with bootstrap sampling  \cite{D12-1091}; the difference is significant {\tiny $(p < 10^{-3})$}.
+
+We also consider how to apply readability and informativeness evaluations to constrained compression (\S\ref{s:readabilityinformativeness}). We describe each method in the following sections.
 
 \subsection{Implementation: transition-based compression}\label{s:transition}
 
@@ -240,7 +243,7 @@ This method is computationally simpler than ILP-based techniques. In the worst c
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a token-level F1 score of  0.712 on the standard compression task. \ahcomment{Revisit. Need for standard task.}
+We compare our transition-based compression system to a state-of-the-art ILP-based method, presented in \citet{filippova2013overcoming}. To our knowledge, a public implementation of this method does not exist. We reimplement the structured perceptron approach from scratch, achieving a token-level F1 score of  0.712 on the standard compression task. \ahcomment{Revisit. Need for standard task.} % TODO: where number from?
 
 The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our implementation and \citet{filippova2013overcoming}, which arise in part because we use Universal Dependencies (v1) instead of the older dependency system employed in prior work. We describe these differences in detail in the appendix.
 
