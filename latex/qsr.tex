@@ -249,15 +249,15 @@ Argue ILPs are hard to program
 bootstraping. cache the values
 SLOR not from LCL}
 
+\ahcomment{Comment on why scores are higher for modified task}
+
 \subsection{Readability and importance}\label{s:readabilityinformativeness}
 
 Researchers often use human judgements of \textit{readability} and \textit{importance} to evaluate extractive sentence compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. 
 
 However, traditional importance judgements are inappropriate for evaluating constrained compression. In a traditional importance evaluation, humans judge the degree to which a compression retains the most ``important'' information from a source sentence. However, in our constrained compression setting, a user's query determines the ``important'' information from the source. By definition, constrained compression must obey user-defined, importance requirements.
  
-As a check on the readability of the compressions produced by each system, we use the automated SLOR metric \cite{lau2015unsupervised} which has been shown to correlate with human judgements of grammatical acceptability, both in general settings and for sentence compression tasks \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our iterative deletion technique achieves a test-time SLOR score of \ahcomment{TODO}. The ILP-based approach achieves a SLOR score of \ahcomment{TODO}.
-
-\ahcomment{Comment on why scores are higher for modified task}
+As a check on the readability of the compressions produced by each system, we use the automated SLOR metric \cite{lau2015unsupervised} which has been shown to correlate with human judgements of grammatical acceptability, both in general settings and for sentence compression tasks \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our iterative deletion technique achieves a test-time SLOR score of 0.906. The ILP-based approach achieves a SLOR score of 0.876. This automated metric suggests that each method returns roughly equally readable compressions.
 
 \section{Computational costs of transition-based compression}\label{s:costs}
 
