@@ -47,7 +47,7 @@ if __name__ == "__main__":
     ug = get_unigram_probs() 
 
     print("[*] slor: I am a student")
-    print(slor(sequence="I am a student .", lm=model, unigram_log_probs_=ug))
+    print(slor(sequence="I am a student", lm=model, unigram_log_probs_=ug))
     
     print("[*] slor: student I am")
-    print(slor(sequence="student I am .", lm=model, unigram_log_probs_=ug))
+    print(slor(sequence="student I am", lm=model, unigram_log_probs_=ug))
