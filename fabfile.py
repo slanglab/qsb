@@ -60,5 +60,6 @@ def qsr(cx):
 
 @task
 def complexity(cx):
-    local("python comp_experiments_complexity/preprocess_complexity_plots.py comp_experiments_f1/output/full-worst-case-worst-case-compressor")
-    local("python comp_experiments_complexity/preprocess_complexity_plots.py comp_experiments_f1/output/full-556251071-nn-prune-greedy")
+    local("python comp_experiments_complexity/preprocess_complexity_plots.py comp_experiments_f1/output/full-worst-case-worst-case-compressor-test")
+    local("python comp_experiments_complexity/preprocess_complexity_plots.py comp_experiments_f1/output/full-556251071-nn-prune-greedy-test")
+    local("Rscript scripts/empirical_ops.R")
