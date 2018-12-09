@@ -25,4 +25,7 @@ python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/expe
 # test performance of unconstrained ILP, using best validation weights
 python comp_experiments_f1/run_f1_experiment.py -config comp_experiments_f1/experiments/standard_ilp7.json -test
 
+py comp_experiments_f1/run_f1_experiment.py  -config comp_experiments_f1/experiments/worst_case.json -test
+py  comp_experiments_f1/run_f1_experiment.py  -config comp_experiments_f1/experiments/min_compression.json -test
+
 python comp_experiments_f1/consolidator.py

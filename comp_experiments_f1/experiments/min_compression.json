@@ -1,0 +1,5 @@
+{
+  "algorithm": "min-compression",
+  "archive_loc": "o/min-compression-query-only/0",
+  "results_dir": "comp_experiments_f1/output/"
+}
