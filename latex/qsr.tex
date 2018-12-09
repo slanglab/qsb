@@ -222,11 +222,11 @@ We use a large, standard dataset of sentence--compression pairs from \citet{fili
 \begin{tabular}{lll}
 \centering
 Approach & F1 & SLOR  \\ \hline
-Query terms only {\small (lower bound)} & 0.384  & a   \\
-Supervised ILP  &  0.854   & a        \\
-\textbf{Transition-based deletion} &  \textbf{0.875}  & a   \\
+Query terms only {\small (lower bound)} & 0.384  & --   \\
+Supervised ILP  &  0.854   &  0.876        \\
+\textbf{Transition-based deletion} &  \textbf{0.875}  & \textbf{0.906}   \\
 \end{tabular}
-\caption{The token-level F1 score for our transition-based deletion approach to length and lexically constrained sentence compression, along with the F1 score for our reimplementation of a traditional ILP-based approach \cite{filippova2013overcoming}. The difference between the methods is statistically significant. Selecting only query terms for a compression achieves an F1 = 0.384, which is the lower bound for this task.}
+\caption{Token-level F1 score for our transition-based deletion approach to length and lexically constrained sentence compression, along with the F1 score for our reimplementation of a traditional ILP-based approach \cite{filippova2013overcoming}. We also show scores for SLOR, an automated readability metric (\S\ref{s:readabilityinformativeness}). The difference in F1 scores and SLOR scores  is statistically significant. Selecting only query terms for a compression achieves an F1 = 0.384, which is the lower bound for this task. \ahcomment{comment on SLOR}}
 \label{t:results}
 \end{table}
 
@@ -259,7 +259,7 @@ Researchers often use human judgements of \textit{importance} and \textit{readab
 
 In a traditional importance evaluation, humans judge the degree to which a compression retains the most ``important'' information from a source sentence. However, in our constrained compression setting, a user's query determines the ``important'' information from $s$, which must be included in a compression. Thus, human importance evaluations are inappropriate for our setting.
  
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our transition-based iterative deletion technique achieves a test-time SLOR score of 0.906; the ILP achieves a SLOR score of 0.876. This suggests that each method returns similarly readable compressions.
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Our method achieves a slightly higher SLOR score, which indicates that it might produce slightly more readable compressions (Table \ref{t:results}. The appendix contains additional details of our implementation of SLOR. 
 
 \section{Computational costs of transition-based compression}\label{s:costs}
 
