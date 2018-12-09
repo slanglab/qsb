@@ -95,7 +95,7 @@ While older compression methods based on integer linear programming could trivia
 \begin{tabular}{lccc}
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained}  \\ \hline
 LSTM taggers \cite{filippova2015sentence}   & linear              & no         \\   
-\textbf{Transition-based compression (this work)}  & \textbf{quadratic}     &      \textbf{yes}   \\
+\textbf{Transition-based deletion (this work)}  & \textbf{quadratic}     &      \textbf{yes}   \\
 ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & yes      \\
 \end{tabular}
 \caption{Three algorithms for sentence compression. Linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-complete optimization problem (\S\ref{s:ilps}), with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints in quadratic time.} 
@@ -123,11 +123,6 @@ In practice, translating a sentence compression objective into an integer linear
 
 We contrast transition-based compression and integer programming approaches with LSTM taggers for the compression task \cite{filippova2015sentence}. Such taggers achieve state-of-the-art scores on extractive sentence compression, using sequence-to-sequence methods which label tokens with a 1 or a 0 indicating if the token should be included in a shortening. This approach is linear in the token length of a the input sequence. However, at this time, LSTM taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, using new work on constrained generation \cite{N18-1119,aaimh}.
 
-\subsection{Transition-based compression}
-
-In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints, inspired by transition-based parsing techniques \cite{Earley1970AnEC,nivre2003}. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. Our stateful approach recalls early solutions to the sentence compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
-
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain query terms, until identifying a compression which satisfies the length constraint. However, we show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
 \begin{table*}[]
 \centering
@@ -144,6 +139,12 @@ $\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v
 \label{t:ops}
 \end{table*}
 
+\subsection{Transition-based compression}
+
+In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints, inspired by transition-based parsing techniques \cite{Earley1970AnEC,nivre2003}. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. Our stateful approach recalls early solutions to the sentence compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
+
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain query terms, until identifying a compression which satisfies the length constraint. However, we show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+
 \section{Transition-based sentence compression}\label{s:system}
 
 In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. Our compression system maintains a state, modified by a small set of operations. We formally describe the system (\S\ref{s:formal}), present a method for generating oracle paths to gold standard shortenings (\S\ref{s:oracle}), and then detail a computational model of oracle compression (\S\ref{s:modeling}). We then demonstrate and evaluate a method which uses this model for constrained compression (\S\ref{s:transition}), and analyze its computational costs (\S\ref{s:costs}).
@@ -156,14 +157,14 @@ We define four principal operations, which reference the vertex $v$ at the head 
 
 To generate a compression, we first execute the $\textbf{\textsc{Start}}$ operation which sets $V=\emptyset$ and defines $B=[v_1, v_2 ... v_{|s|}]$, where $v_1, v_2 ... v_{|s|}$ are the tokens in $s$, arranged breadth-first, and $|s|$ is the token length of the original sentence. After the buffer is empty, we execute a $\textbf{\textsc{Stop}}$ operation and all tokens in $V$ are linearized in their original order to return a shortened sentence. Table \ref{t:ops} formally defines all operations. The appendix also includes a complete, worked example. 
 
-In our transition-based compressor, only some operations are valid for some configurations of the state. If $v \notin V$, then $\textsc{Prune}$ is not valid as $T(v)$ cannot be removed from $V$. Similarly, if $v \in V$, then $\textsc{Insert}$ is not valid as $T(v)$ cannot be added to $V$. Table \ref{t:ops} includes these preconditions in the definition of each operation.
-
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.85\textwidth]{example.pdf}
 \caption{Our neural classifier, which learns to make a binary decision based on the markup, $\bm{x}$ (\S\ref{s:modeling}). The model uses a shared Bi-LSTM and max pooling layer, along with fully-connected layers responsible for binary \textsc{Prune} decisions, and fully-connected layers responsible for \textsc{Insert} decisions. The appropriate task for the LSTM (i.e. prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup $m(V_j,v,o,s)=\bm{x}$ ``shows'' the LSTM what a proposed change to the state of the compression system would ``look'' like if the operation proposal $o$ were to be carried out. At each timestep, LSTM must decide if the stateful compression system should accept the operation proposal, $o \in \{\textsc{Prune}, \textsc{Insert}\}$. In this case, $s$ is ``She said that the protocol limits fire risk'' and $V_j$ is ``the protocol limits fire risk''.  The LSTM must decide if the compression system should execute $o$= \textsc{Prune} on the subtree headed at $v$ = \textit{risk}, governed by a $\texttt{dobj}$ edge in the parse. }
 \label{f:example}
 \end{figure*}
+
+In our transition-based compressor, only some operations are valid for some configurations of the state. If $v \notin V$, then $\textsc{Prune}$ is not valid as $T(v)$ cannot be removed from $V$. Similarly, if $v \in V$, then $\textsc{Insert}$ is not valid as $T(v)$ cannot be added to $V$. Table \ref{t:ops} includes these preconditions in the definition of each operation.
 
 \subsection{Oracle paths}\label{s:oracle}
 
@@ -258,7 +259,7 @@ Researchers often use human judgements of \textit{importance} and \textit{readab
 
 In a traditional importance evaluation, humans judge the degree to which a compression retains the most ``important'' information from a source sentence. However, in our constrained compression setting, a user's query determines the ``important'' information from $s$, which must be included in a compression. Thus, human importance evaluations are inappropriate for our setting.
  
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our iterative deletion technique achieves a test-time SLOR score of 0.906; the ILP achieves a SLOR score of 0.876. This suggests that each method returns similarly readable compressions.
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} The appendix contains additional details of our implementation of SLOR. Our transition-based iterative deletion technique achieves a test-time SLOR score of 0.906; the ILP achieves a SLOR score of 0.876. This suggests that each method returns similarly readable compressions.
 
 \section{Computational costs of transition-based compression}\label{s:costs}
 
@@ -270,7 +271,7 @@ In the worst-case, our method will prune one singleton subtree (i.e. a subtree w
 
 \subsection{Empirical costs of transition-based compression}\label{s:empiricalcost}
 
-The theoretical worst-case is a poor representation of the empirical costs of our iterative deletion algorithm. In the worst-case, iterative deletion only prunes one vertex from a singleton subtree at each timestep. But in practice, the method often prunes large subtrees which remove many vertexes in a single step. 
+The theoretical worst-case is a poor representation of the empirical costs of our transition-based iterative deletion algorithm. In the worst-case, iterative deletion only prunes one vertex from a singleton subtree at each timestep. But in practice, the method often prunes large subtrees which remove many vertexes in a single step. 
 
 %Similarly, in the worst-case, the algorithm must shorten a sentence to match an arbitrarily small character budget, but in practice character budgets will be set to reasonable lengths for shortened English sentences. Finally, in the worst case, $q$ will be empty (i.e. no lexical constraints are specified, so all operations must be considered at each timestep), but in practice practitioners using our query-focused method will likely specify at least one query term which must be included in shortened sentences. 
 
@@ -281,7 +282,7 @@ We find that while iterative deletion is polynomial in the worst case (\S\ref{s:
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=.4\textwidth]{observed.pdf}
-\caption{Mean observed operations in a worst case run vs. mean observed operations in an average run of the iterative deletion algorithm, at different sentence lengths. In the worst case (top), iterative deletion is polynomial in the token length of the input sentence (\S\ref{s:costs}). In practice (bottom), empirical costs scale linearly for constrained compression (\S\ref{s:empiricalcost}). The observed worst case appears to observe the theoretical upper bound of $O(|s|^2)$ operations.}
+\caption{Mean observed operations in a worst case run vs. mean observed operations in an average run of the transition-based deletion algorithm, at different sentence lengths. In the worst case (top), iterative deletion is polynomial in the token length of the input sentence (\S\ref{s:costs}). In practice (bottom), empirical costs scale linearly for constrained compression (\S\ref{s:empiricalcost}). The observed worst case appears to observe the theoretical upper bound of $O(|s|^2)$ operations.}
 \label{f:example}
 \end{figure}
 
