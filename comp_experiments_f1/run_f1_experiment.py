@@ -105,7 +105,7 @@ def do_sentence(_, no_compression, config):
     assert f1 <= 1 and f1 >= 0
     compression = [o["word"] for ono, o in enumerate(sentence['tokens'])
                    if y_pred[ono]]
-    compression = " ".join(compression) + " ."  # SLOR implementation assumes period for EOS
+    compression = " ".join(compression)# SLOR implementation trained on stripped punct b/c models dont include punct b.c not in training data 
 
     lm_score = slor(sequence=compression,
                     lm=LANGUAGE_MODEL,
