@@ -103,7 +103,7 @@ ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & y
 \end{table*}
 
 
-Therefore, in this work, we present a new method for compressing sentences, which efficiently accommodates lexical and length constraints. Our transition-based, stateful compression method is inspired by similar approaches to transition-based dependency parsing \cite{nivre2003,D14-1082}. We compare this supervised, transition-based technique to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. We show that our method has lower computational costs while better reconstructing known-good, constrained shortenings, as measured by token-level F1 score. 
+Therefore, in this work, we present a new method for compressing sentences, which efficiently accommodates lexical and length constraints. Our transition-based, stateful compression method is inspired by similar approaches to transition-based dependency parsing \cite{nivre2003,D14-1082}. We compare this supervised technique to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. We show that our method has lower computational costs while better reconstructing known-good shortenings under constraints. 
 
 \section{Methods for sentence compression}
 
@@ -121,7 +121,7 @@ In practice, translating a sentence compression objective into an integer linear
 
 \subsection{Sequence-to-sequence compression}
 
-We contrast transition-based compression and integer programming approaches with sequence-to-sequences methods for the compression task \cite{filippova2015sentence}. These techniques achieve high automatic evaluation scores by labeling input tokens with a 1 or a 0, indicating if the word should be included in a shortening. Such methods are also linear in the token length of a the input sequence, where ILPs incur exponential cost. However, at this time, sequence-to-sequence taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future efforts by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
+We contrast transition-based compression and integer programming approaches with sequence-to-sequences methods for the compression task \cite{filippova2015sentence}. These techniques achieve high automatic evaluation scores by labeling input tokens with a 1 or a 0, indicating if the word should be included in a shortening. Such methods are also linear in the token length of the input sequence, where ILPs incur exponential cost. However, at this time, sequence-to-sequence taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
 
 
 \begin{table*}[]
@@ -141,9 +141,9 @@ $\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v
 
 \subsection{Transition-based compression}
 
-In this work, we present an alternative, transition-based method for shortening sentences under lexical and length constraints. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. Our stateful approach recalls early solutions to the sentence compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
+In this work, we present a new, neural, transition-based method for shortening sentences under lexical and length constraints. Our method compresses a sentence over $N$ time steps, by adding and removing $N$ different subtrees from a dependency parse, one after another. Our stateful approach recalls early solutions to the sentence compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
 
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain query terms, until identifying a compression which satisfies the length constraint. However, we show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain query terms, until identifying a compression which satisfies the length constraint. However, we show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
 \section{Transition-based sentence compression}\label{s:system}
 
@@ -151,7 +151,7 @@ In this work, we present a new transition-based sentence compression system, ins
 
 \subsection{Formal description}\label{s:formal}
 
-Our transition-based sentence compression system shortens a sentence $s$ by executing a sequence of operations. Each operation modifies the state, denoted $(V,[v|B])$, where $V$ is a subset of tokens from $s$, and $B$ is an ordered buffer of tokens from $s$ headed by the token $v$. In defining each operation, we use the notation $T(v)$ to refer to the subtree headed by $v$ in the unchanging, precomputed dependency parse of $s$.
+Our transition-based sentence compression system shortens a sentence $s$ by executing a sequence of operations. Each operation modifies the state, denoted $(V,[v|B])$, where $V$ is a subset of tokens from $s$, and $B$ is an ordered buffer of tokens from $s$ headed by the token $v$. In defining each operation, we use the notation $T(v)$ to refer to $v$ and all its descendants in the unchanging, precomputed dependency parse of $s$. We that $T(v)$ is the subtree rooted at $v$.
 
 We define four principal operations, which reference the vertex $v$ at the head of the buffer, $[v|B]$. The operation \textbf{\textsc{Prune}} removes all vertexes in $T(v)$ from $V$. The operation \textbf{\textsc{Insert}} adds $T(v)$ into $V$. Executing a \textsc{Prune} or \textsc{Insert} also pops the token $v$ from the head of the buffer. The compression system can also execute the operations \textbf{\textsc{NoPrune}} and \textbf{\textsc{NoInsert}}, which pop $v$ from the buffer without inserting or pruning $T(v)$.\footnote{These two operations have different preconditions (Table \ref{t:ops}). The distinction between each operation is important for modeling (\S\ref{s:modeling}).}
 
