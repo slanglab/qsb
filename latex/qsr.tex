@@ -135,7 +135,7 @@ $\textsc{Insert}$             & $(V, [v|B]), v \notin V, \Rightarrow (V \cup T(v
 \textsc{NoInsert}          &       $(V, [v|B]), v \notin V, \Rightarrow (V, B)$ &   Don't insert the subtree rooted at $v$ into $V$    \\ \hline
 \textsc{Stop}             & $ (V, B=[]) \Rightarrow$ STOP & Compression ends when the buffer is empty \\                                               
 \end{tabular}
-\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $V$ is a subset of vertexes from the original sentence $s$, $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v \in V$ is at the head of the buffer. $T(v)$ denotes the subtree rooted at $v$ in the original sentence. Section \ref{s:formal} describes each operation informally. The appendix presents a complete, worked example. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
+\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $V$ is a subset of vertexes from the original sentence $s$, $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v \in V$ is at the head of the buffer. $T(v)$ denotes the subtree rooted at $v$ in the original sentence (i.e. $v$ and all its descendants). Section \ref{s:formal} describes each operation informally. The appendix presents a complete, worked example. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
 \label{t:ops}
 \end{table*}
 
