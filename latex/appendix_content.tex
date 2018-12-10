@@ -3,7 +3,7 @@
 \begin{figure*}[htb!]
 \centering
 \includegraphics[width=.75\textwidth]{worked.pdf}
-\caption{Nine operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V, [v|B])$. In the diagram, the tokens in $V$ are shown in bold. At each timestep, the token $v$ at the head of the buffer $B$ is shown in the third column. Our compression system references the original, unchanging dependency parse of the sentence, $s$, shown in the diagram. The buffer is initialized breadth-first. Compression stops when the buffer is empty.}
+\caption{Nine operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V_j, [v_j|B])$. In the diagram, the tokens in $V_j$ are shown in bold. The token $v_j$ is shown in the third column.}
 \label{f:example}
 \end{figure*}
 
@@ -21,7 +21,7 @@ Other possible discrepancies arise from differences in part-of-speech taggers. I
 We use \citet{gurobi} (v7) to solve the liner program. \citet{filippova2008dependency} report using LPsolve.\footnote{\url{http://
 sourceforge.net/projects/lpsolve}}  We found that Gurobi sometimes segfaults nondeterminsitically during training. We implement checkpoints which save and restore the state of computation, allowing us to resume training when such errors occur.  We assess convergence by examining the validation F1 score on the constrained task after each pass through the training data. The F1 score increases for each of eight passes through the training data, and then decreases slightly (drops by $10^{-3}$ points). We terminate training at this point. 
 
-Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features included in their model (but not specified in the overview) almost certainly affect performance. 
+Lastly, in Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature explicitly described in their work, except where otherwise noted (e.g. syntactic feature not compatible with UD). However, additional features included in their model (but not explicity described in print) almost certainly affect performance. 
 
 \subsection{Implementation of SLOR: additional details}
 
