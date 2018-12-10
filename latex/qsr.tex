@@ -294,12 +294,16 @@ We find that while transition-based deletion is polynomial in the worst case (\S
 
 \section{Applications and related work}
 
+\subsection{Applications}
+
 Traditional study of sentence compression is motivated by text summarization techniques, which create synopses by selecting and (sometimes) shortening sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,martins2009summarization}. 
 In these settings, it is important for compressions to retain ``important'' information from sources because they must stand-in for longer sentences within summaries.
 
 Our concern with constrained compression is better suited to search applications, in which user input defines important information in source documents. For instance, constrained compression could be used to generate query-biased snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS,kanungo2009predicting}.\footnote{We note that version 7.5 of Apache Lucene, the leading open source search engine, does not perform sentence compression in generating snippets. \url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} Constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Particular forms of query-focused summarization, like summarizing people \cite{w04} or companies \cite{filippova2009company}, also require compressions with hard lexical constraints. 
 
-This work presents a strictly extractive method, following a line of research in which compressions are formed by deleting tokens from an original sentence \cite{clarke2008global,filippova2008dependency,filippova2015sentence}. Other approaches compress sentences via paraphrasing \cite{rush2015neural,mallinson18}. Our method might be extended with paraphrase operations in future work, following recent interest in blending abstractive and extractive summarization techniques \cite{P17-1099}. 
+\subsection{Related work}
+
+Our approach to sentence compression is strictly extractive, following a line of research in which compressions are formed by deleting tokens from an original sentence \cite{clarke2008global,filippova2008dependency,filippova2015sentence}. However, our framework might be extended with abstractive operations in future work, following recent interest in blending summarization techniques \cite{P17-1099}. Other approaches compress sentences abstractively \cite{rush2015neural,mallinson18}. 
 
 Finally, we note one study \cite{Li2013DocumentSV} which solicits annotations for ``guided'' compression, in which humans are directed to include particular words in manually shortening sentences. The authors hypothesize that this form of supervision can improve downstream summarization tasks, but do not formally examine the compression problem under lexical constraints.
 
