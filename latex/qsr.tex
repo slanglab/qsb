@@ -225,7 +225,16 @@ Our method better reconstructs known-good compressions, and achieves higher auto
 
 In order to evaluate different approaches to constrained compression, we require an evaluation dataset of sentences, constraints and known-good shortenings (which respect the constraints). Formally, this means we need input $(s, q, b)$ where $s$ is a sentence, $q$ is a list of query tokens and $b \in \mathbb{Z}^{+}$ is a maximum character budget. For each input triple $(s,q,b)$ we need an output compression $c$, a known-good shortening which $(1)$ includes all tokens from $q$ and $(2)$ is no longer than $b$ (by character length). 
 
-To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming} as a collection of input triples and output compressions. The test set for this corpus is a collection of 10,000 $(s,c)$ pairs. In 6,827 cases, $c$ includes one or more named entities. We interpret these named entities as the query $q$.\footnote{We re-tokenize, parse and tag NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations. We use the untransformed representation of $c$ from the dataset. Transformations employed during preprocessing in prior work \cite{filippova2013overcoming} will change the distribution of NER, for instance by resolving anaphora.} We interpret the length of $c$ (in characters) as a character budget $b$. (We discard cases where the compression does not include NER.) This interpretation defines a dataset of sentences, compressions and constraints.
+To support large-scale automatic evaluation, we reinterpret 
+\citeauthor{filippova2013overcoming}'s
+standard compression corpus
+as a collection of input triples and output compressions.
+In 6,827 of the 10,000 $(s,c)$ pairs in its test set,
+$c$ includes one or more named entities.\footnote{We re-tokenize, parse and tag NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations. We use the untransformed representation of $c$ from the dataset. Transformations employed during preprocessing in prior work \cite{filippova2013overcoming} will change the distribution of NER, for instance by resolving anaphora.}
+We interpret these named entities as the query $q$,
+and interpret the $c$'s length (in characters) as the character budget $b$.
+This defines our test set of 6,827 $(s,q,b,c)$ tuples of sentences, constraints, and 
+known-good compressions.
 
 \begin{table}[]
 \begin{tabular}{lrr}
