@@ -209,7 +209,7 @@ Our architecture (Figure \ref{f:example}) follows recent work on LSTM classifica
 
 \subsection{Training}
 
-We use a large corpus of sentence--compression pairs \cite{filippova2013overcoming} to define a set of 8 million tuples $\{(\bm{x}_j, y_j) \}_{j=1}^{K}$, where $\bm{x}_j$ is the markup reflecting some configuration of the compression system at some step $j$ on some oracle path and $y_j \in \{0,1\}$ is a binary variable indicating the oracle choice at timestep $j$.
+We use a large corpus of sentence--compression pairs \cite{filippova2013overcoming} to define a set of 8 million training instances $(\bm{x}_j, y_j)$, where $\bm{x}_j$ is the markup at step $j$ of some oracle path for some sentence $s$ in the training set, and $y_j \in \{0,1\}$ is the binary oracle choice at timestep $j$.
 
 We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set; the appendix contains additional details. Word vectors are updated during training. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs.
 
