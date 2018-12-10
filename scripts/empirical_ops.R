@@ -50,6 +50,7 @@ ggplot(all_ %>% filter(len < 30), aes(x=len, y=ops, color=kind, shape=kind)) + g
        theme_bw() + theme(legend.title=element_blank(),
                             legend.position = "bottom",
                             legend.spacing.x = unit(.5, 'cm'),
+                            axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
                             axis.title=element_text(size=19,face="bold"),
                             legend.text=element_text(size=15.5,face="bold"),
                             plot.title=element_text(size=19,face="bold"), 
