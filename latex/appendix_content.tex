@@ -35,6 +35,16 @@ where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of thi
 
 We use a 3-gram language model trained on the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}.
 
+\subsection{Subtree and compression brackets: additional details}\label{s:subtree}
+
+Our markup input to our LSTM, $\bm{x}_j$, includes \textbf{subtree brackets} with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o_j \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o_j$ indicating the type of the operation proposal (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
+
+Additionally, the markup includes \textbf{compression brackets} which show the extent of the current compression (if the operation is \textsc{Prune}) or the extent of the compression which would result if the operation were to be accepted (if the operation is \textsc{Insert}). Concretely, these brackets show the extent of \textsc{Max}($V_{j+1}, V_{j}$) within $s$ where, \textsc{Max} selects the largest set by cardinality and where $V_{j+1}$ is all tokens which would be in $V$ at step $j+1$, if the system were to execute operation $o$ at timestep $j$. If $o_j=\textsc{Prune}$ then $V_{j+1}$ will be smaller than $V_j$ and the bracket symbols will show the extent of the current $V_j$. If $o_j=\textsc{Insert}$, then $V_{j+1}$ will be larger than $V_j$ and the compression brackets will show the extent of the compression which would result if the tokens were to be inserted. 
+
+\subsection{Neural net training: additional details}
+
+We note several additional details about our neural network training procedure, including hyperparameter settings.
+
 
 \begin{table}[htb!]
 \begin{tabular}{@{}ll@{}}
@@ -44,7 +54,7 @@ Hidden size        & 907                        \\
 Embeddings dim.    & 300                      \\
 Total fully-connected layers & 2                        \\
 Fully-connected layers, hidden sizes & $(92, 2)$ \\
-Fully-connected layers, dropout & $(0.3093, 0.4078)$ \\
+Fully-connected layers, dropout & $(0.309, 0.408)$ \\
 Fully-connected layers, activations        & Relu, Linear             \\
 Learning rate      & $4.593 * 10^{-4}$   \\
 Weight decay       & $2.421 * 10^{-8}$   \\ \bottomrule
@@ -52,19 +62,9 @@ Weight decay       & $2.421 * 10^{-8}$   \\ \bottomrule
 \caption{The hyperparameters for our model. The learning rate and weight decay parameter each clearly affect validation accuracy. The importance of other parameters is less clear. } 
 \end{table}
 
-\subsection{Subtree and compression brackets: additional details}\label{s:subtree}
-
-Our markup input to our LSTM, $\bm{x_j}$, includes \textbf{subtree brackets} with a complex structure, used to represent the start and end of the tokens which will be pruned or inserted by an operation $o_j \in \{ \textsc{Prune},\textsc{Insert}\}$. The start and end tags are each formed by concatenating two symbols: (1) a symbol $o_j$ indicating the type of the operation proposal (i.e. prune or insert) and (2) a symbol $d$ indicating the dependency type governing $T(v)$, such as \texttt{dobj}. 
-
-Additionally, the markup includes \textbf{compression brackets} which show the extent of the current compression (if the operation is \textsc{Prune}) or the extent of the compression which would result if the operation were to be accepted (if the operation is \textsc{Insert}). Concretely, these brackets show the extent of \textsc{Max}($V_{j+1}, V_{j}$) within $s$ where, \textsc{Max} selects the largest set by cardinality and where $V_{j+1}$ is all tokens which would be in $V$ at step $j+1$, if the system were to execute operation $o$ at timestep $j$. If $o_j=\textsc{Prune}$ then $V_{j+1}$ will be smaller than $V_j$ and the bracket symbols will show the extent of the current $V_j$. If $o_j=\textsc{Insert}$, then $V_{j+1}$ will be larger than $V_j$ and the compression brackets will show the extent of the compression which would result if the tokens were to be inserted. 
-
-\subsection{Neural net training: additional details}
-
-We note several additional details about our neural network training procedure.
-
 \begin{itemize}
 \item{We train on 8 million tuples. The cardinality of the training set was bounded by available hardware resources, not by the total number of oracle tuples which can be generated with the \citet{filippova2013overcoming} dataset.}
-\item{We weight each training instance $(\bm{x_j}, y_j)$ using $\frac{T_o}{2 * T_{o,j}}$, the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. $T_o$ is the total number of training examples of accepted and rejected instances of the operation proposal $o$ (e.g. $T_o$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{o,j}$ is the total number of training operations labeled $y_j$ for operations of proposal type $o$ (e.g. $T_{o,j}$ = the total \textsc{NoPrune} operations, if $y_j=0$ and instance is of type \textsc{Prune}). The 2 in the numerator denotes the total number of classes. Alternative weighting methods are left for future work.}
+\item{We weight each training instance $(\bm{x_j}, y_j)$ using the default class weighting scheme in Scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. The formula for assigning weights is $\frac{T_o}{2 * T_{o,j}}$. $T_o$ is the total number of training examples of accepted and rejected instances of the operation proposal $o$ (e.g. $T_o$ = total number of \textsc{Prune} examples + total number of \textsc{NoPrune} examples). $T_{o,j}$ is the total number of training operations labeled $y_j$ for operations of proposal type $o$ (e.g. $T_{o,j}$ = the total \textsc{NoPrune} operations, if $y_j=0$ and $o$ = \textsc{Prune}). The 2 in the numerator denotes the total number of classes. Alternative weighting methods are left for future work.}
 \item{We experimented with ELMo vectors \cite{Peters:2018}, but found that we were able to achieve similar validation accuracies with much smaller embeddings. It is possible that ELMo-like vectors could be used to increase performance in the future.}
 \end{itemize}
 
