@@ -262,7 +262,7 @@ We initialize $(V, [v|B])$ with the smallest subtree from the dependency parse o
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach proposes representing each edge in a syntax tree with a vector of binary features, then learning weights for each feature using a structured perceptron trained on a corpus of $(s,c)$ pairs. Learned weights are used to compute a global compression score. Solutions are subject to structural constraints encoded into the objective function, which ensure the output is a valid tree.
+We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach proposes representing each edge in a syntax tree with a vector of binary features, then learning weights for each feature using a structured perceptron trained on a corpus of $(s,c)$ pairs. Learned weights are used to compute a global compression objective, that is subject to structural constraints which ensure the output is a valid tree.
 
 To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of  0.690 on the unconstrained compression task. The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our reimplementation and the method reported in \citet{filippova2013overcoming}. We describe these differences in detail in the appendix.
 
