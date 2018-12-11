@@ -180,10 +180,10 @@ In our framework (\S\ref{s:oracle}), the oracle compression process is a series 
 
 To train the LSTM, we encode both the state of the compression system and the operation proposal into a sequence of input symbols $\bm{x}_j$, called the markup. The LSTM predicts $p(y_j=1 | \bm{x}_j)$, the probability of a binary oracle decision, given the markup. 
 
-The markup is the deterministic (rather than learned) output of a function $\bm{x}_j=m(V_j,v_j,o_j,s)$, which inserts additional symbols into $s$, the original sequence of tokens in the sentence. The markup inserts deletion indicator symbols, and 3 sets of brackets (see Figure \ref{f:example}): 
+The markup is the deterministic (rather than learned) output of a function $\bm{x}_j=m(V_j,v_j,o_j,s)$, which inserts additional symbols into $s$, the original sequence of tokens in the sentence (see Figure \ref{f:example}). The markup function adds four kinds of symbols.
 
 \begin{enumerate}
-\item{\textbf{Deletion indicators} mark tokens from $s$ which are not included in the compression at timestep $j$. (These indicators are denoted with strikethrough text in Figure \ref{f:example}.) The markup function concatenates a deletion indicator onto all $t_i \in \{s\} \setminus V_j$, where $\{s\}$ denotes the unordered set of tokens from $s$.} 
+\item{\textbf{Deletion indicators} tag tokens from $s$ which are not included in the compression at timestep $j$. (These indicators are denoted with strikethrough text in Figure \ref{f:example}.) The markup function concatenates a deletion indicator to all $t_i \in \{s\} \setminus V_j$, where $\{s\}$ denotes the unordered set of tokens from $s$.} 
 \item{\textbf{Sentence brackets} represent the start and end of the original, uncompressed sentence $s$. Sentence brackets are shown with $\langle s \rangle$ and $\langle / s \rangle$ in Figure \ref{f:example}.}
 \item{\textbf{Compression brackets} show the location of a compression within $s$. If the operation proposal is \textsc{Prune}, these brackets show the start and end of the compression $V_j$ within $s$. If the operation proposal is \textsc{Insert}, these brackets show the start and end of the compression $V_{j+1}$, if the proposed operation were to be accepted at timestep $j$. Compression brackets are shown with $\langle c \rangle$ and $\langle / c \rangle$ in Figure \ref{f:example}. 
 
@@ -191,7 +191,7 @@ In some cases, some of the tokens in the span from $\langle c \rangle$ to $\lang
 \item{\textbf{Subtree brackets} represent the start and end of $T(v)$, defined previously (\S\ref{s:formal}) as the tokens in the subtree which would be pruned or inserted by the operation proposal $o_j$. Subtree brackets have a more complex structure which encodes $(i)$ the type of the operation proposal and $(ii)$ the syntactic role of $T(v)$ within $s$. Figure \ref{f:example} shows the subtree brackets $\langle \textsc{Prune} \texttt{dobj} ? \rangle$ and $\langle / \textsc{Prune} \texttt{dobj} ? \rangle$. Details of the structure of these brackets are provided in the appendix.}
 \end{enumerate}
 
-Including the three sets of inline bracket tags, along with the indicator tags, allows the LSTM to model the relationship between $(a)$ the tokens to be pruned or inserted, $(b)$ the current compression, $(c)$ the operation proposal, and $(d)$ the original sentence $s$. Prior work shows that LSTMs appear capable of modeling bracketing within a sentence \cite{Vinyals2015GrammarAA,karpathy,Aharoni2017TowardsSN}.
+Including the three sets of inline bracket symbols, along with the indicator symbols, allows the LSTM to model the relationship between $(a)$ the tokens to be pruned or inserted, $(b)$ the current compression, $(c)$ the operation proposal, and $(d)$ the original sentence $s$. Prior work shows that LSTMs appear capable of modeling bracketing within a sentence \cite{Vinyals2015GrammarAA,karpathy,Aharoni2017TowardsSN}.
 
 Our architecture (Figure \ref{f:example}) follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict binary, oracle operations using a Bi-LSTM layer, a max pooling layer, and two separate sequences of fully-connected layers: one for \textsc{Prune} vs. \textsc{NoPrune} decisions, and one for \textsc{Insert} vs. \textsc{NoInsert} decisions. We interpret the shared Bi-LSTM layer as learning deep features from the markup, and each sequence of fully-connected layers as using those features to perform a different kind of binary classification.
 
@@ -209,7 +209,7 @@ Our architecture (Figure \ref{f:example}) follows recent work on LSTM classifica
 
 \subsection{Training}
 
-We use the training set from a large corpus of sentence--compression pairs \cite{filippova2013overcoming} to define a set of 8 million training instances of the form $(\bm{x}_j, y_j)$, where $\bm{x}_j$ is the markup at step $j$ on some oracle path, and $y_j \in \{0,1\}$ is the binary oracle choice at timestep $j$.
+We use the training set from a large corpus of sentence--compression pairs \cite{filippova2013overcoming} to define a set of 8 million training instances of the form $(\bm{x}_j, y_j)$, where $\bm{x}_j$ is the markup at timestep $j$ on some oracle path, and $y_j \in \{0,1\}$ is the binary oracle choice at timestep $j$.
 
 We initialize with GloVe embeddings \cite{pennington2014glove} and train using weighted cross entropy loss with Adam \cite{Kingma2014AdamAM}. We weight the cost function in proportion to the prevalence of each class in our training set; the appendix contains additional details. Word vectors are updated during training. We train for 20 epochs, with early stopping if validation accuracy does not improve within 2 epochs.
 
@@ -230,11 +230,11 @@ To support large-scale automatic evaluation, we reinterpret
 standard compression corpus
 as a collection of input triples and output compressions.
 In 6,827 of the 10,000 $(s,c)$ pairs in its test set,
-$c$ includes one or more named entities.\footnote{We re-tokenize, parse and tag NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations. Prior work transforms compressions during preprocessing \cite{filippova2013overcoming}. We reimplement these transformations using UD (see appendix), after parsing and tagging the untransformed compressions from the dataset.}
+$c$ includes one or more named entities.\footnote{We re-tokenize, parse and tag NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations. Prior work transforms compressions during preprocessing \cite{filippova2013overcoming}. We reimplement these transformations using UD (see Appendix), after parsing and tagging the untransformed compressions from the dataset.}
 We interpret these named entities as the query $q$,
 and we interpret the length of $c$ (in characters) as the character budget $b$.
-This defines a test set of 6,827 tuples, each of the form $(s,q,b,c)$. Each tuple consists of sentences, constraints, and 
-known-good compressions.
+This defines our test set of 6,827 tuples, each of the form $(s,q,b,c)$. Each tuple consists of a sentence, a lexical constraint, a budget constraint and a
+known-good compression.
 
 \begin{table}[]
 \begin{tabular}{lrr}
@@ -262,7 +262,7 @@ We initialize $(V, [v|B])$ with the smallest subtree from the dependency parse o
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach proposes representing each edge in a syntax tree with a vector of binary features, then learning weights for each feature using a structured perceptron trained on a corpus of $(s,c)$ pairs. Learned weights are used to compute a global compression objective, that is subject to structural constraints which ensure the output is a valid tree.
+We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach proposes representing each edge in a syntax tree with a vector of binary features, then learning weights for each feature using a structured perceptron trained on a corpus of $(s,c)$ pairs. Learned weights are used to compute a global compression objective, subject to structural constraints which ensure the output is a valid tree.
 
 To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of  0.690 on the unconstrained compression task. The F1 score in our reimplementation is lower than the than the result reported by the original authors. There are some important differences between our reimplementation and the method reported in \citet{filippova2013overcoming}. We describe these differences in detail in the appendix.
 
