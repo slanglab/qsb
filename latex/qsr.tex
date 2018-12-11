@@ -230,7 +230,7 @@ To support large-scale automatic evaluation, we reinterpret
 standard compression corpus
 as a collection of input triples and output compressions.
 In 6,827 of the 10,000 $(s,c)$ pairs in its test set,
-$c$ includes one or more named entities.\footnote{We re-tokenize, parse and tag NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations. We use the untransformed representation of $c$ from the dataset. Transformations employed during preprocessing in prior work \cite{filippova2013overcoming} will change the distribution of NER, for instance by resolving anaphora.}
+$c$ includes one or more named entities.\footnote{We re-tokenize, parse and tag NER spans from the original dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. We use a standard 3-class definition of NER; for our purposes, entities are people, locations or organizations. Prior work transforms compressions during preprocessing \cite{filippova2013overcoming}. We reimplement these transformations using UD (see appendix), after parsing and tagging the untransformed compressions from the dataset.}
 We interpret these named entities as the query $q$,
 and we interpret the length of $c$ (in characters) as the character budget $b$.
 This defines a test set of 6,827 tuples, each of the form $(s,q,b,c)$. Each tuple consists of sentences, constraints, and 
