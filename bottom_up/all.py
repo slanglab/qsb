@@ -50,7 +50,14 @@ def get_parent(v, jdoc):
     return "ROOT"
 
 
-def get_encoded_tokens(dep, v, original_s, t):
+def get_encoded_tokens(dep, v, original_s, t, dep2symbol):
+            
+    IN = "_π"
+    OUT = "_ε"
+    BRACKETL = "δL"
+    BRACKETR = "δR"
+    TARGET = "_τ"
+
     toks = [_ for _ in original_s["tokens"]]
     toks.append({"word": BRACKETR + dep2symbol[dep], "index": v + .5})
     toks.append({"word": BRACKETL + dep2symbol[dep], "index": v - .5})
@@ -67,17 +74,19 @@ def get_encoded_tokens(dep, v, original_s, t):
     return out
 
 
-def get_instance(original_s, v, y, t):
+def get_instance(original_s, v, y, t, dep2symbol):
     '''
     unknown oracle label is for test time
     '''
+
+
     orig_ix = [i["index"] for i in original_s["tokens"]]
     dep = get_parent(v, original_s)
     return {"label": y, 
             "q": original_s['q'],
             "r": original_s["r"],
             "dep": dep,
-            "tokens": get_encoded_tokens(dep, v, original_s, t),
+            "tokens": get_encoded_tokens(dep, v, original_s, t, dep2symbol),
             "original_ix": orig_ix,
             "basicDependencies": original_s["basicDependencies"],
             "compression_indexes": original_s["compression_indexes"]}

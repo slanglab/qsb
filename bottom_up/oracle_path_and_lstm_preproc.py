@@ -21,14 +21,6 @@ if __name__ == "__main__":
     with open("/tmp/paths.p", "wb") as of:
         pickle.dump(paths, of)
 
-        
-            IN = "_π"
-    OUT = "_ε"
-    BRACKETL = "δL"
-    BRACKETR = "δR"
-    TARGET = "_τ"
-
-
     with open("/tmp/paths.p", "rb") as of:
         all_paths = pickle.load(of)
 
@@ -38,4 +30,5 @@ if __name__ == "__main__":
         paths, s = item_.values()
         for p in paths:
             t, v, y = p
-            instance = get_instance(original_s=s, v=v, y=y, t=t)
+            instance = get_instance(original_s=s, v=v, y=y, t=t, dep2symbol=dep2symbol)
+            print(instance)
