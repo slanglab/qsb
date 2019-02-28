@@ -1,9 +1,0 @@
-{
-  "results_dir": "comp_experiments_f1/output/",
-  "archive_loc": "models/277501065/277501065/model.tar.gz",
-  "model": "nn-transition-based",
-  "query": false,
-  "algorithm": "transition-based-compressor",
-  "model_name": "split_classifier",
-  "predictor_name": "split_classifier"
-}

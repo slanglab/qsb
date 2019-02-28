@@ -1,0 +1,8 @@
+{
+  "results_dir": "comp_experiments_f1/output/",
+  "model":"NA",
+  "archive_loc": "tests/fixtures/891477193/model.tar.gz",
+  "algorithm": "ilp5",
+  "query": true,
+  "weights": "snapshots/5"
+}

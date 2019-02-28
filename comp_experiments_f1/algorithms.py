@@ -17,7 +17,9 @@ from code.treeops import dfs
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 from preproc.lstm_preproc import PP
 from preproc.lstm_preproc import PE
+from code.printers import pretty_print_conl
 from math import log
+from random import shuffle
 import numpy as np
 import copy
 import nn
@@ -68,7 +70,6 @@ class NeuralNetworkTransitionGreedy:
                                                                 jdoc)}
 
     def get_char_length(self, jdoc):
-        assert type(jdoc["tokens"][0]["word"]) == str
         return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
 
     def heuristic_extract(self, jdoc):
@@ -103,8 +104,9 @@ class NeuralNetworkTransitionGreedy:
         # this line is needed for the "For roughly two-thirds of sentences ..."
         # logger.info("V init sentence ", len(jdoc["tokens"]) == len(state["tokens"]))
 
-        r = " ".join([o["word"] for o in state["tokens"]])
-        logger.info("init > r {}".format(len(r) > int(jdoc["r"])))
+        # this line is needed for the "In more than 95% of sentences, the compression system..."
+        #r = " ".join([o["word"] for o in state["tokens"]])
+        #logger.info("init > r {}".format(len(r) > int(jdoc["r"])))
         return state
 
     def predict(self, jdoc):
@@ -114,18 +116,20 @@ class NeuralNetworkTransitionGreedy:
         prev_length = 0
         length = self.get_char_length(jdoc)
         orig_toks = jdoc["original_ix"]
-        nops = 0
+        nops = []
 
         state = self.init_state(jdoc)
         prunes = 0
         while length != prev_length and length > int(jdoc["r"]):
             prunes += 1
             vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
-            nops += len(vertexes)
+            nops.append(len(vertexes))
             vertexes.sort(key=lambda x: x[1], reverse=True)
             if len(vertexes) == 0:
-                print("huh")
-                break
+                print("ending pruning")
+                pretty_print_conl(jdoc) 
+                break # this is a case where there is no compression. there are no vertexes
+                      # that you can prune w/o removing a query term
             vertex, prob = vertexes[0]
             prune(g=state, v=vertex)
             prev_length = length
@@ -133,131 +137,18 @@ class NeuralNetworkTransitionGreedy:
         length = self.get_char_length(state)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in state["tokens"]]
+            compression = " ".join([_["word"] for _ in jdoc["tokens"] if _["index"] in remaining_toks])
+            assert all([o in remaining_toks for o in jdoc["q"]]) 
             return {"y_pred": [_ in remaining_toks for _ in orig_toks],
+                    "compression": compression,
                     "nops": nops,
                     "prunes": prunes
                     }
         else:
-            return {"y_pred": "could not find a compression",
-                    "nops": nops
-                    }
-
-
-class NeuralNetworkTransitionGreedyPlusLength:
-    def __init__(self, archive_loc, model_name, predictor_name, T=.5, alpha=.5, query_focused=True):
-        assert type(archive_loc) == str
-        archive = load_archive(archive_file=archive_loc)
-        self.archive = archive
-        self.T = T
-        self.query_focused = query_focused
-        self.alpha = float(alpha)
-        self.predictor = Predictor.from_archive(archive, predictor_name)
-
-    def predict_proba(self, original_s, vertex, state):
-        '''
-        what is probability that this vertex is prunable,
-        according to transition-based nn model
-        '''
-        provisional_label = "p"
-        toks = get_encoded_tokens(provisional_label, state,
-                                  original_s, vertex)
-
-        txt = " ".join([_["word"] for _ in toks])
-
-        instance = self.predictor._dataset_reader.text_to_instance(txt, True,
-                                                                   "1")
-        would_be_pruned = len(" ".join([_["word"] for _ in state["tokens"]
-                              if _["index"] in
-                              dfs(state, hop_s=vertex, D=[])]))
-
-        total_pruned = len(" ".join([_["word"] for _ in state["tokens"]]))
-
-        pct_pruned = would_be_pruned/total_pruned
-
-        pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
-        op2n = {v:k for k,v in pred_labels.items()}
-        pred = self.predictor.predict_instance(instance)
-        return np.mean([self.alpha * pred["class_probabilities"][op2n["1"]],
-                       (1 - self.alpha) * pct_pruned])
-
-    def predict_vertexes(self, jdoc, state):
-        '''
-        what is probability that this vertex is prunable,
-        according to transition-based nn model
-        '''
-        assert self.query_focused
-        return {_["index"]: self.predict_proba(original_s=jdoc,
-                                               vertex=_["index"],
-                                               state=state)
-                for _ in state["tokens"] if not prune_deletes_q(_["index"],
-                                                                jdoc)}
-
-    def get_char_length(self, jdoc):
-        assert type(jdoc["tokens"][0]["word"]) == str
-        return len(" ".join([_["word"] for _ in jdoc["tokens"]]))
-
-    def heuristic_extract(self, jdoc):
-        '''
-        return the lowest vertex in the tree that contains the query terms
-        '''
-        from_root = [_['dependent'] for _ in jdoc["basicDependencies"] if _['governor'] == 0][0]
-        best = from_root
-        def tok_is_verb(vertex):
-            gov = [o["pos"][0] for o in jdoc["tokens"] if o["index"] == v][0]
-            return gov[0].lower() == "v"
-        for v in get_walk_from_root(jdoc):  # bfs
-            children = dfs(g=jdoc, hop_s=v, D=[])
-            # the verb heuristic is b/c the min governing tree is often just Q itself
-            if all(i in children for i in jdoc["q"]) and tok_is_verb(v):
-                best = v
-        return best
-
-    def init_state(self, jdoc):
-        '''init to the governing subtree'''
-        topv = self.heuristic_extract(jdoc)
-        if jdoc["q"] != []:
-            short_tree = dfs(g=jdoc, hop_s=topv, D=[])
-            toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
-            deps_to_start = [i for i in jdoc["basicDependencies"] if
-                             i["dependent"] in short_tree
-                             and i["governor"] in short_tree]
-            state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
-        else:
-            state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
-        return state
-
-    def predict(self, jdoc):
-        '''
-        return a compression that preserves q and respects r
-        '''
-        prev_length = 0
-        length = self.get_char_length(jdoc)
-        orig_toks = jdoc["original_ix"]
-        nops = 0
-
-        state = self.init_state(jdoc)
-        prunes = 0
-        while length != prev_length and length > int(jdoc["r"]):
-            prunes += 1
-            vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
-            nops += len(vertexes)
-            vertexes.sort(key=lambda x: x[1], reverse=True)
-            if len(vertexes) == 0:
-                print("huh")
-                break
-            vertex, prob = vertexes[0]
-            prune(g=state, v=vertex)
-            prev_length = length
-            length = self.get_char_length(state)
-        length = self.get_char_length(state)
-        if length <= int(jdoc["r"]):
-            remaining_toks = [_["index"] for _ in state["tokens"]]
-            return {"y_pred": [_ in remaining_toks for _ in orig_toks],
-                    "nops": nops,
-                    "prunes": prunes
-                    }
-        else:
-            return {"y_pred": "could not find a compression",
+            # in rare cases (5 of 1000) this method will not be able to prune 
+            # to below the length constraint. In these cases just return q.
+            # TODO add to paper
+            return {"y_pred": [_ in jdoc["q"] for _ in orig_toks],  
                     "nops": nops
                     }
 
@@ -295,7 +186,7 @@ class FMCSearch:
             prune(g=state, v=vertex)
             score += log(v2prob[vertex], 10)
             length = self.predictor.get_char_length(state)
-        
+
         remaining_toks = [_["index"] for _ in state["tokens"]]
 
         return {"score": score,
@@ -355,17 +246,56 @@ class FA2013Compressor:
 
         transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
 
-        #print("***")
-        #print(original_s["q"])
-        #print(original_indexes)
-        #print([_["index"] for _ in original_s["tokens"]])
-        #print([_["index"] for _ in transformed_s["tokens"]])
-        #print("000")
-
         output = run_model(transformed_s,
                            vocab=self.vocab,
                            weights=self.weights,
                            Q=original_s["q"],
+                           r=r)
+
+        # note: not necessarily a unique set b/c multi edges possible to same
+        # vertex after the transform. Set() should not affect eval, if you look
+        # at the code in get_pred_y
+        predicted_compression = set([o['dependent'] for o in output["get_Xs"]])
+        y_pred = get_pred_y(predicted_compression=predicted_compression,
+                            original_indexes=original_indexes)
+
+        assert all([i in predicted_compression for i in original_s["q"]])
+        assert len(output["compressed"]) <= original_s["r"]
+        return {"y_pred": y_pred,
+                "compression": output["compressed"],
+                "nops": -19999999  # whut to do here????
+                }
+
+
+class FA2013CompressorStandard:
+
+    '''
+    This implements a standard version of F and A
+    '''
+
+    def __init__(self, weights):
+        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+        self.weights = weights
+        self.vocab = get_all_vocabs()
+
+    def predict(self, original_s):
+        '''
+        run the ILP
+        '''
+
+        original_indexes = [_["index"] for _ in original_s["tokens"]]
+
+        transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
+
+        # "To get comparable
+        # results, the unsupervised and our systems used
+        # the same compression rate: for both, the requested
+        # maximum length was set to the length of the headline."
+        r = len(original_s["headline"])
+
+        output = run_model(transformed_s,
+                           vocab=self.vocab,
+                           weights=self.weights,
                            r=r)
 
         predicted_compression = [o['dependent'] for o in output["get_Xs"]]
@@ -373,9 +303,9 @@ class FA2013Compressor:
                             original_indexes=original_indexes)
 
         return {"y_pred": y_pred,
+                "compression": output["compressed"],
                 "nops": -19999999  # whut to do here????
                 }
-
 
 # This one is mostly a technical curiousity.
 # Just a transition-based compressor that does
@@ -453,49 +383,36 @@ class NeuralNetworkTransitionBFS:
 
         remaining_toks = [_["index"] for _ in state["tokens"]]
 
-
         return {"y_pred": [_ in remaining_toks for _ in orig_toks],
                 "nops": len(original_s["tokens"])
                 }
 
 
-### this one does not work well
-class NeuralNetworkPredictThenPrune:
-    def __init__(self, archive_loc, model_name, predictor_name, query_focused=True):
-        assert type(archive_loc) == str
-        archive = load_archive(archive_file=archive_loc)
-        self.archive = archive
-        self.query_focused = query_focused
-        self.predictor = Predictor.from_archive(archive, predictor_name)
+class WorstCaseCompressor:
+    '''
+    Performs the absolutely worst number of ops
 
-    def predict_proba(self, original_s, vertex, state):
+    Prunes only a singleton vertex
+    '''
+    def __init__(self):
+        pass
+
+    def predict_len(self, original_s, vertex, state):
         '''
-        what is probability that this vertex is prunable,
-        according to transition-based nn model
+        the length is just the number of children
         '''
-        provisional_label = "p"
-        toks = get_encoded_tokens(provisional_label, state,
-                                  original_s, vertex)
-
-        txt = " ".join([_["word"] for _ in toks])
-
-        instance = self.predictor._dataset_reader.text_to_instance(txt, True,
-                                                                   "1")
-
-        pred_labels = self.archive.model.vocab.get_index_to_token_vocabulary("labels")
-        op2n = {v:k for k,v in pred_labels.items()}
-        pred = self.predictor.predict_instance(instance)
-        return pred["class_probabilities"][op2n["1"]]
+        children = [o for o in state["basicDependencies"]
+                    if o["governor"] == vertex]
+        return len(children)
 
     def predict_vertexes(self, jdoc, state):
         '''
         what is probability that this vertex is prunable,
         according to transition-based nn model
         '''
-        assert self.query_focused
-        return {_["index"]: self.predict_proba(original_s=jdoc,
-                                               vertex=_["index"],
-                                               state=state)
+        return {_["index"]: self.predict_len(original_s=jdoc,
+                                             vertex=_["index"],
+                                             state=state)
                 for _ in state["tokens"] if not prune_deletes_q(_["index"],
                                                                 jdoc)}
 
@@ -514,20 +431,14 @@ class NeuralNetworkPredictThenPrune:
             return gov[0].lower() == "v"
         for v in get_walk_from_root(jdoc):  # bfs
             children = dfs(g=jdoc, hop_s=v, D=[])
+            # the verb heuristic is b/c the min governing tree is often just Q itself
             if all(i in children for i in jdoc["q"]) and tok_is_verb(v):
                 best = v
         return best
 
-    def predict(self, jdoc):
-        '''
-        return a compression that preserves q and respects r
-        '''
-        prev_length = 0
-        length = self.get_char_length(jdoc)
-        orig_toks = jdoc["original_ix"]
-        nops = 0
+    def init_state(self, jdoc):
+        '''init to the governing subtree'''
         topv = self.heuristic_extract(jdoc)
-
         if jdoc["q"] != []:
             short_tree = dfs(g=jdoc, hop_s=topv, D=[])
             toks_to_start = [i for i in jdoc["tokens"] if i["index"] in short_tree]
@@ -537,20 +448,46 @@ class NeuralNetworkPredictThenPrune:
             state = {"tokens": toks_to_start, "basicDependencies": deps_to_start}
         else:
             state = {"tokens": jdoc["tokens"], "basicDependencies": jdoc["basicDependencies"]}
-        vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
-        nops += len(vertexes)
+
+        # this line is needed for the "For roughly two-thirds of sentences ..."
+        # logger.info("V init sentence ", len(jdoc["tokens"]) == len(state["tokens"]))
+
+        # this line is needed for the "In more than 95% of sentences, the compression system..."
+        #r = " ".join([o["word"] for o in state["tokens"]])
+        #logger.info("init > r {}".format(len(r) > int(jdoc["r"])))
+        return state
+
+    def predict(self, jdoc):
+        '''
+        return a compression that preserves q and respects r
+        '''
+        prev_length = 0
+        length = self.get_char_length(jdoc)
+        orig_toks = jdoc["original_ix"]
+        nops = []
+
+        state = self.init_state(jdoc)
+        prunes = 0
         while length != prev_length and length > int(jdoc["r"]):
-            vertexes.sort(key=lambda x: x[1], reverse=True)
-            vertex, prob = vertexes[0]
-            prune(g=state, v=vertex)
-            prev_length = length
-            length = self.get_char_length(state)
-            vertexes.remove((vertex,prob))
+            prunes += 1
+            vertexes = list(self.predict_vertexes(jdoc=jdoc, state=state).items())
+            nops.append(len(vertexes))
+            vertexes = [o for o in vertexes if o[1] == 0]
+            if len(vertexes) > 0:
+                shuffle(vertexes)
+                vertex, length = vertexes[0]
+                assert length == 0
+                prune(g=state, v=vertex)
+                prev_length = length
+                length = self.get_char_length(state)
+            else:
+                break
         length = self.get_char_length(state)
         if length <= int(jdoc["r"]):
             remaining_toks = [_["index"] for _ in state["tokens"]]
             return {"y_pred": [_ in remaining_toks for _ in orig_toks],
-                    "nops": nops
+                    "nops": nops,
+                    "prunes": prunes
                     }
         else:
             return {"y_pred": "could not find a compression",

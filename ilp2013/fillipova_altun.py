@@ -167,14 +167,17 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
         '''
         def get_Xs():
             for dep in jdoc["enhancedDependencies"]:
-                if Xs['{}-{}'.format(dep["governor"], dep["dependent"])].Xn > 0:
+                if Xs['{}-{}'.format(dep["governor"], dep["dependent"])].Xn == 1:
                     yield {"word":dep["dependentGloss"], "dependent":dep["dependent"], "X":'{}-{}'.format(dep["governor"], dep["dependent"]),"X_val":Xs['{}-{}'.format(dep["governor"], dep["dependent"])].X}
 
         def get_compressed():
-            indexes = list(set([int(_.replace("w","")) for _ in Ws if Ws[_].Xn > 0]))
+            indexes = list(set([int(_.replace("w","")) for _ in Ws if Ws[_].Xn == 1]))
             indexes.sort()
             compressed = " ".join([_["word"] for _ in words if _["index"] in indexes])
             return compressed
+
+        def get_Ws():
+            return [(Ws[_].Xn,_) for _ in Ws] 
 
         out = []
         for solution in range(0, m.SolCount):
@@ -184,12 +187,14 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
             def to_ints(key__):
                 a,b = key__.split("-")
                 return (int(a), int(b))
-            predicted = [to_ints(key_) for key_,v in Xs.items() if v.Xn > 0]
+            predicted = [to_ints(key_) for key_, v in Xs.items() if v.Xn == 1]
             predicted.sort(key=lambda x:x[0])
             compressed = get_compressed()
+            ws = get_Ws()
             out.append({"SolutionNumber":solution,
                         "objective_val": m.PoolObjVal,
                         "solved": True,
+                        "ws": ws,
                         "get_Xs": Xs_final,
                         "predicted": predicted,
                         "compressed": compressed})

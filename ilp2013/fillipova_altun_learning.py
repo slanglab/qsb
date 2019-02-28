@@ -5,12 +5,9 @@ Overcoming the Lack of Parallel Data in Sentence Compression
 from __future__ import division
 from ilp2013.fillipova_altun import run_model
 from code.log import logger
-import glob
-import os
+import numpy as np
 import random
 import pickle
-import string
-import ujson as json
 import argparse
 from sklearn.metrics import f1_score
 from code.printers import pretty_print_conl
@@ -21,27 +18,35 @@ from code.utils import get_gold_y,get_pred_y
 random.seed(1)
 
 
-def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
+def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False):
     '''
     Do learning for a dataset of compression data
     '''
-    weights = zero_weights(vocab)
-    avg_weights = np.copy(weights) # a running average of the weights
-    t = 0
+    with open("checkpoints/latest", "rb") as of:
+        checkpoint = pickle.load(of)
+
+    weights = checkpoint["weights"]
+    avg_weights = checkpoint["avg_weights"]
+    dataset_queue = checkpoint["dataset_queue"]
+    t = checkpoint["t"]
+    start_epoch = checkpoint["epoch"]
+
     print("[*] running on ", len(dataset))
 
-    for epoch in range(1, epochs):
+    for epoch in range(start_epoch, epochs):
         if verbose:
             print("[*] epoch {}".format(epoch))
-        random.shuffle(dataset)
         epoch_scores = []
-        for d in dataset:
+        random.shuffle(dataset_queue)
+        while len(dataset_queue) > 0:
             t += 1
-            source_jdoc = d
+            source_jdoc = dataset[dataset_queue[0]]
+            dataset_queue = dataset_queue[1:]
+            random.shuffle(dataset_queue)
             gold = get_gold_edges(source_jdoc)
 
-            # The maximum permitted compression length is set to be the same as the
-            # length of the oracle compression
+            # "The maximum permitted compression length is set to be the same as the
+            # length of the oracle compression" => F & A
 
             r = get_oracle_r(source_jdoc)
             # Q = get_NER_query(source_jdoc)
@@ -56,6 +61,11 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             # the query term is making the model worse so no query. Sorting out
             # and fixing this would change the model they propose in their paper, which
             # is then no longer a baseline.
+
+            # page 5 of their paper.
+            # "The maximum permitted compression
+            # length is set to be the same as the length
+            # of the oracle compression" => so r param below is appropriate
             try:
                 output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
             except IndexError:
@@ -86,24 +96,49 @@ def learn(dataset, vocab, epsilon=1, epochs=20, verbose=False, snapshot=False):
             if (t % 1000 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []
+                with open("checkpoints/latest", "wb") as of:
+                    checkpoint = {"weights": weights,
+                                  "t": t,
+                                  "epoch": epoch,
+                                  "avg_weights": avg_weights,
+                                  "dataset_queue": dataset_queue}
+                    pickle.dump(checkpoint, of)
         if snapshot:
             with open("snapshots/{}".format(epoch), "wb") as of:
                 pickle.dump(avg_weights, of)
-    return {"avg_weights":avg_weights, "final_weights":weights}
 
+        # refresh dataset queue at end of epoch
+        dataset_queue = list(range(len(dataset)))
+        random.shuffle(dataset_queue)
+
+    return {"avg_weights": avg_weights, "final_weights": weights}
+
+
+def init_checkpoints(dataset, vocab):
+    dataset_queue = list(range(len(dataset)))
+    random.shuffle(dataset_queue)
+    with open("checkpoints/latest", "wb") as of:
+        checkpoint = {"weights": zero_weights(vocab),
+                      "t": 0,
+                      "epoch": 0,
+                      "avg_weights": zero_weights(vocab),
+                      "dataset_queue": dataset_queue}
+        pickle.dump(checkpoint, of)
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-N', nargs="?", default=None, type=int)
-    parser.add_argument('-epochs', nargs="?", default=7, type=int)
+    parser.add_argument('-epochs', nargs="?", default=20, type=int)
     parser.add_argument("-file", default="preproc/100k")
     args = parser.parse_args()
     vocab = get_all_vocabs()
     with open(args.file, "rb") as of:
         data = pickle.load(of)
-    if args.N is not None:
-        data = data[0:args.N]
+
+    # you need to uncomment this to start the checkpoints then comment out
+    # after the first segfault. This is what I did when training ILP
+    #init_checkpoints(data, vocab)
+
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)
     with open("output/{}".format(args.epochs), "wb") as of:
