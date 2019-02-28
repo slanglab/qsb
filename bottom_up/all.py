@@ -5,15 +5,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import copy
-
+from code.treeops import get_walk_from_root
 from sklearn.linear_model import LogisticRegression
 from collections import defaultdict
 from sklearn.metrics import f1_score
 #from code.printers import pretty_print_conl
 from sklearn.metrics import f1_score
 from code.treeops import bfs
+from code.treeops import dfs
 from sklearn.feature_extraction import DictVectorizer
 from charguana import get_charset
+
 
 def get_UD2symbols():
     '''
@@ -119,10 +121,6 @@ def oracle_path(sentence, pi = pick_at_random):
     return path
 
 
-
-
-
-
 def heuristic_extract(jdoc):
     '''
     return the lowest vertex in the tree that contains the query terms
@@ -140,7 +138,7 @@ def heuristic_extract(jdoc):
     return best
 
 
-def get_path_to_root(v, jdoc):
+def get_path_to_root(v, jdoc, root_or_pseudo_root=0):
     def get_parent(v):
         for _ in jdoc["basicDependencies"]:
             if _["dependent"] == v:
@@ -148,15 +146,18 @@ def get_path_to_root(v, jdoc):
         return _["governor"]
     out = [v]
     parent = get_parent(v)
-    while parent != 0:
+    while parent != root_or_pseudo_root: # if not 0, is a governing verb
         v = parent
         out.append(parent)
         parent = get_parent(v)
+    if root_or_pseudo_root != 0:
+        out.append(root_or_pseudo_root)
     return out
 
 
-def min_tree_to_root(jdoc):
-    return {i for q in jdoc["q"] for i in get_path_to_root(q, jdoc)}
+def min_tree_to_root(jdoc, root_or_pseudo_root=0):
+    # if pseudo root is not 0, then root is a governing verb
+    return {i for q in jdoc["q"] for i in get_path_to_root(q, jdoc, root_or_pseudo_root)}
 
 
 def len_tree(tree, jdoc):
@@ -177,7 +178,8 @@ def append_at_random(tree, jdoc):
 
 
 def bottom_up_compression_random(jdoc, **kwargs):
-    tree = min_tree_to_root(jdoc=jdoc)
+    pseudo_root = heuristic_extract(jdoc=jdoc)
+    tree = min_tree_to_root(jdoc=jdoc, root_or_pseudo_root=pseudo_root)
     while len_tree(tree=tree, jdoc=jdoc) < jdoc["r"]:
         try:
             append_at_random(tree, jdoc)
@@ -242,7 +244,10 @@ def train_from_corpus(fn):
 def add_children_to_q(vx, q, sentence, tree, dep_probs):
     '''add a vertexes children to a queue, sort by prob'''
     children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]
-    governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
+    if vx != 0:
+        governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
+    else:
+        governor = {"dep":"root"}
     for c in children:
         try:
             c["prob"] = dep_probs[governor["dep"]][c["dep"]]
@@ -282,7 +287,8 @@ def bottom_up_from_corpus_nops(sentence, **kwargs):
 
 
 def bottom_up_from_corpus(sentence, **kwargs):
-    tree = min_tree_to_root(jdoc=sentence)
+    pseudo_root = heuristic_extract(jdoc=sentence)
+    tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
     q_by_prob = []
     for item in tree:
         add_children_to_q(item, q_by_prob, sentence, tree, dep_probs=kwargs["dep_probs"])
@@ -337,8 +343,7 @@ def get_features_and_labels(fn, cutoff=10000000):
 
 def add_children_to_q_lr(vx, q, sentence, tree, clf, v):
     '''add a vertexes children to a queue, sort by prob'''
-    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]
-    governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
+    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]    
     for c in children:
         try:
             c = {"c" + k: v for k,v in c.items()}
@@ -361,8 +366,9 @@ def remove_from_q_lr(vx, Q, sentence):
 
 
 def bottom_up_from_clf(sentence, **kwargs):
+    pseudo_root = heuristic_extract(jdoc=sentence)
+    tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
     clf, v = kwargs["clf"], kwargs["v"]
-    tree = min_tree_to_root(jdoc=sentence)
     q_by_prob = []
     for item in tree:
         add_children_to_q_lr(item, q_by_prob, sentence, tree, clf, v)
