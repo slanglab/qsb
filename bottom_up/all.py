@@ -1,17 +1,117 @@
-from __future__ import division
+'''p3'''
 import json
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy as np
-import numpy as np
+import random
+import copy
+
 from sklearn.linear_model import LogisticRegression
 from collections import defaultdict
 from sklearn.metrics import f1_score
-from code.printers import pretty_print_conl
+#from code.printers import pretty_print_conl
 from sklearn.metrics import f1_score
 from code.treeops import bfs
 from sklearn.feature_extraction import DictVectorizer
+from charguana import get_charset
+
+def get_UD2symbols():
+    '''
+    elmo does character-based representation, 
+    so represent the OOV symbols w/ non english chars
+    '''
+    katakana = list(get_charset('katakana'))
+    out = {}
+    with open("preproc/ud.txt", "r") as inf:
+        for lno, ln in enumerate(inf):
+            ln = ln.replace("\n", "")
+            out[ln] = katakana[lno]
+    return out
+
+def pick_at_random(l):
+    return random.sample(l, 1)[0]
+     
+def get_dependents_and_governors(vx, sentence, tree):
+    '''add a vertexes children to a queue, sort by prob'''
+    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx]
+    governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
+    out = []
+    for c in children:
+        if c["dependent"] not in tree:
+            out.append(c["dependent"])
+    if governor["governor"] not in tree:
+        out.append(governor["governor"])
+    return out
+
+def get_parent(v, jdoc):
+    for _ in jdoc["basicDependencies"]:
+        if _["dependent"] == v:
+            return _["dep"]
+    return "ROOT"
+
+
+def get_encoded_tokens(dep, v, original_s, t):
+    toks = [_ for _ in original_s["tokens"]]
+    toks.append({"word": BRACKETR + dep2symbol[dep], "index": v + .5})
+    toks.append({"word": BRACKETL + dep2symbol[dep], "index": v - .5})
+    toks.sort(key=lambda x:x["index"])
+    out = []
+    assert v not in t
+    for tok in toks:
+        if tok["index"] in t:
+            out.append(tok["word"] + IN)
+        elif tok["index"] == v:
+            out.append(tok["word"] + TARGET)
+        else:
+            out.append(tok["word"] + OUT)
+    return out
+
+
+def get_instance(original_s, v, y, t):
+    '''
+    unknown oracle label is for test time
+    '''
+    orig_ix = [i["index"] for i in original_s["tokens"]]
+    dep = get_parent(v, original_s)
+    return {"label": y, 
+            "q": original_s['q'],
+            "r": original_s["r"],
+            "dep": dep,
+            "tokens": get_encoded_tokens(dep, v, original_s, t),
+            "original_ix": orig_ix,
+            "basicDependencies": original_s["basicDependencies"],
+            "compression_indexes": original_s["compression_indexes"]}
+    return encoding
+
+
+def oracle_path(sentence, pi = pick_at_random):
+    T = {i for i in sentence["q"]}
+    F = set()
+    
+    # init frontier
+    for v in T:
+        for i in get_dependents_and_governors(v, sentence, T):
+            if i not in T:
+                F.add(i)
+    path = []
+    while len(F) > 0:
+        v = pi(F)
+        if v in sentence["compression_indexes"]:
+            for i in get_dependents_and_governors(v, sentence, T):
+                F.add(i)
+            path.append((copy.deepcopy(T), v, 1))
+            T.add(v)
+        else:
+            path.append((copy.deepcopy(T), v, 0))
+        F.remove(v)
+    
+    assert T == set(sentence["compression_indexes"])
+        
+    return path
+
+
+
+
 
 
 def heuristic_extract(jdoc):
@@ -80,12 +180,12 @@ def bottom_up_compression_random(jdoc, **kwargs):
 
 def print_gold(jdoc):
     gold = jdoc["compression_indexes"]
-    print " ".join([_["word"] for _ in jdoc["tokens"] if _["index"] in gold])
+    print(" ".join([_["word"] for _ in jdoc["tokens"] if _["index"] in gold]))
 
 
 def print_tree(tree, jdoc):
     tk = [_["word"] for _ in jdoc["tokens"] if _["index"] in tree]
-    print " ".join(tk)
+    print(" ".join(tk))
 
 
 def get_f1(predicted, jdoc):
@@ -167,7 +267,7 @@ def bottom_up_from_corpus_nops(sentence, **kwargs):
             remove_from_q(new_vx, q_by_prob, sentence)
             nops += 1
         except IndexError:
-            print "[*] Index error", # these are mostly parse errors from punct governing parts of the tree.
+            print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.)
             return nops
     return nops
 
@@ -185,7 +285,7 @@ def bottom_up_from_corpus(sentence, **kwargs):
             add_children_to_q(new_vx, q_by_prob, sentence, tree, dep_probs=kwargs["dep_probs"])
             remove_from_q(new_vx, q_by_prob, sentence)
         except IndexError:
-            print "[*] Index error" # these are mostly parse errors from punct governing parts of the tree.
+            print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
             return tree
 
     return tree
@@ -265,7 +365,7 @@ def bottom_up_from_clf(sentence, **kwargs):
             add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
             remove_from_q_lr(new_vx, q_by_prob, sentence)
         except IndexError:
-            print "[*] Index error", # these are mostly parse errors from punct governing parts of the tree.
+            print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
             return tree
 
     return tree
