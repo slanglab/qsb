@@ -19,8 +19,8 @@ from allennlp.training.metrics import CategoricalAccuracy
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
-@Model.register("split_classifier")
-class SplitClassifier(Model):
+@Model.register("bottom_up")
+class BottomUpClassifier(Model):
     """
     This ``Model`` performs text classification for an academic paper.  We assume we're given a
     title and an abstract, and we predict some output label.
