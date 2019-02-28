@@ -31,10 +31,10 @@ def make_rando():
     else:
         dt['trainer']['optimizer']['weight_decay'] -= dt['trainer']['optimizer']['weight_decay'] * random.uniform(.01,.03)
 
-    if random.uniform(0, 1) < .5:
-        dt['iterator']['batch_size'] += int(dt['iterator']['batch_size'] * random.uniform(.01,.03))
-    else:
-        dt['iterator']['batch_size'] -= int(dt['iterator']['batch_size'] * random.uniform(.01,.03))
+    #if random.uniform(0, 1) < .5:
+    #    dt['iterator']['batch_size'] += int(dt['iterator']['batch_size'] * random.uniform(.01,.03))
+    #else:
+    #    dt['iterator']['batch_size'] -= int(dt['iterator']['batch_size'] * random.uniform(.01,.03))
 
     import uuid
 

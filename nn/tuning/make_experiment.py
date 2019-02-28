@@ -19,8 +19,9 @@ tok_indexers = {"tokens": {"type": "single_id"},
                 "elmo": {"type": "elmo_characters"}}
 
 elmo_vectors = {"type": "elmo_token_embedder",
-                "options_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_options.json",
-                "weight_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5",
+                "options_file": "/home/ahandler/qsr/elmo_2x4096_512_2048cnn_2xhighway_options.json",
+                #"weight_file": "https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x4096_512_2048cnn_2xhighway/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5",
+                "weight_file": "/home/ahandler/qsr/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5",
                 "do_layer_norm": False,
                 "dropout": 0.5
                 }
@@ -50,7 +51,7 @@ def make_rando():
     else:
         print("no elmo")
 
-    fn = "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.{}d.txt.gz".format(inputd)
+    fn = "/home/ahandler/qsr/glove.6B.{}d.txt.gz".format(inputd)
     print(dt["model"]["text_field_embedder"]["tokens"])
     dt['model']['text_field_embedder']["tokens"]['pretrained_file'] = fn
     dt['model']['text_field_embedder']['tokens']['embedding_dim'] = inputd
@@ -91,11 +92,11 @@ def make_rando():
     num_layers = layers[0]
     dt["model"]["abstract_encoder"]["num_layers"] = num_layers
 
-    x = random.uniform(3, 6)
+    x = random.uniform(3, 5)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(3, 10)
+    x = random.uniform(5, 8)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
@@ -110,5 +111,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(1):
+for i in range(100):
     make_rando()

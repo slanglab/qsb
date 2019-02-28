@@ -13,7 +13,7 @@ for experiment in glob.glob("/mnt/nfs/scratch1/ahandler/experiments/qsr/compress
     try:
         with open(experiment+ "/metrics_epoch_1.json") as inf:
             dt = json.load(inf)
-            if dt["best_validation_accuracy"] < .80:
+            if dt["best_validation_accuracy"] < .85:
                 crapola.append(experiment)
     except FileNotFoundError:
         pass

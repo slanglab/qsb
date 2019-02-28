@@ -33,7 +33,11 @@ for experiment in glob.glob(experiments):
         stats.append(epoch)
         stats.append(cf["iterator"]["batch_size"])
         stats.append(cf["model"]["abstract_encoder"]["num_layers"])
-        stats.append(cf["model"]["abstract_encoder"]["dropout"])
+        try:
+            stats.append(cf["model"]["abstract_encoder"]["dropout"])
+        except:
+            print(experiment)
+            stats.append(0)
         stats.append(cf["model"]["abstract_encoder"]["hidden_size"])
         stats.append(cf["model"]["classifier_feedforward_i"]["dropout"])
         stats.append(cf["trainer"]["optimizer"]["weight_decay"])

@@ -1,0 +1,86 @@
+{
+    "dataset_reader": {
+        "type": "binary_reader"
+    },
+    "iterator": {
+        "type": "bucket",
+        "batch_size": 121,
+        "sorting_keys": [
+            [
+                "sentence",
+                "num_tokens"
+            ]
+        ]
+    },
+    "model": {
+        "type": "split_classifier",
+        "abstract_encoder": {
+            "type": "lstm",
+            "bidirectional": true,
+            "dropout": 0.09033624363939596,
+            "hidden_size": 600,
+            "input_size": 100,
+            "num_layers": 1
+        },
+        "classifier_feedforward_i": {
+            "activations": [
+                "sigmoid",
+                "sigmoid",
+                "linear"
+            ],
+            "dropout": [
+                0.526097076474551,
+                0.40137127419805907,
+                0.4367387122207349
+            ],
+            "hidden_dims": [
+                42,
+                24,
+                2
+            ],
+            "input_dim": 1200,
+            "num_layers": 3
+        },
+        "classifier_feedforward_p": {
+            "activations": [
+                "sigmoid",
+                "sigmoid",
+                "linear"
+            ],
+            "dropout": [
+                0.526097076474551,
+                0.40137127419805907,
+                0.4367387122207349
+            ],
+            "hidden_dims": [
+                42,
+                24,
+                2
+            ],
+            "input_dim": 1200,
+            "num_layers": 3
+        },
+        "text_field_embedder": {
+            "tokens": {
+                "type": "embedding",
+                "embedding_dim": 100,
+                "pretrained_file": "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.100d.txt.gz",
+                "trainable": true
+            }
+        }
+    },
+    "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_1000000.jsonl",
+    "validation_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_validation_100k.jsonl",
+    "trainer": {
+        "cuda_device": 0,
+        "grad_clipping": 5,
+        "num_epochs": 7,
+        "optimizer": {
+            "type": "adam",
+            "lr": 0.0023281064503575073,
+            "weight_decay": 6.325634024879488e-08
+        },
+        "patience": 2,
+        "validation_metric": "+accuracy"
+    }
+}

@@ -1,0 +1,74 @@
+{
+    "dataset_reader": {
+        "type": "binary_reader"
+    },
+    "iterator": {
+        "type": "bucket",
+        "batch_size": 98,
+        "sorting_keys": [
+            [
+                "sentence",
+                "num_tokens"
+            ]
+        ]
+    },
+    "model": {
+        "type": "split_classifier",
+        "abstract_encoder": {
+            "type": "lstm",
+            "bidirectional": true,
+            "dropout": 0.006416007357582765,
+            "hidden_size": 535,
+            "input_size": 100,
+            "num_layers": 1
+        },
+        "classifier_feedforward_i": {
+            "activations": [
+                "linear"
+            ],
+            "dropout": [
+                0.3330190734823445
+            ],
+            "hidden_dims": [
+                2
+            ],
+            "input_dim": 1070,
+            "num_layers": 1
+        },
+        "classifier_feedforward_p": {
+            "activations": [
+                "linear"
+            ],
+            "dropout": [
+                0.3330190734823445
+            ],
+            "hidden_dims": [
+                2
+            ],
+            "input_dim": 1070,
+            "num_layers": 1
+        },
+        "text_field_embedder": {
+            "tokens": {
+                "type": "embedding",
+                "embedding_dim": 100,
+                "pretrained_file": "https://s3-us-west-2.amazonaws.com/allennlp/datasets/glove/glove.6B.100d.txt.gz",
+                "trainable": true
+            }
+        }
+    },
+    "train_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_train_1000000.jsonl",
+    "validation_data_path": "/mnt/nfs/work1/brenocon/ahandler/qsr/lstm_validation_100k.jsonl", 
+    "trainer": {
+        "cuda_device": 0,
+        "grad_clipping": 5,
+        "num_epochs": 3,
+        "optimizer": {
+            "type": "adam",
+            "lr": 0.0004844025510500318,
+            "weight_decay": 9.099181533667006e-07
+        },
+        "patience": 3,
+        "validation_metric": "+accuracy"
+    }
+}
