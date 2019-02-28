@@ -180,13 +180,16 @@ def append_at_random(tree, jdoc):
 def bottom_up_compression_random(jdoc, **kwargs):
     pseudo_root = heuristic_extract(jdoc=jdoc)
     tree = min_tree_to_root(jdoc=jdoc, root_or_pseudo_root=pseudo_root)
+    last_known_good = tree
     while len_tree(tree=tree, jdoc=jdoc) < jdoc["r"]:
         try:
             append_at_random(tree, jdoc)
+            if len_tree(tree=tree, jdoc=jdoc) < jdoc["r"]:
+                last_known_good = tree
         except ValueError: # it is possible to back into a corner where there are no V left to add.
                            # in these cases, you cant make compression longer and should just stop
-            return tree
-    return tree
+            return last_known_good
+    return last_known_good
 
 
 def print_gold(jdoc):
@@ -293,17 +296,20 @@ def bottom_up_from_corpus(sentence, **kwargs):
     for item in tree:
         add_children_to_q(item, q_by_prob, sentence, tree, dep_probs=kwargs["dep_probs"])
 
+    last_known_good = copy.deepcopy(tree)
     while len_tree(tree, sentence) < sentence["r"]:
         try:
             new_vx = q_by_prob[0]["dependent"]
             tree.add(new_vx)
             add_children_to_q(new_vx, q_by_prob, sentence, tree, dep_probs=kwargs["dep_probs"])
             remove_from_q(new_vx, q_by_prob, sentence)
+            if  len_tree(tree, sentence) < sentence["r"]:
+                last_known_good = copy.deepcopy(tree)
         except IndexError:
             print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
-            return tree
+            return last_known_good
 
-    return tree
+    return last_known_good
 
 
 def featurize(sentence):
@@ -373,17 +379,20 @@ def bottom_up_from_clf(sentence, **kwargs):
     for item in tree:
         add_children_to_q_lr(item, q_by_prob, sentence, tree, clf, v)
 
+    last_known_good = copy.deepcopy(tree)
     while len_tree(tree, sentence) < sentence["r"]:
         try:
             new_vx = q_by_prob[0]["cdependent"]
             tree.add(new_vx)
             add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
             remove_from_q_lr(new_vx, q_by_prob, sentence)
+            if len_tree(tree, sentence) < sentence["r"]:
+                last_known_good = copy.deepcopy(tree)
         except IndexError:
             print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
-            return tree
+            return last_known_good
 
-    return tree
+    return last_known_good
 
 
 def plot_slens(slens):
