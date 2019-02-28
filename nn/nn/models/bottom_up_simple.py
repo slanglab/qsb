@@ -36,7 +36,7 @@ class BottomUpClassifier(Model):
                  classifier_feedforward: FeedForward,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
-        super(SplitClassifier, self).__init__(vocab, regularizer)
+        super(BottomUpClassifier, self).__init__(vocab, regularizer)
 
         self.text_field_embedder = text_field_embedder
         self.abstract_encoder = abstract_encoder
@@ -56,8 +56,7 @@ class BottomUpClassifier(Model):
 
     @overrides
     def forward(self,  # type: ignore
-                sentence: Dict[str, torch.LongTensor],
-                is_prune,
+                sentence: Dict[str, torch.LongTensor], 
                 label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
         """
@@ -73,9 +72,9 @@ class BottomUpClassifier(Model):
 
         output_dict = {'logits': logits}
         if label is not None:
-            loss = self.loss(logits2, label)
+            loss = self.loss(logits, label)
             for metric in self.metrics.values():
-                metric(logits2, label)
+                metric(logits, label)
             output_dict["loss"] = loss
 
         return output_dict

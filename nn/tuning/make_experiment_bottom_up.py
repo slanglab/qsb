@@ -36,7 +36,7 @@ def make_rando():
     nonlinearity = ["sigmoid", "relu", "tanh", "linear"]
     random.shuffle(nonlinearity)
 
-    elmo = [True]
+    elmo = [False]
     random.shuffle(elmo)
     elmo = elmo[0]
 
