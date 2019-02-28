@@ -417,3 +417,29 @@ def get_slens(dev, f, **kwargs):
             nops = f(d, **kwargs)  # get nops
             slens[slen].append(nops)
     return slens
+
+
+def bottom_up_from_nn(sentence, **kwargs):
+    pseudo_root = heuristic_extract(jdoc=sentence)
+    tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
+    
+    
+    clf, v = kwargs["clf"], kwargs["v"]
+    q_by_prob = []
+    for item in tree:
+        add_children_to_q_lr(item, q_by_prob, sentence, tree, clf, v)
+
+    last_known_good = copy.deepcopy(tree)
+    while len_tree(tree, sentence) < sentence["r"]:
+        try:
+            new_vx = q_by_prob[0]["cdependent"]
+            tree.add(new_vx)
+            add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
+            remove_from_q_lr(new_vx, q_by_prob, sentence)
+            if len_tree(tree, sentence) < sentence["r"]:
+                last_known_good = copy.deepcopy(tree)
+        except IndexError:
+            print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
+            return last_known_good
+
+    return last_known_good
