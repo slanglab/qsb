@@ -32,14 +32,14 @@ clf = LogisticRegression(random_state=0,
 clf.score(X, y)
 
 
-nn = f1_experiment(dev, bottom_up_from_nn, nn)
-random_picks = f1_experiment(dev, bottom_up_compression_random, nada=None)
-corpus_picks = f1_experiment(dev, bottom_up_from_corpus, dep_probs=dep_probs)
-lr = f1_experiment(dev, bottom_up_from_clf, clf=clf, v=v)
+nn_picks = f1_experiment(dev, bottom_up_from_nn, nn=nn)
+#random_picks = f1_experiment(dev, bottom_up_compression_random, nada=None)
+#corpus_picks = f1_experiment(dev, bottom_up_from_corpus, dep_probs=dep_probs)
+#lr = f1_experiment(dev, bottom_up_from_clf, clf=clf, v=v)
 
 print("\n")
 print("[*] random")
-print(random_picks)
+#print(random_picks)
 print("[*] corpus")
-print(corpus_picks)
-print("[*] logistic regression", lr)
+#print(corpus_picks)
+#print("[*] logistic regression", lr)

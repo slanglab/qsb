@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import copy
+
+from tqdm import tqdm
 from code.treeops import get_walk_from_root
 from sklearn.linear_model import LogisticRegression
 from collections import defaultdict
@@ -15,6 +17,16 @@ from code.treeops import bfs
 from code.treeops import dfs
 from sklearn.feature_extraction import DictVectorizer
 from charguana import get_charset
+
+
+'''put in init b/c want to run this locally'''
+from models import *
+from nn.models.bottom_up_simple import *
+from nn.dataset_readers.bottom_up_reader import *
+from nn.predictors.bottom_up_predictor import *
+from nn.models import *
+from allennlp.models.archival import load_archive
+from allennlp.predictors.predictor import Predictor
 
 
 def get_UD2symbols():
@@ -221,9 +233,7 @@ def train_from_corpus(fn):
 
     dep_counter = defaultdict(list)
 
-    from tqdm import tqdm_notebook as tqdm
-
-    for _ in tqdm(open(fn, "r")):
+    for _ in open(fn, "r"):
         _ = json.loads(_)
         toks = [i for i in _["tokens"] if i["index"] in _["compression_indexes"] + [0]]
         for t in toks:
@@ -321,7 +331,7 @@ def featurize(sentence):
             governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
             for c in children:
                 y = c["dependent"] in sentence["compression_indexes"]
-                c = {k + "c": v for k, v in c.items()}
+                #c = {k + v for k, v in c.items()}
                 c["type"] = "CHILD"
                 feats = c
                 out.append({"feats": feats, "y": y})
@@ -377,7 +387,7 @@ def bottom_up_from_clf(sentence, **kwargs):
             new_vx = q_by_prob[0]["dependent"]
             tree.add(new_vx)
             add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
-            remove_from_q_lr(new_vx, q_by_prob, sentence)
+            remove_from_q(new_vx, q_by_prob, sentence)
             if len_tree(tree, sentence) < sentence["r"]:
                 last_known_good = copy.deepcopy(tree)
         except IndexError:
@@ -415,14 +425,6 @@ class EasyAllenNLP(object):
 
     def __init__(self, loc="/tmp/548079730"):
 
-        '''put in init b/c want to run this locally'''
-        from models import *
-        from nn.models.bottom_up_simple import *
-        from nn.dataset_readers.bottom_up_reader import *
-        from nn.predictors.bottom_up_predictor import *
-        from nn.models import *
-        from allennlp.models.archival import load_archive
-        from allennlp.predictors.predictor import Predictor
 
         loc = loc
         arch = load_archive(loc, weights_file=loc + "/best.th")
@@ -445,16 +447,15 @@ class EasyAllenNLP(object):
 
 def add_children_to_q_nn(vx, q, sentence, tree, nn, dep2symbol):
     '''add a vertexes children to a queue, sort by prob'''
-    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]    
+    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dependent"] not in tree]    
     for c in children:
-        try:
-            c = {"c" + k: v for k, v in c.items()}
+        try: 
             c["type"] = "CHILD"
-            paper_json = get_instance(original_s=sentence, v=v, y=None, t=tree, dep2symbol=dep2symbol)
+            paper_json = get_instance(original_s=sentence, v=c["dependent"], y=None, t=tree, dep2symbol=dep2symbol)
             c["prob"] = nn.predict_proba(paper_json)
         except KeyError:
             c["prob"] = 0
-        if c["cdependent"] not in tree:
+        if c["dependent"] not in tree:
             q.append(c)
     q.sort(key=lambda x: x["prob"], reverse=True)
 
@@ -466,15 +467,15 @@ def bottom_up_from_nn(sentence, **kwargs):
     dep2symbol = get_UD2symbols()
     q_by_prob = []
     for item in tree:
-        add_children_to_q_nn(item, q_by_prob, sentence, tree, nn)
+        add_children_to_q_nn(item, q_by_prob, sentence, tree, nn, dep2symbol)
 
     last_known_good = copy.deepcopy(tree)
     while len_tree(tree, sentence) < sentence["r"]:
         try:
-            new_vx = q_by_prob[0]["cdependent"]
+            new_vx = q_by_prob[0]["dependent"]
             tree.add(new_vx)
             add_children_to_q_nn(new_vx, q_by_prob, sentence, tree, nn, dep2symbol)
-            remove_from_q_nn(new_vx, q_by_prob, sentence)
+            remove_from_q(new_vx, q_by_prob, sentence)
             if len_tree(tree, sentence) < sentence["r"]:
                 last_known_good = copy.deepcopy(tree)
         except IndexError:
