@@ -19,8 +19,8 @@ paper_json = {"tokens": [{'word': "hi"}, {"word": "bye"}]}
 
 sentence = " ".join([_["word"] for _ in paper_json["tokens"]])
 
-instance = self.predictor._dataset_reader.text_to_instance(sentence)
+instance = predictor._dataset_reader.text_to_instance(sentence)
 
-pred = self.predictor.predict_instance(instance)
+pred = predictor.predict_instance(instance)
 
 print(pred)
