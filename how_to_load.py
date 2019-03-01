@@ -15,4 +15,12 @@ predictor_name = "bottom_up_predictor"
 
 predictor = Predictor.from_archive(arch, predictor_name)
 
-pdb.set_trace()
+paper_json = {"tokens": [{'word': "hi"}, {"word": "bye"}]}
+
+sentence = " ".join([_["word"] for _ in paper_json["tokens"]])
+
+instance = self.predictor._dataset_reader.text_to_instance(sentence)
+
+pred = self.predictor.predict_instance(instance)
+
+print(pred)
