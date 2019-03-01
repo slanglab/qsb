@@ -352,23 +352,15 @@ def add_children_to_q_lr(vx, q, sentence, tree, clf, v):
     children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]    
     for c in children:
         try:
-            c = {"c" + k: v for k,v in c.items()}
+            c = {k: v for k,v in c.items()}
             c["type"] = "CHILD"
             x = v.transform(c)
             c["prob"] = clf.predict_proba(x)[0][1]
         except KeyError:
             c["prob"] = 0
-        if c["cdependent"] not in tree:
+        if c["dependent"] not in tree:
             q.append(c)
     q.sort(key=lambda x: x["prob"], reverse=True)
-
-
-def remove_from_q_lr(vx, Q, sentence):
-    '''add a vertexes children to a queue, sort by prob'''
-    for ino, i in enumerate(Q):
-        if i["cdependent"] == vx:
-            del Q[ino]
-            break
 
 
 def bottom_up_from_clf(sentence, **kwargs):
@@ -382,7 +374,7 @@ def bottom_up_from_clf(sentence, **kwargs):
     last_known_good = copy.deepcopy(tree)
     while len_tree(tree, sentence) < sentence["r"]:
         try:
-            new_vx = q_by_prob[0]["cdependent"]
+            new_vx = q_by_prob[0]["dependent"]
             tree.add(new_vx)
             add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
             remove_from_q_lr(new_vx, q_by_prob, sentence)
@@ -419,15 +411,46 @@ def get_slens(dev, f, **kwargs):
     return slens
 
 
+class EasyAllenNLP(object):
+
+    def __init__(self, loc="/tmp/548079730"):
+
+        '''put in init b/c want to run this locally'''
+        from models import *
+        from nn.models.bottom_up_simple import *
+        from nn.dataset_readers.bottom_up_reader import *
+        from nn.predictors.bottom_up_predictor import *
+        from nn.models import *
+        from allennlp.models.archival import load_archive
+        from allennlp.predictors.predictor import Predictor
+
+        loc = loc
+        arch = load_archive(loc, weights_file=loc + "/best.th")
+        predictor_name = "bottom_up_predictor"
+
+        self.predictor = Predictor.from_archive(arch, predictor_name)
+
+    def predict_proba(self, paper_json):
+
+        paper_json = {"tokens": [{'word': "hi"}, {"word": "bye"}]}
+
+        sentence = " ".join([_["word"] for _ in paper_json["tokens"]])
+
+        instance = self.predictor._dataset_reader.text_to_instance(sentence)
+
+        pred = self.predictor.predict_instance(instance)
+
+        return pred["class_probabilities"][1]
+
+
 def bottom_up_from_nn(sentence, **kwargs):
     pseudo_root = heuristic_extract(jdoc=sentence)
     tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
     
-    
-    clf, v = kwargs["clf"], kwargs["v"]
+    archive = kwargs["archive"]
     q_by_prob = []
     for item in tree:
-        add_children_to_q_lr(item, q_by_prob, sentence, tree, clf, v)
+        add_children_to_q_nn(item, q_by_prob, sentence, tree, clf, v)
 
     last_known_good = copy.deepcopy(tree)
     while len_tree(tree, sentence) < sentence["r"]:

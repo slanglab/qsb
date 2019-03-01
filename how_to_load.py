@@ -1,26 +1,49 @@
-
 # coding: utf-8
 import pdb
-from models import *
-from nn.models.bottom_up_simple import *
-from nn.dataset_readers.bottom_up_reader import *
-from nn.predictors.bottom_up_predictor import *
-from nn.models import *
-from allennlp.models.archival import load_archive
-from allennlp.predictors.predictor import Predictor
 
-loc = "/tmp/548079730"
-arch = load_archive(loc, weights_file=loc + "/best.th")
-predictor_name = "bottom_up_predictor"
+from all import EasyAllenNLP
 
-predictor = Predictor.from_archive(arch, predictor_name)
 
-paper_json = {"tokens": [{'word': "hi"}, {"word": "bye"}]}
+def add_children_to_q_nn(vx, q, sentence, tree, nn):
+    '''add a vertexes children to a queue, sort by prob'''
+    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]    
+    for c in children:
+        try:
+            c = {"c" + k: v for k,v in c.items()}
+            c["type"] = "CHILD"
+            // transform tokeens
+            //  paper_json = {"tokens": [{'word': "hi"}, {"word": "bye"}]}
+            c["prob"] = clf.predict_proba(paper_json)
+        except KeyError:
+            c["prob"] = 0
+        if c["cdependent"] not in tree:
+            q.append(c)
+    q.sort(key=lambda x: x["prob"], reverse=True)
 
-sentence = " ".join([_["word"] for _ in paper_json["tokens"]])
 
-instance = predictor._dataset_reader.text_to_instance(sentence)
+def bottom_up_from_nn(sentence, **kwargs):
+    pseudo_root = heuristic_extract(jdoc=sentence)
+    tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
+    nn = kwargs["EasyAllenNLP"]
+    q_by_prob = []
+    for item in tree:
+        add_children_to_q_nn(item, q_by_prob, sentence, tree, nn)
 
-pred = predictor.predict_instance(instance)
+    last_known_good = copy.deepcopy(tree)
+    while len_tree(tree, sentence) < sentence["r"]:
+        try:
+            new_vx = q_by_prob[0]["cdependent"]
+            tree.add(new_vx)
+            add_children_to_q_nn(new_vx, q_by_prob, sentence, tree, nn)
+            remove_from_q_nn(new_vx, q_by_prob, sentence)
+            if len_tree(tree, sentence) < sentence["r"]:
+                last_known_good = copy.deepcopy(tree)
+        except IndexError:
+            print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
+            return last_known_good
 
-print(pred)
+    return last_known_good
+
+
+m = EasyAllenNLP()
+print(m.predict_proba()) 
