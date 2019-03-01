@@ -7,12 +7,14 @@ Run the prelim bottom up experiments
 from bottom_up.all import *
 
 
+from bottom_up.all import EasyAllenNLP
+
 dev = [json.loads(_) for _ in open("dev.jsonl")]
 dep_probs = train_from_corpus("dev.jsonl")
 
 slens = get_slens(dev, bottom_up_from_corpus_nops, dep_probs=dep_probs)
 
-#plot_slens(slens)
+nn = EasyAllenNLP()
 
 out = get_features_and_labels("mini.train.jsonl", cutoff=100)
 
@@ -29,6 +31,8 @@ clf = LogisticRegression(random_state=0,
 
 clf.score(X, y)
 
+
+nn = f1_experiment(dev, bottom_up_from_nn, nn)
 random_picks = f1_experiment(dev, bottom_up_compression_random, nada=None)
 corpus_picks = f1_experiment(dev, bottom_up_from_corpus, dep_probs=dep_probs)
 lr = f1_experiment(dev, bottom_up_from_clf, clf=clf, v=v)

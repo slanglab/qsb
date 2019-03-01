@@ -443,22 +443,38 @@ class EasyAllenNLP(object):
         return pred["class_probabilities"][1]
 
 
+def add_children_to_q_nn(vx, q, sentence, tree, nn, dep2symbol):
+    '''add a vertexes children to a queue, sort by prob'''
+    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]    
+    for c in children:
+        try:
+            c = {"c" + k: v for k, v in c.items()}
+            c["type"] = "CHILD"
+            paper_json = get_instance(original_s=sentence, v=v, y=None, t=tree, dep2symbol=dep2symbol)
+            c["prob"] = nn.predict_proba(paper_json)
+        except KeyError:
+            c["prob"] = 0
+        if c["cdependent"] not in tree:
+            q.append(c)
+    q.sort(key=lambda x: x["prob"], reverse=True)
+
+
 def bottom_up_from_nn(sentence, **kwargs):
     pseudo_root = heuristic_extract(jdoc=sentence)
     tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
-    
-    archive = kwargs["archive"]
+    nn = kwargs["nn"]
+    dep2symbol = get_UD2symbols()
     q_by_prob = []
     for item in tree:
-        add_children_to_q_nn(item, q_by_prob, sentence, tree, clf, v)
+        add_children_to_q_nn(item, q_by_prob, sentence, tree, nn)
 
     last_known_good = copy.deepcopy(tree)
     while len_tree(tree, sentence) < sentence["r"]:
         try:
             new_vx = q_by_prob[0]["cdependent"]
             tree.add(new_vx)
-            add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
-            remove_from_q_lr(new_vx, q_by_prob, sentence)
+            add_children_to_q_nn(new_vx, q_by_prob, sentence, tree, nn, dep2symbol)
+            remove_from_q_nn(new_vx, q_by_prob, sentence)
             if len_tree(tree, sentence) < sentence["r"]:
                 last_known_good = copy.deepcopy(tree)
         except IndexError:
