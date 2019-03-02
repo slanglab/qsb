@@ -24,7 +24,7 @@ def make_paths(fn):
                     successes += 1
                 except AssertionError:
                     failures += 1
-
+    print("finished with {} successes and {} failures".format(successes, failures))
 
 if __name__ == "__main__":
 

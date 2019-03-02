@@ -52,7 +52,7 @@ def is_parent_or_child_of_t(v, T, s):
 
 def pick_bfs_connected(l, d, T, s):
     connected = [o for o in l if is_parent_or_child_of_t(o, T, s)]
-    uncconnected = [o for o in l if is_parent_or_child_of_t(o, T, s)]
+    unconnected = [o for o in l if not is_parent_or_child_of_t(o, T, s)]
     
     if len(connected) > 0:
         l = connected
