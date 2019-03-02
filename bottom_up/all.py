@@ -220,7 +220,7 @@ def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
 
     path = []
     while len(F) > 0:
-        v = pi(l=F, d=d, T=T, s=sentence)
+        v = pi(F=F, d=d, T=T, s=sentence)
         if v in sentence["compression_indexes"]:
             for i in get_dependents_and_governors(v, sentence, T):
                 F.add(i)
