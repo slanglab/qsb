@@ -353,14 +353,14 @@ def featurize(sentence):
             for c in children:
                 y = c["dependent"] in sentence["compression_indexes"]
                 c["type"] = "CHILD"
-                c["position"] = float(c["dependent"]/len(sentence["tokens"]))
-                if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
-                    c["compund_off_q"] = True
+                #c["position"] = float(c["dependent"]/len(sentence["tokens"]))
+                #if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
+                #    c["compund_off_q"] = True
 
                 # similar https://arxiv.org/pdf/1510.08418.pdf
                 #c["parent_label"] = c["dep"] + c["governorGloss"]
-                c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
-                c["depth"] = d[c["dependent"]]
+                #c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
+                #c["depth"] = d[c["dependent"]]
                 c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
 
                 feats = c
@@ -368,13 +368,13 @@ def featurize(sentence):
 
             assert governor["dependent"] in sentence["compression_indexes"]
             y = governor["governor"] in sentence["compression_indexes"]
-            governor["depth"] = d[governor["governor"]]
-            try:
-                governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
-            except IndexError: # root
-                governor["ner"] = "O"
-            governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
-            governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
+            #governor["depth"] = d[governor["governor"]]
+            #try:
+            #    governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
+            #except IndexError: # root
+            #    governor["ner"] = "O"
+            #governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+            #governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
             governor = {k + "g":v for k,v in governor.items()}
             governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
             governor["type"] = "GOVERNOR"
@@ -415,7 +415,17 @@ def add_children_to_q_lr(vx, q, sentence, tree, clf, v):
 def bottom_up_from_clf(sentence, **kwargs):
     pseudo_root = heuristic_extract(jdoc=sentence)
     tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
-
+    
+    
+    new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "root"][0]
+    tree.add(new_vx)
+    try:
+        new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "ccomp"][0]
+        tree.add(new_vx)
+    except:
+        pass
+    
+    
     ### Good evidence for importance of first/last
     #print("warning oracle")
     #first = min([o for o in sentence["compression_indexes"]])
