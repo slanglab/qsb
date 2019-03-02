@@ -42,20 +42,20 @@ def pick_bfs(l, d):
     l.sort(key=lambda x:x[1],reverse=True)
     return l[0][0]
 
-def get_connected(sentence, T):
+def get_connected(sentence, F, T):
+    '''get vx in F that are conntected to T'''
     out = set()
     for d in sentence["basicDependencies"]:
         if d["dependent"] in T and d["governor"] not in T and d['governor'] != 0:
             out.add(d["governor"])
         if d["governor"] in T and d["dependent"] not in T:
             out.add(d["dependent"])
-    return out
+    return {i for i in out if i in F}
 
-def pick_bfs_connected(l, d, T, s):
-    connected = get_connected(s, T)
-    unconnected = [o["index"] for o in s["tokens"] if o["index"] not in connected]
+def pick_bfs_connected(F, d, T, s):
+    connected = get_connected(s, F, T)
+    unconnected = [o["index"] for o in F if o["index"] not in connected]
 
-    import pdb;pdb.set_trace()
     if len(connected) > 0:
         l = connected
     else:
