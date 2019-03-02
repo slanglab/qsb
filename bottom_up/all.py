@@ -340,7 +340,22 @@ def bottom_up_from_corpus(sentence, **kwargs):
     return last_known_good
 
 
-def featurize(sentence):
+def get_lr(features_and_labels):
+    v = DictVectorizer(sparse=True)
+
+    X = v.fit_transform([_["feats"] for _ in features_and_labels])
+
+    y = np.asarray([_["y"] for _ in features_and_labels])
+
+    clf = LogisticRegression(random_state=0,
+                             solver='lbfgs',
+                             C=2,
+                             multi_class='ovr').fit(X, y)
+
+    return clf, v
+
+
+def featurize_ultra_local(sentence):
     out = []
 
     d, pi, c = bfs(g=sentence, hop_s=0)
@@ -391,7 +406,7 @@ def get_features_and_labels(fn, cutoff=10000000):
         if sno == cutoff:
             break
         sentence = json.loads(sentence)
-        out = out + featurize(sentence)
+        out = out + featurize_ultra_local(sentence)
 
     return out
 
