@@ -464,7 +464,7 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
     c["parent_label"] = c["dep"] + c["governorGloss"]
     c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
     c["depth"] = d[c["dependent"]]
-    c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
+    c = {k:v for k,v in c.items() if k not in ["dependent", "governor"]}
     feats = c
     return feats
 
@@ -481,10 +481,12 @@ def featurize_parent_proposal(sentence, dependent_vertex, d):
         governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
     except IndexError: # root
         governor["ner"] = "O"
-    governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+    if governor["governor"] == 0: # dep of root, usually governing verb. note flip gov/dep in numerator
+        governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
+    else:
+        governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
     governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
-    governor = {k + "g":v for k,v in governor.items()}
-    governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
+    governor = {k + "g":v for k,v in governor.items() if k not in ["dependent", "governor"]}
     governor["type"] = "GOVERNOR"
     return governor
 
