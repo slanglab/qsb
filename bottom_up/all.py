@@ -20,6 +20,11 @@ from code.treeops import dfs
 from sklearn.feature_extraction import DictVectorizer
 from charguana import get_charset
 
+# 
+# Not quite same as us but pretty similar. We are way faster
+#
+
+
 if socket.gethostname() != "dewey":
     '''put in init b/c want to run this locally'''
     from models import *
@@ -337,6 +342,8 @@ def bottom_up_from_corpus(sentence, **kwargs):
 
 def featurize(sentence):
     out = []
+
+    d, pi, c = bfs(g=sentence, hop_s=0)
     for t in sentence["tokens"]:
         vx = t["index"]
         if t["index"] in sentence["compression_indexes"]:
@@ -347,12 +354,27 @@ def featurize(sentence):
                 y = c["dependent"] in sentence["compression_indexes"]
                 c["type"] = "CHILD"
                 c["position"] = float(c["dependent"]/len(sentence["tokens"]))
+                if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
+                    c["compund_off_q"] = True
+
+                # similar https://arxiv.org/pdf/1510.08418.pdf
+                #c["parent_label"] = c["dep"] + c["governorGloss"]
+                c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
+                c["depth"] = d[c["dependent"]]
                 c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
+
                 feats = c
                 out.append({"feats": feats, "y": y})
+
             assert governor["dependent"] in sentence["compression_indexes"]
             y = governor["governor"] in sentence["compression_indexes"]
+            governor["depth"] = d[governor["governor"]]
+            try:
+                governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
+            except IndexError: # root
+                governor["ner"] = "O"
             governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+            governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
             governor = {k + "g":v for k,v in governor.items()}
             governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
             governor["type"] = "GOVERNOR"
