@@ -20,7 +20,7 @@ def make_paths(fn):
                 try:
                     pp =  oracle_path(sentence=s, pi=pick_bfs)
                     pp = [(list(p[0]), p[1], p[2]) for p in pp] 
-                    of.write(json.dumps({"paths":pp, "sentence":d}) + "\n")
+                    of.write(json.dumps({"paths":pp, "sentence":s}) + "\n")
                     successes += 1
                 except AssertionError:
                     failures += 1
@@ -35,5 +35,5 @@ if __name__ == "__main__":
 
     dep2symbol = get_UD2symbols()
    
-    make_instances(validation_fn)
-    make_instances(train_fn)
+    make_paths(validation_fn)
+    make_paths(train_fn)

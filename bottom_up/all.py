@@ -597,10 +597,9 @@ def bottom_up_from_nn(sentence, **kwargs):
 
     return last_known_good
 
-
-
+'''
 def make_instances(fn):
-    '''used for LSTM. dead code?'''
+   # 
     paths_loc = "bottom_up/" + fn.split("/").pop().replace(".jsonl", ".paths")
 
     failures = 0
@@ -626,3 +625,4 @@ def make_instances(fn):
                     t, v, y = p
                     instance = get_instance(original_s=s, v=v, y=y, t=t, dep2symbol=dep2symbol)
                     of.write(json.dumps(instance) + "\n")
+'''
