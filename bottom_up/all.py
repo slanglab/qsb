@@ -212,9 +212,10 @@ def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
     
     # init frontier
     for v in T:
-        for i in get_dependents_and_governors(v, sentence, T):
-            if i not in T:
-                F.add(i)
+        for i in sentence["tokens"]:
+            F.add(i["index"])
+    F.add(0)    
+
     path = []
     while len(F) > 0:
         v = pi(l=F, d=d, T=T, s=sentence)
