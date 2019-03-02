@@ -214,7 +214,7 @@ def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
     
     # init frontier
     for i in sentence["tokens"]:
-        if i not in T:
+        if i["index"] not in T:
             F.add(i["index"])
     F.add(0)    
 
