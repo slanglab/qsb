@@ -53,9 +53,13 @@ def get_UD2symbols():
 def pick_at_random(l):
     return random.sample(l, 1)[0]
      
+def get_dependents(sentence, vx):
+    return [d for d in sentence['basicDependencies'] if d["governor"] == vx]
+
 def get_dependents_and_governors(vx, sentence, tree):
     '''add a vertexes children to a queue, sort by prob'''
-    children = [d for d in sentence['basicDependencies'] if d["governor"] == vx]
+    assert vx != 0
+    children = get_dependents(sentence, vx)
     governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
     out = []
     for c in children:
@@ -118,6 +122,7 @@ def get_instance(original_s, v, y, t, dep2symbol):
 def oracle_path(sentence, pi = pick_at_random):
     T = {i for i in sentence["q"]}
     F = set()
+    d, pi_bfs, c = bfs(g=sentence, hop_s=0)
     
     # init frontier
     for v in T:
@@ -126,7 +131,7 @@ def oracle_path(sentence, pi = pick_at_random):
                 F.add(i)
     path = []
     while len(F) > 0:
-        v = pi(F)
+        v = pi(F, d=d)
         if v in sentence["compression_indexes"]:
             for i in get_dependents_and_governors(v, sentence, T):
                 F.add(i)
@@ -296,6 +301,12 @@ def remove_from_q(vx, Q, sentence):
             break
 
 
+def pick_bfs(l, d):
+    l = [(o,d[o]) for o in l]
+    l.sort(key=lambda x:x[1],reverse=True)
+    return l[0][0]
+
+
 def bottom_up_from_corpus_nops(sentence, **kwargs):
     tree = min_tree_to_root(jdoc=sentence)
     q_by_prob = []
@@ -345,6 +356,9 @@ def get_lr(features_and_labels):
 
     X = v.fit_transform([_["feats"] for _ in features_and_labels])
 
+    for _ in features_and_labels:
+        assert "y" not in _['feats']
+
     y = np.asarray([_["y"] for _ in features_and_labels])
 
     clf = LogisticRegression(random_state=0,
@@ -356,33 +370,36 @@ def get_lr(features_and_labels):
 
 
 
-def featurize_child_proposal(sentence, dependent_vertex, governor_vertex):
+def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
     c = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex and _["dependent"] == dependent_vertex][0]
     c["type"] = "CHILD"
-    #c["position"] = float(c["dependent"]/len(sentence["tokens"]))
-    #if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
-    #    c["compund_off_q"] = True
+    c["position"] = float(c["dependent"]/len(sentence["tokens"]))
+    if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
+        c["compund_off_q"] = True
 
     # similar https://arxiv.org/pdf/1510.08418.pdf
-    #c["parent_label"] = c["dep"] + c["governorGloss"]
-    #c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
-    #c["depth"] = d[c["dependent"]]
+    c["parent_label"] = c["dep"] + c["governorGloss"]
+    c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
+    c["depth"] = d[c["dependent"]]
     c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
     feats = c
     return feats
 
 
-def featurize_parent_proposal(sentence, dependent_vertex):
-    governor = [d for d in sentence['basicDependencies'] if d["dependent"] == dependent_vertex][0]
-    assert governor["dependent"] in sentence["compression_indexes"]
+def featurize_parent_proposal(sentence, dependent_vertex, d):
+    governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
+    
+    # this is not true if you are featurizing oracle paths. it is true for bottom_up_lr compression
+    # assert governor["dependent"] in sentence["compression_indexes"]
+    
     y = governor["governor"] in sentence["compression_indexes"]
-    #governor["depth"] = d[governor["governor"]]
-    #try:
-    #    governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
-    #except IndexError: # root
-    #    governor["ner"] = "O"
-    #governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
-    #governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
+    governor["depth"] = d[governor["governor"]]
+    try:
+        governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
+    except IndexError: # root
+        governor["ner"] = "O"
+    governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+    governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
     governor = {k + "g":v for k,v in governor.items()}
     governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
     governor["type"] = "GOVERNOR"
@@ -403,12 +420,14 @@ def featurize_ultra_local(sentence):
     
                 feats = featurize_child_proposal(sentence,
                                                 dependent_vertex=c["dependent"],
-                                                governor_vertex=c["governor"])
+                                                governor_vertex=c["governor"],
+                                                d=d)
                 out.append({"feats":feats, "y": y})
             governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
             y = governor["governor"] in sentence["compression_indexes"]
             feats = featurize_parent_proposal(sentence,
-                                              dependent_vertex=vx)
+                                              dependent_vertex=vx,
+                                              d=d)
             out.append({"feats":feats, "y": y})
     return out
 

@@ -15,10 +15,10 @@ def make_paths(fn):
     successes = 0
     with open(paths_loc, "w") as of:
         with open(fn, "r") as inf:
-            for _ in tqdm(inf): 
-                d = json.loads(_)
+            for _ in tqdm(inf):
+                s = json.loads(_)
                 try:
-                    pp =  oracle_path(sentence=d, pi=pick_at_random)
+                    pp =  oracle_path(sentence=s, pi=pick_bfs)
                     pp = [(list(p[0]), p[1], p[2]) for p in pp] 
                     of.write(json.dumps({"paths":pp, "sentence":d}) + "\n")
                     successes += 1
