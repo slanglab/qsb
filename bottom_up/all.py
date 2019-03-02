@@ -42,7 +42,13 @@ def pick_bfs(l, d):
     l.sort(key=lambda x:x[1],reverse=True)
     return l[0][0]
 
-def is_parent_or_child_of_t(v, T, s)
+def is_parent_or_child_of_t(v, T, s):
+    for d in s["basicDependencies"]:
+        if d["dependent"] == v and d["dependent"] not in T:
+            return True
+        if d["governor"] == v and d["governor"] not in T:
+            return True
+    return False
 
 def pick_bfs_connected(l, d, T, s):
     connected = [o for o in l if is_parent_or_child_of_t(o, T, s)]
@@ -211,7 +217,7 @@ def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
                 F.add(i)
     path = []
     while len(F) > 0:
-        v = pi(l=F, d=d, T=T, s=s)
+        v = pi(l=F, d=d, T=T, s=sentence)
         if v in sentence["compression_indexes"]:
             for i in get_dependents_and_governors(v, sentence, T):
                 F.add(i)

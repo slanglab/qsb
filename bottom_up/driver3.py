@@ -15,8 +15,8 @@ from sklearn.feature_extraction import DictVectorizer
 from code.printers import pretty_print_conl
 from bottom_up.all import len_tree
 
-training_paths = [_ for _ in open("train.paths")]
-validation_paths = [_ for _ in open("validation.paths")]
+training_paths = [_ for _ in open("bottom_up/training.paths")]
+validation_paths = [_ for _ in open("bottom_up/validation.paths")]
 
 
 vectorizer = DictVectorizer(sparse=True)
