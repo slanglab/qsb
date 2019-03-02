@@ -37,6 +37,44 @@ if socket.gethostname() != "dewey":
 
 PUNCT = [_ for _ in string.punctuation]
 
+def pick_bfs(l, d):
+    l = [(o,d[o]) for o in l]
+    l.sort(key=lambda x:x[1],reverse=True)
+    return l[0][0]
+
+
+def get_governor(vertex, sentence):
+    for d in sentence["basicDependencies"]:
+        if d['dependent'] == vertex:
+            return d['governor']
+    assert vertex == 0
+    return None
+
+
+def get_labels_and_features(list_of_paths):
+    labels = []
+    features = []
+    for paths in list_of_paths:
+        paths=json.loads(paths)
+        sentence = paths["sentence"]
+        d, pi, c = bfs(g=sentence, hop_s=0)
+        for p in paths["paths"]:
+
+            current_tree, vertex, decision = p
+            if vertex != 0:
+                governor = get_governor(vertex, sentence)
+                if governor in current_tree:
+                    assert vertex not in current_tree
+                    feats = featurize_child_proposal(sentence, dependent_vertex=vertex, governor_vertex=governor, d=d)
+                else:
+                    feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
+                lt = len_tree(current_tree, sentence)
+                len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
+                feats["over_r"] = lt + len_tok > sentence["r"]
+                labels.append(decision)
+                features.append(feats)
+    return features, labels
+
 def get_UD2symbols():
     '''
     elmo does character-based representation, 
@@ -119,7 +157,7 @@ def get_instance(original_s, v, y, t, dep2symbol):
     return encoding
 
 
-def oracle_path(sentence, pi = pick_at_random):
+def oracle_path(sentence, pi = pick_bfs):
     T = {i for i in sentence["q"]}
     F = set()
     d, pi_bfs, c = bfs(g=sentence, hop_s=0)
@@ -299,12 +337,6 @@ def remove_from_q(vx, Q, sentence):
         if i["dependent"] == vx:
             del Q[ino]
             break
-
-
-def pick_bfs(l, d):
-    l = [(o,d[o]) for o in l]
-    l.sort(key=lambda x:x[1],reverse=True)
-    return l[0][0]
 
 
 def bottom_up_from_corpus_nops(sentence, **kwargs):
