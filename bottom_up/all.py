@@ -415,16 +415,8 @@ def add_children_to_q_lr(vx, q, sentence, tree, clf, v):
 def bottom_up_from_clf(sentence, **kwargs):
     pseudo_root = heuristic_extract(jdoc=sentence)
     tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
-    
-    
     new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "root"][0]
     tree.add(new_vx)
-    try:
-        new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "ccomp"][0]
-        tree.add(new_vx)
-    except:
-        pass
-    
     
     ### Good evidence for importance of first/last
     #print("warning oracle")
@@ -449,7 +441,10 @@ def bottom_up_from_clf(sentence, **kwargs):
                 last_known_good = copy.deepcopy(tree)
         except IndexError:
             print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
-            new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "root"][0]
+            try:
+                new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "ccomp"][0]
+            except:
+                return last_known_good
             if new_vx not in tree:
                 print("warning heuristic ",)
                 tree.add(new_vx)
