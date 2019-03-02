@@ -356,6 +356,38 @@ def get_lr(features_and_labels):
 
 
 
+def featurize_child_proposal(sentence, dependent_vertex, governor_vertex):
+    c = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex and _["dependent"] == dependent_vertex][0]
+    c["type"] = "CHILD"
+    #c["position"] = float(c["dependent"]/len(sentence["tokens"]))
+    #if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
+    #    c["compund_off_q"] = True
+
+    # similar https://arxiv.org/pdf/1510.08418.pdf
+    #c["parent_label"] = c["dep"] + c["governorGloss"]
+    #c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
+    #c["depth"] = d[c["dependent"]]
+    c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
+    feats = c
+    return feats
+
+
+def featurize_parent_proposal(sentence, dependent_vertex):
+    governor = [d for d in sentence['basicDependencies'] if d["dependent"] == dependent_vertex][0]
+    assert governor["dependent"] in sentence["compression_indexes"]
+    y = governor["governor"] in sentence["compression_indexes"]
+    #governor["depth"] = d[governor["governor"]]
+    #try:
+    #    governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
+    #except IndexError: # root
+    #    governor["ner"] = "O"
+    #governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+    #governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
+    governor = {k + "g":v for k,v in governor.items()}
+    governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
+    governor["type"] = "GOVERNOR"
+    return governor
+
 
 def featurize_ultra_local(sentence):
     out = []
@@ -365,38 +397,19 @@ def featurize_ultra_local(sentence):
         vx = t["index"]
         if t["index"] in sentence["compression_indexes"]:
             children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]
-            governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
 
             for c in children:
                 y = c["dependent"] in sentence["compression_indexes"]
-                c["type"] = "CHILD"
-                #c["position"] = float(c["dependent"]/len(sentence["tokens"]))
-                #if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
-                #    c["compund_off_q"] = True
-
-                # similar https://arxiv.org/pdf/1510.08418.pdf
-                #c["parent_label"] = c["dep"] + c["governorGloss"]
-                #c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
-                #c["depth"] = d[c["dependent"]]
-                c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
-
-                feats = c
-                out.append({"feats": feats, "y": y})
-
-            assert governor["dependent"] in sentence["compression_indexes"]
+    
+                feats = featurize_child_proposal(sentence,
+                                                dependent_vertex=c["dependent"],
+                                                governor_vertex=c["governor"])
+                out.append({"feats":feats, "y": y})
+            governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
             y = governor["governor"] in sentence["compression_indexes"]
-            #governor["depth"] = d[governor["governor"]]
-            #try:
-            #    governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
-            #except IndexError: # root
-            #    governor["ner"] = "O"
-            #governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
-            #governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
-            governor = {k + "g":v for k,v in governor.items()}
-            governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
-            governor["type"] = "GOVERNOR"
-            feats = governor
-            out.append({"feats": feats, "y": y})
+            feats = featurize_parent_proposal(sentence,
+                                              dependent_vertex=vx)
+            out.append({"feats":feats, "y": y})
     return out
 
 
