@@ -87,7 +87,7 @@ def get_labels_and_features(list_of_paths):
             if vertex != 0:
                 governor = get_governor(vertex, sentence)
                 if governor in current_tree:
-                    assert vertex not in current_tree
+                    #assert vertex not in current_tree /// this does not apply w/ full frontier
                     feats = featurize_child_proposal(sentence, dependent_vertex=vertex, governor_vertex=governor, d=d)
                 else:
                     feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
@@ -213,8 +213,8 @@ def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
     d, pi_bfs, c = bfs(g=sentence, hop_s=0)
     
     # init frontier
-    for v in T:
-        for i in sentence["tokens"]:
+    for i in sentence["tokens"]:
+        if i not in T:
             F.add(i["index"])
     F.add(0)    
 
