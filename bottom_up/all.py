@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import copy
+import string
+import socket
 
 from tqdm import tqdm
 from code.treeops import get_walk_from_root
@@ -18,16 +20,17 @@ from code.treeops import dfs
 from sklearn.feature_extraction import DictVectorizer
 from charguana import get_charset
 
+if socket.gethostname() != "dewey":
+    '''put in init b/c want to run this locally'''
+    from models import *
+    from nn.models.bottom_up_simple import *
+    from nn.dataset_readers.bottom_up_reader import *
+    from nn.predictors.bottom_up_predictor import *
+    from nn.models import *
+    from allennlp.models.archival import load_archive
+    from allennlp.predictors.predictor import Predictor
 
-'''put in init b/c want to run this locally'''
-from models import *
-from nn.models.bottom_up_simple import *
-from nn.dataset_readers.bottom_up_reader import *
-from nn.predictors.bottom_up_predictor import *
-from nn.models import *
-from allennlp.models.archival import load_archive
-from allennlp.predictors.predictor import Predictor
-
+PUNCT = [_ for _ in string.punctuation]
 
 def get_UD2symbols():
     '''
@@ -228,6 +231,15 @@ def f1_experiment(sentence_set, f, **kwargs):
         tot += get_f1(predicted, sentence)
     return tot/len(sentence_set)
 
+def f1_experiment_error_analysis(sentence_set, f, **kwargs):
+    tot = 0
+    out = []
+    for sentence in sentence_set:
+        predicted = f(sentence, **kwargs)
+        f1 = get_f1(predicted, sentence)
+        s = sentence
+        out.append((f1, sentence, predicted))
+    return out
 
 def train_from_corpus(fn):
 
@@ -289,6 +301,7 @@ def bottom_up_from_corpus_nops(sentence, **kwargs):
     while len_tree(tree, sentence) < sentence["r"]:
         try:
             new_vx = q_by_prob[0]["dependent"]
+            
             tree.add(new_vx)
             add_children_to_q(new_vx, q_by_prob, sentence, tree, dep_probs=kwargs["dep_probs"])
             remove_from_q(new_vx, q_by_prob, sentence)
@@ -329,18 +342,22 @@ def featurize(sentence):
         if t["index"] in sentence["compression_indexes"]:
             children = [d for d in sentence['basicDependencies'] if d["governor"] == vx if d["dep"] not in ["punct"]]
             governor = [d for d in sentence['basicDependencies'] if d["dependent"] == vx][0]
+
             for c in children:
                 y = c["dependent"] in sentence["compression_indexes"]
-                #c = {k + v for k, v in c.items()}
                 c["type"] = "CHILD"
+                c["position"] = float(c["dependent"]/len(sentence["tokens"]))
+                c = {k:v for k,v in c.items() if "dependent" not in k and "governor" not in k}
                 feats = c
                 out.append({"feats": feats, "y": y})
             assert governor["dependent"] in sentence["compression_indexes"]
             y = governor["governor"] in sentence["compression_indexes"]
+            governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
             governor = {k + "g":v for k,v in governor.items()}
+            governor = {k:v for k,v in governor.items() if "dependent" not in k and "governor" not in k}
             governor["type"] = "GOVERNOR"
             feats = governor
-            #out.append({"feats": feats, "y": y}) no gov feats at the moment
+            out.append({"feats": feats, "y": y})
     return out
 
 
@@ -376,6 +393,14 @@ def add_children_to_q_lr(vx, q, sentence, tree, clf, v):
 def bottom_up_from_clf(sentence, **kwargs):
     pseudo_root = heuristic_extract(jdoc=sentence)
     tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
+
+    ### Good evidence for importance of first/last
+    #print("warning oracle")
+    #first = min([o for o in sentence["compression_indexes"]])
+    #last = max([o for o in sentence["compression_indexes"]])
+    #tree.add(first)
+    #tree.add(last)
+
     clf, v = kwargs["clf"], kwargs["v"]
     q_by_prob = []
     for item in tree:
@@ -392,7 +417,16 @@ def bottom_up_from_clf(sentence, **kwargs):
                 last_known_good = copy.deepcopy(tree)
         except IndexError:
             print("[*] Index error"), # these are mostly parse errors from punct governing parts of the tree.
-            return last_known_good
+            new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "root"][0]
+            if new_vx not in tree:
+                print("warning heuristic ",)
+                tree.add(new_vx)
+                add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
+                remove_from_q(new_vx, q_by_prob, sentence)
+                if  len_tree(tree, sentence) < sentence["r"]:
+                    last_known_good = copy.deepcopy(tree)
+            else:
+                return last_known_good
 
     return last_known_good
 
