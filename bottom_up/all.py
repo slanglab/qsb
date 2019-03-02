@@ -54,7 +54,7 @@ def get_connected(sentence, F, T):
 
 def pick_bfs_connected(F, d, T, s):
     connected = get_connected(s, F, T)
-    unconnected = [o["index"] for o in F if o["index"] not in connected]
+    unconnected = [o for o in F if o not in connected]
 
     if len(connected) > 0:
         l = connected
