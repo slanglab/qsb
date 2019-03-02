@@ -416,8 +416,13 @@ def bottom_up_from_clf(sentence, **kwargs):
     pseudo_root = heuristic_extract(jdoc=sentence)
     tree = min_tree_to_root(jdoc=sentence, root_or_pseudo_root=pseudo_root)
     new_vx = [o["dependent"] for o in sentence["basicDependencies"] if o["dep"].lower() == "root"][0]
-    tree.add(new_vx)
-    
+
+    clf, v = kwargs["clf"], kwargs["v"]
+    q_by_prob = []
+
+    #add root to frontier
+    add_children_to_q_lr(new_vx, q_by_prob, sentence, tree, clf, v)
+
     ### Good evidence for importance of first/last
     #print("warning oracle")
     #first = min([o for o in sentence["compression_indexes"]])
@@ -425,8 +430,6 @@ def bottom_up_from_clf(sentence, **kwargs):
     #tree.add(first)
     #tree.add(last)
 
-    clf, v = kwargs["clf"], kwargs["v"]
-    q_by_prob = []
     for item in tree:
         add_children_to_q_lr(item, q_by_prob, sentence, tree, clf, v)
 
