@@ -42,18 +42,20 @@ def pick_bfs(l, d):
     l.sort(key=lambda x:x[1],reverse=True)
     return l[0][0]
 
-def is_parent_or_child_of_t(v, T, s):
-    for d in s["basicDependencies"]:
-        if d["dependent"] == v and d["dependent"] not in T:
-            return True
-        if d["governor"] == v and d["governor"] not in T:
-            return True
-    return False
+def get_connected(sentence, T):
+    out = set()
+    for d in sentence["basicDependencies"]:
+        if d["dependent"] in T and d["governor"] not in T and d['governor'] != 0:
+            out.add(d["governor"])
+        if d["governor"] in T and d["dependent"] not in T:
+            out.add(d["dependent"])
+    return out
 
 def pick_bfs_connected(l, d, T, s):
-    connected = [o for o in l if is_parent_or_child_of_t(o, T, s)]
-    unconnected = [o for o in l if not is_parent_or_child_of_t(o, T, s)]
-    
+    connected = get_connected(s, T)
+    unconnected = [o["index"] for o in s["tokens"] if o["index"] not in connected]
+
+    import pdb;pdb.set_trace()
     if len(connected) > 0:
         l = connected
     else:
