@@ -42,6 +42,21 @@ def pick_bfs(l, d):
     l.sort(key=lambda x:x[1],reverse=True)
     return l[0][0]
 
+def is_parent_or_child_of_t(v, T, s)
+
+def pick_bfs_connected(l, d, T, s):
+    connected = [o for o in l if is_parent_or_child_of_t(o, T, s)]
+    uncconnected = [o for o in l if is_parent_or_child_of_t(o, T, s)]
+    
+    if len(connected) > 0:
+        l = connected
+    else:
+        l = unconnected
+
+    l = [(o,d[o]) for o in l]
+    l.sort(key=lambda x:x[1],reverse=True)
+    return l[0][0]
+
 
 def get_governor(vertex, sentence):
     for d in sentence["basicDependencies"]:
@@ -170,6 +185,33 @@ def oracle_path(sentence, pi = pick_bfs):
     path = []
     while len(F) > 0:
         v = pi(F, d=d)
+        if v in sentence["compression_indexes"]:
+            for i in get_dependents_and_governors(v, sentence, T):
+                F.add(i)
+            path.append((copy.deepcopy(T), v, 1))
+            T.add(v)
+        else:
+            path.append((copy.deepcopy(T), v, 0))
+        F.remove(v)
+    
+    assert T == set(sentence["compression_indexes"])
+        
+    return path
+
+
+def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
+    T = {i for i in sentence["q"]}
+    F = set()
+    d, pi_bfs, c = bfs(g=sentence, hop_s=0)
+    
+    # init frontier
+    for v in T:
+        for i in get_dependents_and_governors(v, sentence, T):
+            if i not in T:
+                F.add(i)
+    path = []
+    while len(F) > 0:
+        v = pi(l=F, d=d, T=T, s=s)
         if v in sentence["compression_indexes"]:
             for i in get_dependents_and_governors(v, sentence, T):
                 F.add(i)

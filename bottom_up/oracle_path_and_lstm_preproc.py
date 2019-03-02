@@ -18,7 +18,7 @@ def make_paths(fn):
             for _ in tqdm(inf):
                 s = json.loads(_)
                 try:
-                    pp =  oracle_path(sentence=s, pi=pick_bfs)
+                    pp = oracle_path_wild_frontier(sentence=s, pi=pick_bfs_connected)
                     pp = [(list(p[0]), p[1], p[2]) for p in pp] 
                     of.write(json.dumps({"paths":pp, "sentence":s}) + "\n")
                     successes += 1
@@ -34,6 +34,6 @@ if __name__ == "__main__":
     validation_fn = "preproc/validation.jsonl"
 
     dep2symbol = get_UD2symbols()
-   
+
     make_paths(validation_fn)
     make_paths(train_fn)
