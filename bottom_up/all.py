@@ -74,6 +74,7 @@ def pick_l2r_connected(F, d, T, s):
     else:
         l = unconnected
 
+    l = list(l)
     l.sort()
     return l[0]
 
