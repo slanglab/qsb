@@ -91,7 +91,7 @@ def get_global_feats(sentence, feats, vertex, current_tree):
     len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
     feats["over_r"] = lt + len_tok > sentence["r"]
     feats["remaining"] = sentence["r"] -  (lt + len_tok)
-    #feats["tok_len_current_tree"] = len(current_tree)
+
     return feats
 
 
@@ -107,7 +107,7 @@ def get_local_feats(vertex, sentence, d, current_tree):
         feats["disconnected"] = 0
     else:
         feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
-        feats["gtype"] = "disconnected"
+        feats["discon_suffix"] = feats["governorGlossg"][-2:]
         feats = {k + "d": v for k,v in feats.items()}
         feats["disconnected"] = 1
     return feats
