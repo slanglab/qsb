@@ -86,6 +86,32 @@ def get_governor(vertex, sentence):
     return None
 
 
+def get_global_feats(sentence, feats, vertex, current_tree):
+    lt = len_tree(current_tree, sentence)
+    len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
+    feats["over_r"] = lt + len_tok > sentence["r"]
+    feats["remaining"] = sentence["r"] -  (lt + len_tok )
+    return feats
+
+
+def get_local_feats(vertex, sentence, d, current_tree):
+    governor = get_governor(vertex, sentence)
+    dependents = get_dependents(sentence, vertex)
+    if governor in current_tree:
+        #assert vertex not in current_tree /// this does not apply w/ full frontier
+        feats = featurize_child_proposal(sentence, dependent_vertex=vertex, governor_vertex=governor, d=d)
+        feats["disconnected"] = 0
+    elif any(d["dependent"] in current_tree for d in dependents):
+        feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
+        feats["disconnected"] = 0
+    else:
+        feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
+        feats["gtype"] = "disconnected"
+        feats = {k + "d": v for k,v in feats.items()}
+        feats["disconnected"] = 1
+    return feats
+
+
 def get_labels_and_features(list_of_paths):
     labels = []
     features = []
@@ -97,25 +123,10 @@ def get_labels_and_features(list_of_paths):
 
             current_tree, vertex, decision = p
             if vertex != 0:
-                governor = get_governor(vertex, sentence)
-                dependents = get_dependents(sentence, vertex)
-                if governor in current_tree:
-                    #assert vertex not in current_tree /// this does not apply w/ full frontier
-                    feats = featurize_child_proposal(sentence, dependent_vertex=vertex, governor_vertex=governor, d=d)
-                    feats["disconnected"] = 0
-                elif any(d["dependent"] in current_tree for d in dependents):
-                    feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
-                    feats["disconnected"] = 0
-                else:
-                    feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
-                    feats["gtype"] = "disconnected"
-                    feats = {k + "d": v for k,v in feats.items()}
-                    feats["disconnected"] = 1
+                feats = get_local_feats(vertex, sentence, d, current_tree)
 
                 # global features
-                lt = len_tree(current_tree, sentence)
-                len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
-                feats["over_r"] = lt + len_tok > sentence["r"]
+                feats = get_global_feats(sentence, feats, vertex, current_tree)
 
                 labels.append(decision)
                 features.append(feats)
@@ -487,6 +498,7 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
     c["parent_label"] = c["dep"] + c["governorGloss"]
     c["child_label"] = c["dep"] + c["dependentGloss"]
     c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
+    c["pos"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
     c["depth"] = d[c["dependent"]]
     c = {k:v for k,v in c.items() if k not in ["dependent", "governor"]}
     feats = c
@@ -504,6 +516,11 @@ def featurize_parent_proposal(sentence, dependent_vertex, d):
         governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
     except IndexError: # root
         governor["ner"] = "O"
+
+    try:
+        governor["pos"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
+    except IndexError: # root
+        governor["pos"] = "O"
 
     if governor["governor"] == 0: # dep of root, usually governing verb. note flip gov/dep in numerator
         governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
