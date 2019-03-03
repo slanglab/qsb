@@ -108,7 +108,7 @@ def get_global_feats(sentence, feats, vertex, current_tree):
     lt = len_tree(current_tree, sentence)
     len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
     feats["over_r"] = lt + len_tok > sentence["r"]
-    feats["remaining"] = sentence["r"] -  (lt + len_tok)
+    feats["remaining"] = (lt + len_tok)/sentence["r"]
 
     return feats
 
@@ -126,6 +126,10 @@ def get_local_feats(vertex, sentence, d, current_tree):
         feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
         feats["disconnected"] = 0
     else:
+        governs_proposed = [_["governor"] for _ in sentence["basicDependencies"] if _["dependent"] == vertex]
+        governed_by_proposed = [_["dep"] for _ in sentence["basicDependencies"] if _["governor"] == vertex]
+        
+        # information about the how the proposed disconnected is governed
         feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
         feats["discon_suffix"] = feats["governorGlossg"][-2:]
         feats = {k + "d": v for k,v in feats.items()}
@@ -133,6 +137,11 @@ def get_local_feats(vertex, sentence, d, current_tree):
         feats["gov_is_root"] = governor == 0
         verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_tree)
         feats["proposed_governed_by_verb"] = verby
+        feats["is_next_tok"] = vertex == max(current_tree) + 1
+        if (vertex + 1 in current_tree and vertex - 1 in current_tree):
+            feats["is_missing"] = 1
+        else:
+            feats["is_missing"] = 0
         if verby:
             if n_verbs_in_s(sentence) == 1:
                 feats["only_verb"] = True
@@ -143,7 +152,6 @@ def get_local_feats(vertex, sentence, d, current_tree):
                 gov = [_ for _ in sentence["tokens"] if _["index"] == governor][0]
                 feats["gov_discon"] = gov["word"]
                 feats["pos_discon"] = gov["pos"]
-
     return feats
 
 
