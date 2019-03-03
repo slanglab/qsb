@@ -65,6 +65,17 @@ def pick_bfs_connected(F, d, T, s):
     l.sort(key=lambda x:x[1],reverse=True)
     return l[0][0]
 
+def pick_l2r_connected(F, d, T, s):
+    connected = get_connected(s, F, T)
+    unconnected = [o for o in F if o not in connected]
+
+    if len(connected) > 0:
+        l = connected
+    else:
+        l = unconnected
+
+    l.sort()
+    return l[0]
 
 def get_governor(vertex, sentence):
     for d in sentence["basicDependencies"]:
@@ -475,12 +486,12 @@ def featurize_parent_proposal(sentence, dependent_vertex, d):
     # this is not true if you are featurizing oracle paths. it is true for bottom_up_lr compression
     # assert governor["dependent"] in sentence["compression_indexes"]
     
-    y = governor["governor"] in sentence["compression_indexes"]
     governor["depth"] = d[governor["governor"]]
     try:
         governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
     except IndexError: # root
         governor["ner"] = "O"
+
     if governor["governor"] == 0: # dep of root, usually governing verb. note flip gov/dep in numerator
         governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
     else:
