@@ -98,14 +98,25 @@ def get_labels_and_features(list_of_paths):
             current_tree, vertex, decision = p
             if vertex != 0:
                 governor = get_governor(vertex, sentence)
+                dependents = get_dependents(sentence, vertex)
                 if governor in current_tree:
                     #assert vertex not in current_tree /// this does not apply w/ full frontier
                     feats = featurize_child_proposal(sentence, dependent_vertex=vertex, governor_vertex=governor, d=d)
+                    feats["disconnected"] = 0
+                elif any(d["dependent"] in current_tree for d in dependents):
+                    feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
+                    feats["disconnected"] = 0
                 else:
                     feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
+                    feats["gtype"] = "disconnected"
+                    feats = {k + "d": v for k,v in feats.items()}
+                    feats["disconnected"] = 1
+
+                # global features
                 lt = len_tree(current_tree, sentence)
                 len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
                 feats["over_r"] = lt + len_tok > sentence["r"]
+
                 labels.append(decision)
                 features.append(feats)
     return features, labels
@@ -474,6 +485,7 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
 
     # similar https://arxiv.org/pdf/1510.08418.pdf
     c["parent_label"] = c["dep"] + c["governorGloss"]
+    c["child_label"] = c["dep"] + c["dependentGloss"]
     c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
     c["depth"] = d[c["dependent"]]
     c = {k:v for k,v in c.items() if k not in ["dependent", "governor"]}
@@ -497,9 +509,12 @@ def featurize_parent_proposal(sentence, dependent_vertex, d):
         governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
     else:
         governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+    
+    governor["parent_label"] = governor["dep"] + governor["governorGloss"]
+    governor["child_label"] = governor["dep"] + governor["dependentGloss"]
     governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
-    governor = {k + "g":v for k,v in governor.items() if k not in ["dependent", "governor"]}
     governor["type"] = "GOVERNOR"
+    governor = {k + "g":v for k,v in governor.items() if k not in ["dependent", "governor"]}
     return governor
 
 
