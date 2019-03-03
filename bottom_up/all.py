@@ -571,11 +571,19 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
     if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
         c["compund_off_q"] = True
 
+    c["is_punct"] = c["dependentGloss"] in PUNCT
+
+    if c["dep"] == "advmod":
+        c["last2_advmod"] = c["dependentGloss"][-2:]
+        c["last2_advmod_gov"] = c["governorGloss"][-2:]
+        c["pos_gov_advmod"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
+
     # similar https://arxiv.org/pdf/1510.08418.pdf
     c["parent_label"] = c["dep"] + c["governorGloss"]
     c["child_label"] = c["dep"] + c["dependentGloss"]
     c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
     c["pos"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
+    c["pos_gov"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
     c["depth"] = d[c["dependent"]]
     c = {k:v for k,v in c.items() if k not in ["dependent", "governor"]}
     feats = c
@@ -603,6 +611,8 @@ def featurize_parent_proposal(sentence, dependent_vertex, d):
         governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
     else:
         governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
+
+    governor["is_punct"] = governor["governorGloss"] in PUNCT
 
     governor["parent_label"] = governor["dep"] + governor["governorGloss"]
     governor["child_label"] = governor["dep"] + governor["dependentGloss"]
