@@ -566,13 +566,16 @@ def get_lr(features_and_labels):
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
     c = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex and _["dependent"] == dependent_vertex][0]
+    
     c["type"] = "CHILD"
+
+    # crossing this w/ dep seems to lower F1
     c["position"] = float(c["dependent"]/len(sentence["tokens"]))
-    if c["dep"] in ["compound", "amod"] and c["governor"] in sentence["q"]:
+
+    if c["governor"] in sentence["q"]:
         c["compund_off_q"] = True
-
+    
     c["is_punct"] = c["dependentGloss"] in PUNCT
-
     c["last2_" ] = c["dependentGloss"][-2:]
     c["last2_gov" ] = c["governorGloss"][-2:]
     c["pos_gov_"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
