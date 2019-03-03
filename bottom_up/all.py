@@ -573,17 +573,22 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, d):
 
     c["is_punct"] = c["dependentGloss"] in PUNCT
 
-    if c["dep"] == "advmod":
-        c["last2_advmod"] = c["dependentGloss"][-2:]
-        c["last2_advmod_gov"] = c["governorGloss"][-2:]
-        c["pos_gov_advmod"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
+    c["last2_" ] = c["dependentGloss"][-2:]
+    c["last2_gov" ] = c["governorGloss"][-2:]
+    c["pos_gov_"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
+    c["comes_first" ] = c["governor"] < c["dependent"]
+
+    c["is_punct" + c["dep"]] = c["dependentGloss"] in PUNCT
+    c["last2_" + c["dep"]] = c["dependentGloss"][-2:]
+    c["last2_gov" + c["dep"]] = c["governorGloss"][-2:]
+    c["pos_gov_" + c["dep"]] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
+    c["comes_first" + c["dep"]] = c["governor"] < c["dependent"]
 
     # similar https://arxiv.org/pdf/1510.08418.pdf
     c["parent_label"] = c["dep"] + c["governorGloss"]
     c["child_label"] = c["dep"] + c["dependentGloss"]
     c["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
     c["pos"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["dependent"]][0]
-    c["pos_gov"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == c["governor"]][0]
     c["depth"] = d[c["dependent"]]
     c = {k:v for k,v in c.items() if k not in ["dependent", "governor"]}
     feats = c
@@ -614,10 +619,26 @@ def featurize_parent_proposal(sentence, dependent_vertex, d):
 
     governor["is_punct"] = governor["governorGloss"] in PUNCT
 
-    governor["parent_label"] = governor["dep"] + governor["governorGloss"]
-    governor["child_label"] = governor["dep"] + governor["dependentGloss"]
-    governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
+    governor["parent_label"] = governor["governorGloss"]
+    governor["child_label"] = governor["dependentGloss"]
     governor["type"] = "GOVERNOR"
+
+    '''same interaction feats on gov side'''
+    governor["last2"] = governor["dependentGloss"][-2:]
+    governor["last2_gov"] = governor["governorGloss"][-2:]
+    governor["pos_dep"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == governor["dependent"]][0]
+    governor["comes_first"] = governor["governor"] < governor["dependent"]
+
+    governor["last2_" + governor["dep"]] = governor["dependentGloss"][-2:]
+    governor["last2_gov" + governor["dep"]] = governor["governorGloss"][-2:]
+    governor["pos_dep_" + governor["dep"]] = [_["pos"] for _ in sentence["tokens"] if _["index"] == governor["dependent"]][0]
+    governor["comes_first" + governor["dep"]] = governor["governor"] < governor["dependent"]
+    governor["is_punct"  + governor["dep"]] = governor["governorGloss"] in PUNCT
+
+    governor["parent_label_interaction"] = governor["dep"] + governor["governorGloss"]
+    governor["child_label_interaction"] = governor["dep"] + governor["dependentGloss"]
+    governor["childrenCount"] = sum(1 for i in sentence["basicDependencies"] if i["governor"] == governor["governor"])
+    
     governor = {k + "g":v for k,v in governor.items() if k not in ["dependent", "governor"]}
     return governor
 
