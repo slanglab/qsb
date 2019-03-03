@@ -110,6 +110,22 @@ def get_global_feats(sentence, feats, vertex, current_tree):
     feats["over_r"] = lt + len_tok > sentence["r"]
     feats["remaining"] = (lt + len_tok)/sentence["r"]
 
+    feats['middle'] = vertex > min(current_tree) and vertex < max(current_tree)
+
+    feats["right_add"] = vertex > max(current_tree)
+
+    feats["left_add"] = vertex < min(current_tree)
+
+    if 'dep' in feats:
+        feats['middle_dep'] =  str(feats['middle']) + feats["dep"]
+        feats['right_add_dep'] = str(feats['right_add']) + feats["dep"]
+        feats["left_add_dep"] = str(feats['left_add']) + feats["dep"]
+
+    if 'depg' in feats:
+        feats['middle_dep'] =  str(feats['middle']) + feats["depg"]
+        feats['right_add_dep'] = str(feats['right_add']) + feats["depg"]
+        feats["left_add_dep"] = str(feats['left_add']) + feats["depg"]
+
     return feats
 
 def n_verbs_in_s(s):
@@ -125,6 +141,7 @@ def get_local_feats(vertex, sentence, d, current_tree):
     elif any(d["dependent"] in current_tree for d in dependents):
         feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, d=d)
         feats["disconnected"] = 0
+
     else:
         governs_proposed = [_["governor"] for _ in sentence["basicDependencies"] if _["dependent"] == vertex]
         governed_by_proposed = [_["dep"] for _ in sentence["basicDependencies"] if _["governor"] == vertex]
@@ -138,6 +155,22 @@ def get_local_feats(vertex, sentence, d, current_tree):
         verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_tree)
         feats["proposed_governed_by_verb"] = verby
         feats["is_next_tok"] = vertex == max(current_tree) + 1
+        
+        # if depg is case and is disconnected, 
+        # you need to reason about if the add the pp
+        # if there is a lot budget left, you should add the pp. This feat
+        # helps reason about this
+        if feats["depgd"] == "case":
+            lt = len_tree(current_tree, sentence)
+            len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
+            feats["remaining_case_discon"] = (lt + len_tok)/sentence["r"]
+            grandparent_dep = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == governor]
+            if len(grandparent_dep) > 0:
+                feats["case_enhanced_deps"]  = feats["dependentGlossgd"] + ":" + grandparent_dep[0]
+
+            if vertex - 1 in current_tree:
+                feats["prev_pos_case"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == vertex - 1][0]
+
         if (vertex + 1 in current_tree and vertex - 1 in current_tree):
             feats["is_missing"] = 1
         else:
@@ -152,6 +185,7 @@ def get_local_feats(vertex, sentence, d, current_tree):
                 gov = [_ for _ in sentence["tokens"] if _["index"] == governor][0]
                 feats["gov_discon"] = gov["word"]
                 feats["pos_discon"] = gov["pos"]
+    
     return feats
 
 
