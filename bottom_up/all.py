@@ -78,6 +78,24 @@ def pick_l2r_connected(F, d, T, s):
     l.sort()
     return l[0]
 
+def gov_is_verb(vertex, s):
+    gov = get_governor(vertex, s)
+    if gov is not None and gov is not 0:
+        pos = [_['pos'][0].lower() == "v" for _ in s["tokens"] if _["index"] == gov][0]
+        return pos
+    else:
+        return False
+    
+def current_compression_has_verb(s, T):
+    current_pos = {_["pos"][0].lower() for _ in s["tokens"] if _["index"] in T}
+    return any(i == "v" for i in current_pos)
+    
+def gov_of_proposed_is_verb_and_current_compression_no_verb(s, vertex, T):
+    if gov_is_verb(vertex, s) and not current_compression_has_verb(s=s, T=T):
+        return True
+    else:
+        return False
+
 def get_governor(vertex, sentence):
     for d in sentence["basicDependencies"]:
         if d['dependent'] == vertex:
@@ -94,6 +112,8 @@ def get_global_feats(sentence, feats, vertex, current_tree):
 
     return feats
 
+def n_verbs_in_s(s):
+    return sum(1 for i in s["tokens"] if i["pos"][0].lower() == "v")
 
 def get_local_feats(vertex, sentence, d, current_tree):
     governor = get_governor(vertex, sentence)
@@ -110,6 +130,20 @@ def get_local_feats(vertex, sentence, d, current_tree):
         feats["discon_suffix"] = feats["governorGlossg"][-2:]
         feats = {k + "d": v for k,v in feats.items()}
         feats["disconnected"] = 1
+        feats["gov_is_root"] = governor == 0
+        verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_tree)
+        feats["proposed_governed_by_verb"] = verby
+        if verby:
+            if n_verbs_in_s(sentence) == 1:
+                feats["only_verb"] = True
+            else:
+                feats["only_verb"] = False
+            feats["verby_dep"] = feats["depgd"]
+            if governor != 0:
+                gov = [_ for _ in sentence["tokens"] if _["index"] == governor][0]
+                feats["gov_discon"] = gov["word"]
+                feats["pos_discon"] = gov["pos"]
+
     return feats
 
 
