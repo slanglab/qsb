@@ -14,6 +14,10 @@ import os
 local = Connection("localhost").local
 
 
+def bottom_up():
+    local("python bottom_up_clean/oracle_paths.py && py bottom_up_clean/driver4.py -training_paths preproc/training.paths -validation_paths preproc/validation.paths")
+
+
 def download():
     '''
     Download the data from Google. Will redownload if already found on machine
