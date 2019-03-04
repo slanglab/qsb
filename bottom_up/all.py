@@ -866,3 +866,69 @@ def make_instances(fn):
                     instance = get_instance(original_s=s, v=v, y=y, t=t, dep2symbol=dep2symbol)
                     of.write(json.dumps(instance) + "\n")
 '''
+
+
+def train_clf(training_paths = "training.paths", validiation_paths="validation.paths"):
+
+    training_paths = [_ for _ in open(training_paths)]
+    validation_paths = [_ for _ in open(validiation_paths)]
+
+
+    vectorizer = DictVectorizer(sparse=True)
+
+    train_features, train_labels = get_labels_and_features(training_paths)
+
+    X_train = vectorizer.fit_transform(train_features)
+
+    y_train = np.asarray(train_labels)
+
+    val_features, val_labels = get_labels_and_features(validation_paths)
+
+    X_val = vectorizer.transform(val_features)
+
+    y_val = np.asarray(val_labels)
+
+    clf = LogisticRegression(random_state=0,
+                             solver='lbfgs',
+                             C=.05,
+                             multi_class='ovr').fit(X_train, y_train)
+
+    print(clf.score(X_val,y_val))
+    print(clf.score(X_train, y_train))
+    return clf, vectorizer
+
+
+def runtime_path_wild_frontier(sentence, pi, clf, vectorizer, verbose=False):
+    T = {i for i in sentence["q"]}
+    F = set()
+    
+    # init frontier
+    for v in T:
+        for i in sentence["tokens"]:
+            F.add(i["index"])
+
+    d, heads, c = bfs(g=sentence, hop_s=0) 
+    while len(F) > 0:
+        vertex = pi(F=F, d=d, T=T, s=sentence)
+
+        if vertex != 0: # bug here?
+            feats = get_local_feats(vertex=vertex, sentence=sentence, d=d, current_tree=T)
+            feats = get_global_feats(sentence=sentence, feats=feats, vertex=vertex, current_tree=T)
+
+            X = vectorizer.transform([feats])
+            pred = clf.predict_proba(X)[0]
+            y = clf.predict(X)[0]
+
+            if y == 1:
+                T.add(vertex)
+                if vertex != 0:
+                    for i in get_dependents_and_governors(vertex, sentence, T):
+                        if i not in T and i is not None:
+                            F.add(i)
+                else:
+                    for i in get_dependents(sentence, vertex):
+                        if i["dependent"] not in T and i is not None:
+                            F.add(i)
+        F.remove(vertex)
+
+    return T
