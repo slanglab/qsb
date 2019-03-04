@@ -9,7 +9,7 @@ import pickle
 
 
 def make_paths(fn):
-    paths_loc = fn.split("/").replace(".jsonl", ".paths")
+    paths_loc = fn.replace(".jsonl", ".paths")
 
     failures = 0
     successes = 0
