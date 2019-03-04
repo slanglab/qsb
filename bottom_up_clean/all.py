@@ -108,6 +108,7 @@ def gov_is_verb(vertex, sentence):
         return False
 
 def get_f1(predicted, jdoc):
+    '''get the f1 score for the predicted vertexs vs. the gold'''
     original_ixs = [_["index"] for _ in jdoc["tokens"]]
     y_true = [_ in jdoc['compression_indexes'] for _ in original_ixs]
     y_pred = [_ in predicted for _ in original_ixs]
@@ -254,35 +255,35 @@ def featurize_parent_proposal(sentence, dependent_vertex, depths):
 
     governor["depth"] = depths[governor["governor"]]
     try:
-        governor["ner"] = [_["ner"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
+        governor_token = get_token_from_sentence(sentence=sentence, vertex=governor["governor"])
+        governor["ner"] = governor_token["ner"]
+        governor["pos"] = governor_token["pos"]
     except IndexError: # root
         governor["ner"] = "O"
-
-    try:
-        governor["pos"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == governor["governor"]][0]
-    except IndexError: # root
         governor["pos"] = "O"
 
-    if governor["governor"] == 0: # dep of root, usually governing verb. note flip gov/dep in numerator
+     # 0 means governor is root, usually if of the governing verb. Note flip of gov/dep in numerator
+    if governor["governor"] == 0:
         governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
     else:
         governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
 
     governor["is_punct"] = governor["governorGloss"] in PUNCT
-
     governor["parent_label"] = governor["governorGloss"]
     governor["child_label"] = governor["dependentGloss"]
     governor["type"] = "GOVERNOR"
 
     # same interaction feats on gov side
+    dependent_token = get_token_from_sentence(sentence=sentence, vertex=governor["dependent"])
+
     governor["last2"] = governor["dependentGloss"][-2:]
     governor["last2_gov"] = governor["governorGloss"][-2:]
-    governor["pos_dep"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == governor["dependent"]][0]
+    governor["pos_dep"] = dependent_token["pos"]
     governor["comes_first"] = governor["governor"] < governor["dependent"]
 
     governor["last2_" + governor["dep"]] = governor["dependentGloss"][-2:]
     governor["last2_gov" + governor["dep"]] = governor["governorGloss"][-2:]
-    governor["pos_dep_" + governor["dep"]] = [_["pos"] for _ in sentence["tokens"] if _["index"] == governor["dependent"]][0]
+    governor["pos_dep_" + governor["dep"]] = dependent_token["pos"]
     governor["comes_first" + governor["dep"]] = governor["governor"] < governor["dependent"]
     governor["is_punct"  + governor["dep"]] = governor["governorGloss"] in PUNCT
 
@@ -294,11 +295,12 @@ def featurize_parent_proposal(sentence, dependent_vertex, depths):
 
 
 def in_compression(vertex, current_compression):
+    '''returns bool: is vertex in current compression?'''
     return vertex in current_compression
 
 
 def get_connected(sentence, frontier, current_compression):
-    '''get vx in F that are conntected to T'''
+    '''get vertexes in frontier that are conntected to current_compression'''
     out = set()
     for dep in sentence["basicDependencies"]:
         dependent = dep["dependent"]
@@ -312,7 +314,7 @@ def get_connected(sentence, frontier, current_compression):
 
 def get_global_feats(sentence, feats, vertex, current_compression):
     lt = len_current_compression(current_compression, sentence)
-    len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
+    len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
     feats["over_r"] = lt + len_tok > sentence["r"]
     feats["remaining"] = (lt + len_tok)/sentence["r"]
 
