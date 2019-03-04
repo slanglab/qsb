@@ -9,7 +9,7 @@ import pickle
 
 
 def make_paths(fn):
-    paths_loc = "bottom_up/" + fn.split("/").pop().replace(".jsonl", ".paths")
+    paths_loc = fn.split("/").replace(".jsonl", ".paths")
 
     failures = 0
     successes = 0
@@ -27,8 +27,6 @@ def make_paths(fn):
     print("finished with {} successes and {} failures".format(successes, failures))
 
 if __name__ == "__main__":
-
-    import pickle
 
     train_fn = "preproc/training.jsonl"
     validation_fn = "preproc/validation.jsonl"
