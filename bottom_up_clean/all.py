@@ -181,6 +181,7 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
     return feats
 
 def proposed_parent(governor, current_compression):
+    '''is the governor in the compression'''
     return governor in current_compression
 
 def proposed_child(current_compression, dependents):
@@ -196,12 +197,10 @@ def get_local_feats(vertex, sentence, depths, current_compression):
                                          dependent_vertex=vertex,
                                          governor_vertex=governor,
                                          depths=depths)
-        feats["disconnected"] = 0
     elif proposed_child(current_compression, dependents):
         feats = featurize_governor_proposal(sentence=sentence,
                                           dependent_vertex=vertex,
                                           depths=depths)
-        feats["disconnected"] = 0
 
     else:
         feats = featurize_disconnected_proposal(sentence=sentence,
@@ -209,7 +208,6 @@ def get_local_feats(vertex, sentence, depths, current_compression):
                                                 depths=depths,
                                                 current_compression=current_compression,
                                                 governor=governor)
-        feats["disconnected"] = 1
     return feats
 
 
@@ -370,6 +368,16 @@ def get_global_feats(sentence, feats, vertex, current_compression):
         feats['middle_dep'] = str(feats['middle']) + feats["depg"]
         feats['right_add_dep'] = str(feats['right_add']) + feats["depg"]
         feats["left_add_dep"] = str(feats['left_add']) + feats["depg"]
+
+    dependents = get_children(sentence, vertex)
+    governor = get_governor(vertex, sentence)
+    assert type(governor) == int
+    if proposed_child(current_compression=current_compression,
+                      dependents=dependents) or proposed_parent(governor=governor,
+                                                                current_compression=current_compression):
+        feats["disconnected"] = 0
+    else:
+        feats["disconnected"] = 1
 
     return feats
 
