@@ -10,7 +10,8 @@ parser.add_argument('-training_paths', type=str, default="training.paths")
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    clf, vectorizer = train_clf(args.training_paths)
+    clf, vectorizer = train_clf(training_paths=args.training_paths,
+                                validation_paths=args.validation_paths)
 
     tot = 0
     for pno, paths in enumerate(open(args.validation_paths, "r")):
