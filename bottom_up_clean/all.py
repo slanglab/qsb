@@ -76,7 +76,7 @@ def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
                         if i not in current_compression and i is not None:
                             frontier.add(i)
                 else:
-                    for i in get_dependents(sentence, vertex):
+                    for i in get_children(sentence, vertex):
                         if i["dependent"] not in current_compression and i is not None:
                             frontier.add(i)
         frontier.remove(vertex)
@@ -97,10 +97,12 @@ def pick_l2r_connected(frontier, current_compression, sentence):
     return options[0]
 
 def current_compression_has_verb(sentence, current_compression):
+    '''returns boolean: does the current compression have a verb?'''
     current_pos = {_["pos"][0].lower() for _ in sentence["tokens"] if _["index"] in current_compression}
     return any(i == "v" for i in current_pos)
 
 def gov_is_verb(vertex, sentence):
+    '''returns boolean: is the governor a verb?'''
     gov = get_governor(vertex, sentence)
     if gov is not None and gov is not 0:
         pos = [_['pos'][0].lower() == "v" for _ in sentence["tokens"] if _["index"] == gov][0]
@@ -118,16 +120,59 @@ def get_f1(predicted, jdoc):
 def gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_compression):
     if gov_is_verb(vertex, sentence) and not current_compression_has_verb(sentence=sentence, current_compression=current_compression):
         return True
-    else:
-        return False
+    return False
 
 
 def n_verbs_in_s(sentence):
     return sum(1 for i in sentence["tokens"] if i["pos"][0].lower() == "v")
 
+
+def featurize_disconnected_proposal(sentence, vertex, depths, current_compression, governor):
+    # information about the how the proposed disconnected is governed
+    feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, depths=depths)
+    feats["discon_suffix"] = feats["governorGlossg"][-2:]
+    feats = {k + "d": v for k, v in feats.items()}
+    feats["gov_is_root"] = governor == 0
+    verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_compression)
+    feats["proposed_governed_by_verb"] = verby
+    feats["is_next_tok"] = vertex == max(current_compression) + 1
+
+    # if depg is case and is disconnected
+    # you need to reason about if the add the pp
+    # if there is a lot budget left, you should add the pp. This feat
+    # helps reason about this
+    if feats["depgd"] == "case":
+        lt = len_current_compression(current_compression, sentence)
+        len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
+        feats["remaining_case_discon"] = (lt + len_tok)/sentence["r"]
+        grandparent_dep = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == governor]
+        if len(grandparent_dep) > 0:
+            feats["case_enhanced_deps"] = feats["dependentGlossgd"] + ":" + grandparent_dep[0]
+
+        if vertex - 1 in current_compression:
+            feats["prev_pos_case"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == vertex - 1][0]
+
+    if (vertex + 1 in current_compression and vertex - 1 in current_compression):
+        feats["is_missing"] = 1
+    else:
+        feats["is_missing"] = 0
+    if verby:
+        if n_verbs_in_s(sentence) == 1:
+            feats["only_verb"] = True
+        else:
+            feats["only_verb"] = False
+        feats["verby_dep"] = feats["depgd"]
+        if governor != 0:
+            gov = [_ for _ in sentence["tokens"] if _["index"] == governor][0]
+            feats["gov_discon"] = gov["word"]
+            feats["pos_discon"] = gov["pos"]
+    return feats
+
+
 def get_local_feats(vertex, sentence, depths, current_compression):
+    '''get the features that are local to the vertex to be added, and its relationship to the tree #TODO'''
     governor = get_governor(vertex, sentence)
-    dependents = get_dependents(sentence, vertex)
+    dependents = get_children(sentence, vertex)
     if governor in current_compression:
         #assert vertex not in current_compression /// this does not apply w/ full frontier
         feats = featurize_child_proposal(sentence, 
@@ -142,50 +187,13 @@ def get_local_feats(vertex, sentence, depths, current_compression):
         feats["disconnected"] = 0
 
     else:
-        # information about the how the proposed disconnected is governed
-        feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, depths=depths)
-        feats["discon_suffix"] = feats["governorGlossg"][-2:]
-        feats = {k + "d": v for k, v in feats.items()}
+        feats = featurize_disconnected_proposal(sentence, vertex, depths, current_compression, governor)
         feats["disconnected"] = 1
-        feats["gov_is_root"] = governor == 0
-        verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_compression)
-        feats["proposed_governed_by_verb"] = verby
-        feats["is_next_tok"] = vertex == max(current_compression) + 1
-
-        # if depg is case and is disconnected
-        # you need to reason about if the add the pp
-        # if there is a lot budget left, you should add the pp. This feat
-        # helps reason about this
-        if feats["depgd"] == "case":
-            lt = len_current_compression(current_compression, sentence)
-            len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
-            feats["remaining_case_discon"] = (lt + len_tok)/sentence["r"]
-            grandparent_dep = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == governor]
-            if len(grandparent_dep) > 0:
-                feats["case_enhanced_deps"] = feats["dependentGlossgd"] + ":" + grandparent_dep[0]
-
-            if vertex - 1 in current_compression:
-                feats["prev_pos_case"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == vertex - 1][0]
-
-        if (vertex + 1 in current_compression and vertex - 1 in current_compression):
-            feats["is_missing"] = 1
-        else:
-            feats["is_missing"] = 0
-        if verby:
-            if n_verbs_in_s(sentence) == 1:
-                feats["only_verb"] = True
-            else:
-                feats["only_verb"] = False
-            feats["verby_dep"] = feats["depgd"]
-            if governor != 0:
-                gov = [_ for _ in sentence["tokens"] if _["index"] == governor][0]
-                feats["gov_discon"] = gov["word"]
-                feats["pos_discon"] = gov["pos"]
-
     return feats
 
 
 def get_labels_and_features(list_of_paths):
+    '''get the labels and the features from the list of paths'''
     labels = []
     features = []
     for paths in list_of_paths:
@@ -206,6 +214,7 @@ def get_labels_and_features(list_of_paths):
 
 
 def get_governor(vertex, sentence):
+    '''return the governor of a vertex'''
     for dep in sentence["basicDependencies"]:
         if dep['dependent'] == vertex:
             return dep['governor']
@@ -218,8 +227,9 @@ def get_token_from_sentence(sentence, vertex):
     return [_ for _ in sentence["tokens"] if _["index"] == vertex][0]
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
+    '''return features for a vertex that is a dependent of a vertex in the tree'''
     child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex
-            and _["dependent"] == dependent_vertex][0]
+             and _["dependent"] == dependent_vertex][0]
 
     child["type"] = "CHILD"
 
@@ -230,7 +240,7 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
         child["compund_off_q"] = True
 
     governor_token = get_token_from_sentence(sentence=sentence,
-                                            vertex=child["governor"])
+                                             vertex=child["governor"])
 
     child["is_punct"] = child["dependentGloss"] in PUNCT
     child["last2_"] = child["dependentGloss"][-2:]
@@ -323,6 +333,7 @@ def get_connected(sentence, frontier, current_compression):
 
 
 def get_global_feats(sentence, feats, vertex, current_compression):
+    '''return global features of the edits'''
     lt = len_current_compression(current_compression, sentence)
     len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
     feats["over_r"] = lt + len_tok > sentence["r"]
@@ -346,18 +357,19 @@ def get_global_feats(sentence, feats, vertex, current_compression):
 
     return feats
 
-def get_dependents(sentence, vertex):
+def get_children(sentence, vertex):
+    ''''return the dependents of a vertex in basicDependencies'''
     return [dep for dep in sentence['basicDependencies'] if dep["governor"] == vertex]
 
 def get_dependents_and_governors(vertex, sentence, tree):
     '''add a vertexes children to a queue, sort by prob'''
     assert vertex != 0
-    children = get_dependents(sentence, vertex)
-    governor = [dep for dep in sentence['basicDependencies'] if dep["dependent"] == vertex][0]
+    
     out = []
-    for child in children:
+    for child in get_children(sentence, vertex):
         if child["dependent"] not in tree:
             out.append(child["dependent"])
+    governor = [dep for dep in sentence['basicDependencies'] if dep["dependent"] == vertex][0]
     if governor["governor"] not in tree:
         out.append(governor["governor"])
     return out
