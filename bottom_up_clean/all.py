@@ -13,7 +13,7 @@ def len_current_compression(current_compression, sentence):
     '''get the character length of the current compression'''
     return sum(len(o['word']) for o in sentence["tokens"] if o["index"] in current_compression)
 
-def train_clf(training_paths = "training.paths", validation_paths="validation.paths"):
+def train_clf(training_paths="training.paths", validation_paths="validation.paths"):
     '''Train a classifier on the oracle path, and check on validation paths'''
     training_paths = [_ for _ in open(training_paths)]
     validation_paths = [_ for _ in open(validation_paths)]
@@ -42,6 +42,7 @@ def train_clf(training_paths = "training.paths", validation_paths="validation.pa
     return clf, vectorizer
 
 def get_depths(sentence):
+    '''just a wrapper for bfs that only returns the depths lookup'''
     depths, heads_ignored_var, c_ignored_var = bfs(g=sentence, hop_s=0)
     return depths
 
@@ -129,10 +130,15 @@ def get_local_feats(vertex, sentence, depths, current_compression):
     dependents = get_dependents(sentence, vertex)
     if governor in current_compression:
         #assert vertex not in current_compression /// this does not apply w/ full frontier
-        feats = featurize_child_proposal(sentence, dependent_vertex=vertex, governor_vertex=governor, depths=depths)
+        feats = featurize_child_proposal(sentence, 
+                                         dependent_vertex=vertex,
+                                         governor_vertex=governor,
+                                         depths=depths)
         feats["disconnected"] = 0
     elif any(d["dependent"] in current_compression for d in dependents):
-        feats = featurize_parent_proposal(sentence, dependent_vertex=vertex, depths=depths)
+        feats = featurize_parent_proposal(sentence=sentence,
+                                          dependent_vertex=vertex,
+                                          depths=depths)
         feats["disconnected"] = 0
 
     else:
@@ -212,7 +218,8 @@ def get_token_from_sentence(sentence, vertex):
     return [_ for _ in sentence["tokens"] if _["index"] == vertex][0]
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
-    child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex and _["dependent"] == dependent_vertex][0]
+    child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex
+            and _["dependent"] == dependent_vertex][0]
 
     child["type"] = "CHILD"
 
@@ -222,16 +229,19 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
     if child["governor"] in sentence["q"]:
         child["compund_off_q"] = True
 
+    governor_token = get_token_from_sentence(sentence=sentence,
+                                            vertex=child["governor"])
+
     child["is_punct"] = child["dependentGloss"] in PUNCT
     child["last2_"] = child["dependentGloss"][-2:]
     child["last2_gov"] = child["governorGloss"][-2:]
-    child["pos_gov_"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == child["governor"]][0]
+    child["pos_gov_"] = governor_token["pos"]
     child["comes_first"] = child["governor"] < child["dependent"]
 
     child["is_punct" + child["dep"]] = child["dependentGloss"] in PUNCT
     child["last2_" + child["dep"]] = child["dependentGloss"][-2:]
     child["last2_gov" + child["dep"]] = child["governorGloss"][-2:]
-    child["pos_gov_" + child["dep"]] = [_["pos"] for _ in sentence["tokens"] if _["index"] == child["governor"]][0]
+    child["pos_gov_" + child["dep"]] = governor_token["pos"]
     child["comes_first" + child["dep"]] = child["governor"] < child["dependent"]
 
     # similar https://arxiv.org/pdf/1510.08418.pdf
