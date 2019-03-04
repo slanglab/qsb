@@ -868,10 +868,10 @@ def make_instances(fn):
 '''
 
 
-def train_clf(training_paths = "training.paths", validiation_paths="validation.paths"):
+def train_clf(training_paths = "training.paths", validation_paths="validation.paths"):
 
     training_paths = [_ for _ in open(training_paths)]
-    validation_paths = [_ for _ in open(validiation_paths)]
+    validation_paths = [_ for _ in open(validation_paths)]
 
 
     vectorizer = DictVectorizer(sparse=True)
