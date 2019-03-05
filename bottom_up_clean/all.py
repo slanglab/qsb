@@ -2,6 +2,7 @@ import json
 import string
 from code.treeops import bfs
 import numpy as np
+import copy
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
@@ -15,20 +16,32 @@ def len_current_compression(current_compression, sentence):
     return sum(len(o['word']) for o in sentence["tokens"] if o["index"] in current_compression)
 
 
-def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
+def pick_l2r_connected(frontier, current_compression, sentence):
+    connected = get_connected(sentence, frontier, current_compression)
+    unconnected = [o for o in frontier if o not in connected]
+
+    if len(connected) > 0:
+        options = list(connected)
+    else:
+        options = list(unconnected)
+
+    options.sort()
+    return options[0]
+
+
+def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
     T = {i for i in sentence["q"]}
     F = set()
     d, pi_bfs, c = bfs(g=sentence, hop_s=0)
     
     # init frontier
     for i in sentence["tokens"]:
-        if i["index"] not in T:
-            F.add(i["index"])
+        F.add(i["index"])
     F.add(0)    
 
     path = []
     while len(F) > 0:
-        v = pi(F=F, d=d, T=T, s=sentence)
+        v = pi(frontier=F, current_compression=T, sentence=sentence)
         if v in sentence["compression_indexes"]:
             for i in get_dependents_and_governors(v, sentence, T):
                 F.add(i)
@@ -121,17 +134,6 @@ def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
     return current_compression
 
 
-def pick_l2r_connected(frontier, current_compression, sentence):
-    connected = get_connected(sentence, frontier, current_compression)
-    unconnected = [o for o in frontier if o not in connected]
-
-    if len(connected) > 0:
-        options = list(connected)
-    else:
-        options = list(unconnected)
-
-    options.sort()
-    return options[0]
 
 def current_compression_has_verb(sentence, current_compression):
     '''returns boolean: does the current compression have a verb?'''
