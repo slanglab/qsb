@@ -1,10 +1,10 @@
 
-from bottom_up.all import *
+from bottom_up_clean.all import *
 
 from tqdm import tqdm
 import json
-from bottom_up.all import pick_at_random
-from bottom_up.all import oracle_path
+from bottom_up_clean.all import pick_at_random
+from bottom_up_clean.all import oracle_path
 import pickle
 
 
