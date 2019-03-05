@@ -36,8 +36,9 @@ def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
     
     # init frontier
     for i in sentence["tokens"]:
-        F.add(i["index"])
-    F.add(0)    
+        if i["index"] not in T:
+            F.add(i["index"])
+    F.add(0)
 
     path = []
     while len(F) > 0:
