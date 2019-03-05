@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.feature_extraction import FeatureHasher
 
 PUNCT = [_ for _ in string.punctuation]
 
@@ -13,12 +14,10 @@ def len_current_compression(current_compression, sentence):
     '''get the character length of the current compression'''
     return sum(len(o['word']) for o in sentence["tokens"] if o["index"] in current_compression)
 
-def train_clf(training_paths="training.paths", validation_paths="validation.paths"):
+def train_clf(training_paths="training.paths", validation_paths="validation.paths", vectorizer=DictVectorizer(sparse=True)):
     '''Train a classifier on the oracle path, and check on validation paths'''
     training_paths = [_ for _ in open(training_paths)]
     validation_paths = [_ for _ in open(validation_paths)]
-
-    vectorizer = DictVectorizer(sparse=True)
 
     train_features, train_labels = get_labels_and_features(training_paths)
 
@@ -40,6 +39,7 @@ def train_clf(training_paths="training.paths", validation_paths="validation.path
     print(clf.score(X_val, y_val))
     print(clf.score(X_train, y_train))
     return clf, vectorizer
+
 
 def get_depths(sentence):
     '''just a wrapper for bfs that only returns the depths lookup'''
@@ -184,20 +184,20 @@ def proposed_parent(governor, current_compression):
     '''is the governor in the compression'''
     return governor in current_compression
 
-def proposed_child(current_compression, dependents):
+def proposed_child(current_compression, sentence, vertex):
+    dependents = get_children(sentence, vertex)
     return any(d["dependent"] in current_compression for d in dependents)
 
 def get_local_feats(vertex, sentence, depths, current_compression):
     '''get the features that are local to the vertex to be added, and its relationship to the tree #TODO'''
     governor = get_governor(vertex, sentence)
-    dependents = get_children(sentence, vertex)
     if proposed_parent(governor, current_compression):
         #assert vertex not in current_compression /// this does not apply w/ full frontier
         feats = featurize_child_proposal(sentence,
                                          dependent_vertex=vertex,
                                          governor_vertex=governor,
                                          depths=depths)
-    elif proposed_child(current_compression, dependents):
+    elif proposed_child(current_compression, sentence, vertex):
         feats = featurize_governor_proposal(sentence=sentence,
                                           dependent_vertex=vertex,
                                           depths=depths)
@@ -359,22 +359,21 @@ def get_global_feats(sentence, feats, vertex, current_compression):
 
     feats["left_add"] = vertex < min(current_compression)
 
-    if 'dep' in feats:
-        feats['middle_dep'] = str(feats['middle']) + feats["dep"]
-        feats['right_add_dep'] = str(feats['right_add']) + feats["dep"]
-        feats["left_add_dep"] = str(feats['left_add']) + feats["dep"]
+    depf = "dep" 
+    if "depg" in feats:
+        depf = "depg"
+    elif "depgd" in feats:
+        depf = "depgd"
+    else:
+        depf = "dep"
 
-    if 'depg' in feats:
-        feats['middle_dep'] = str(feats['middle']) + feats["depg"]
-        feats['right_add_dep'] = str(feats['right_add']) + feats["depg"]
-        feats["left_add_dep"] = str(feats['left_add']) + feats["depg"]
+    feats['middle_dep'] = str(feats['middle']) + feats[depf]
+    feats['right_add_dep'] = str(feats['right_add']) + feats[depf]
+    feats["left_add_dep"] = str(feats['left_add']) + feats[depf]
 
-    dependents = get_children(sentence, vertex)
     governor = get_governor(vertex, sentence)
     assert type(governor) == int
-    if proposed_child(current_compression=current_compression,
-                      dependents=dependents) or proposed_parent(governor=governor,
-                                                                current_compression=current_compression):
+    if proposed_child(current_compression, sentence, vertex) or proposed_parent(governor=governor, current_compression=current_compression):
         feats["disconnected"] = 0
     else:
         feats["disconnected"] = 1

@@ -17,7 +17,10 @@ if __name__ == "__main__":
     for pno, paths in enumerate(open(args.validation_paths, "r")):
         paths=json.loads(paths)
         sentence = paths["sentence"]
-        predicted = runtime_path_wild_frontier(sentence, pi=pick_l2r_connected, clf=clf, vectorizer=vectorizer)
+        predicted = runtime_path_wild_frontier(sentence,
+                                               frontier_selector=pick_l2r_connected,
+                                               clf=clf,
+                                               vectorizer=vectorizer)
         f1s = get_f1(predicted, sentence)
         tot += f1s
     print(tot/(pno + 1))
