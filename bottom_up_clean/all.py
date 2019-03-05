@@ -14,6 +14,36 @@ def len_current_compression(current_compression, sentence):
     '''get the character length of the current compression'''
     return sum(len(o['word']) for o in sentence["tokens"] if o["index"] in current_compression)
 
+
+def oracle_path_wild_frontier(sentence, pi = pick_bfs_connected):
+    T = {i for i in sentence["q"]}
+    F = set()
+    d, pi_bfs, c = bfs(g=sentence, hop_s=0)
+    
+    # init frontier
+    for i in sentence["tokens"]:
+        if i["index"] not in T:
+            F.add(i["index"])
+    F.add(0)    
+
+    path = []
+    while len(F) > 0:
+        v = pi(F=F, d=d, T=T, s=sentence)
+        if v in sentence["compression_indexes"]:
+            for i in get_dependents_and_governors(v, sentence, T):
+                F.add(i)
+            path.append((copy.deepcopy(T), v, 1))
+            T.add(v)
+        else:
+            path.append((copy.deepcopy(T), v, 0))
+        F.remove(v)
+    
+    assert T == set(sentence["compression_indexes"])
+        
+    return path
+
+
+
 def train_clf(training_paths="training.paths", validation_paths="validation.paths", vectorizer=DictVectorizer(sparse=True)):
     '''Train a classifier on the oracle path, and check on validation paths'''
     training_paths = [_ for _ in open(training_paths)]
