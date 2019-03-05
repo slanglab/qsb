@@ -3,8 +3,6 @@ from bottom_up_clean.all import *
 
 from tqdm import tqdm
 import json
-from bottom_up_clean.all import pick_at_random
-from bottom_up_clean.all import oracle_path
 import pickle
 
 
@@ -31,7 +29,6 @@ if __name__ == "__main__":
     train_fn = "preproc/training.jsonl"
     validation_fn = "preproc/validation.jsonl"
 
-    dep2symbol = get_UD2symbols()
 
     make_paths(validation_fn)
     make_paths(train_fn)
