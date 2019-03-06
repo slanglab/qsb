@@ -156,17 +156,13 @@ At training time, we use an oracle to decide if $v_i$ should be added to $C_i$, 
 
 In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
+We developed our compression system empirically: for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|V|$ operations which can fully reconstruct the gold compression.
+
 \ahcomment{need a diagram}
-
-\subsection{Oracle paths}\label{s:oracle}
-
-We identified the operations in our compression system empirically: we found that for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|s|$ operations which can fully reconstruct the shortened sentence, where $|s|$ denotes the token length of the original sentence.
-
-We identify the oracle path by executing a sequence of operations. \ahcomment{This can be redone/simplified}
 
 \subsection{Modeling}\label{s:modeling}
 
-In our framework (\S\ref{s:oracle}), the oracle compression process is a series of binary decisions. At each step $j$ the oracle must decide to execute (or not add) some proposed vertex $o_j$.
+We use a model of oracle decisions to decide if $v_i$ should be added to $C_i$ at test time.  
 
 \ahcomment{Add some discussion of features}
 
