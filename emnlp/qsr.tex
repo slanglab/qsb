@@ -128,9 +128,9 @@ We contrast transition-based compression and integer programming approaches with
 \Input{$s=(V,E)$, $Q \subseteq V$, $b \in \mathbb{R^+}$}
  $ C \gets Q;  F \gets V \setminus Q$; \\
  \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
-  $v_i \gets \pi(F)$; \\
-  $F \gets F \setminus  \{v_i\}$ \\
-  \lIf{$p(v_i | C) > .5$}{$C \gets C \cup \{v_i\}$}
+  $v \gets \pi(F)$; \\
+  $F \gets F \setminus  \{v\}$ \\
+  \lIf{$p(v | C) > .5$}{$C \gets C \cup \{v\}$}
  }
 \KwRet{$\ell(C)$}
  \caption{Bottom-up compression}
@@ -139,23 +139,24 @@ We contrast transition-based compression and integer programming approaches with
 
 \subsection{Transition-based compression}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}). Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}). Like ILP-based techniques, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
 \section{Transition-based sentence compression}\label{s:system}
 
-In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. Our compression system maintains a state representing the current compression, which is repeatedly modified by a small set of operations. 
+In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. Where some previous approaches shorten sentences by removing components from a well-formed tree from the \textit{top down} \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,Filippova2015FastKS}, our method constructs a compression of a sentence from the \textit{bottom up}, by adding vertexes to a set of query nodes $Q$ until exhausting a character-based length budget $r \in \mathbb{R}^{+}$. (Query vertexes are leaves at the bottom of dependency parse.)
 
+\subsection{Formal Description}
+
+Our method builds a compression $C$ over at most $|V|$ timesteps by maintaining a state
+$(C_i,F_i)$. $C_i$ is the set of tokens in the current compression and $F_i$ is a set of frontier tokens, considered for possible inclusion in the compression at timestep $i$.
+
+We initialize $C_0=Q$ and $F_0 = V \setminus Q$. Then, at each timestep, decide if some vertex $v_i \in F_i$ should be added to $C_i$. We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$. 
+
+At training time, we use an oracle to decide if $v_i$ should be added to $C_i$, denoted $C_i \gets v_i \cup C_i$: if $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included.
+
+In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
 \ahcomment{need a diagram}
-
-
-%We formally describe the system (\S\ref{s:formal}), present a method for generating oracle paths to gold standard shortenings (\S\ref{s:oracle}), and detail a computational model of oracle compression (\S\ref{s:modeling}). We then demonstrate and evaluate a method which uses this model for constrained compression (\S\ref{s:transition}), and analyze its computational costs (\S\ref{s:costs}).
-
-\subsection{Formal description}\label{s:formal}
-
-Our transition-based sentence compression system shortens a sentence $s$ by executing a sequence of operations. Each operation modifies the state, denoted $(V,[v|B])$, where $V$ is a subset of tokens from $s$, and $B$ is an ordered buffer of tokens from $s$ headed by the token $v$. In defining each operation, we use the notation $T(v)$ to refer to $v$ and all its descendants in the unchanging, precomputed dependency parse of $s$. We say that $T(v)$ is the subtree rooted at $v$.
-
-\ahcomment{This needs to be redone}
 
 \subsection{Oracle paths}\label{s:oracle}
 
