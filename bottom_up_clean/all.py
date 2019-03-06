@@ -17,27 +17,43 @@ def get_features_of_dep(dep, sentence, depths):
     '''
     Dep is some dependent in basicDependencies
     '''
-    governor_token = get_token_from_sentence(sentence=sentence,
-                                             vertex=dep["governor"])
 
     depentent_token = get_token_from_sentence(sentence=sentence, vertex=dep["dependent"])
 
     # similar https://arxiv.org/pdf/1510.08418.pdf
 
     out = defaultdict()
+    out["childrenCount"] = count_children(sentence, dep["governor"])
     out["ner_dependent"] = depentent_token["ner"]
     out["pos_dependent"] = depentent_token["pos"]
     out["depth_dependent"] = depths[dep["dependent"]]
     out["position_dependent"] = float(dep["dependent"]/len(sentence["tokens"]))
     out["is_punct_dependent"] = dep["dependentGloss"] in PUNCT
+    out["is_punct_gov"] = dep["governorGloss"] in PUNCT
     out["last2_dependent"] = dep["dependentGloss"][-2:]
     out["last2_gov"] = dep["governorGloss"][-2:]
     out["comes_first"] = dep["governor"] < dep["dependent"]
     out["governorGloss"] = dep["governorGloss"]
     out["dependentGloss"] = dep["dependentGloss"]
-    out["pos_gov"] = governor_token["pos"]
     out["dep"] = dep["dep"]
     out["governor_in_q"] = dep["governor"] in sentence["q"]
+
+    try:
+        governor_token = get_token_from_sentence(sentence=sentence,
+                                                vertex=dep["governor"])
+        out["ner_gov"] = governor_token["ner"]
+        out["pos_gov"] = governor_token["pos"]
+    except IndexError: # root
+        out["ner_gov"] = "O"
+        out["pos_gov"] = "O"
+
+    out["depth_governor"] = depths[dep["governor"]]
+
+    # 0 means governor is root, usually if of the governing verb. Note flip of gov/dep in numerator
+    if dep["governor"] == 0:
+        out["position_governor"] = float(dep["dependent"]/len(sentence["tokens"]))
+    else:
+        out["position_governor"] = float(dep["governor"]/len(sentence["tokens"]))
 
     return dict(out)
 
@@ -207,9 +223,11 @@ def n_verbs_in_s(sentence):
 
 def featurize_disconnected_proposal(sentence, vertex, depths, current_compression, governor):
     # information about the how the proposed disconnected is governed
-    feats = featurize_governor_proposal(sentence, dependent_vertex=vertex, depths=depths)
 
-    feats["discon_suffix"] = feats["governorGlossg"][-2:]
+    dep = [de for de in sentence['basicDependencies'] if de["dependent"] == vertex][0]
+
+    feats = get_features_of_dep(dep, sentence, depths)
+    feats["discon_suffix"] = feats["governorGloss"][-2:]
     feats["gov_is_root"] = governor == 0
     verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,
                                                                     vertex,
@@ -221,13 +239,13 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
     # you need to reason about if the add the pp
     # if there is a lot budget left, you should add the pp. This feat
     # helps reason about this
-    if feats["depg"] == "case":
+    if feats["dep"] == "case":
         lt = len_current_compression(current_compression, sentence)
         len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
         feats["remaining_case_discon"] = (lt + len_tok)/sentence["r"]
         grandparent_dep = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == governor]
         if len(grandparent_dep) > 0:
-            feats["case_enhanced_deps"] = feats["dependentGlossg"] + ":" + grandparent_dep[0]
+            feats["case_enhanced_deps"] = feats["dependentGloss"] + ":" + grandparent_dep[0]
 
         if vertex - 1 in current_compression:
             feats["prev_pos_case"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == vertex - 1][0]
@@ -241,7 +259,7 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
             feats["only_verb"] = True
         else:
             feats["only_verb"] = False
-        feats["verby_dep"] = feats["depg"]
+        feats["verby_dep"] = feats["dep"]
         if governor != 0:
             gov = get_token_from_sentence(sentence=sentence, vertex=governor)
             feats["gov_discon"] = gov["word"]
@@ -343,43 +361,19 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
     governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
 
-    governor["depth"] = depths[governor["governor"]]
-    try:
-        governor_token = get_token_from_sentence(sentence=sentence, vertex=governor["governor"])
-        governor["ner"] = governor_token["ner"]
-        governor["pos"] = governor_token["pos"]
-    except IndexError: # root
-        governor["ner"] = "O"
-        governor["pos"] = "O"
-
-    # 0 means governor is root, usually if of the governing verb. Note flip of gov/dep in numerator
-    if governor["governor"] == 0:
-        governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
-    else:
-        governor["position"] = float(governor["governor"]/len(sentence["tokens"]))
-
     # same interaction feats on gov side
     dependent_token = get_token_from_sentence(sentence=sentence, vertex=governor["dependent"])
 
-    governor["type"] = "GOVERNOR"
-    governor["last2"] = governor["dependentGloss"][-2:]
-    governor["last2_gov"] = governor["governorGloss"][-2:]
-    governor["pos_dep"] = dependent_token["pos"]
-    governor["comes_first"] = governor["governor"] < governor["dependent"]
-    governor["is_punct"] = governor["governorGloss"] in PUNCT
-    governor["parent_label"] = governor["governorGloss"]
-    governor["child_label"] = governor["dependentGloss"]
-    governor["childrenCount"] = count_children(sentence, governor["governor"])
+    out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
-    features = ["last2", "last2_gov", "pos_dep", "childrenCount", "type", "position",
-                "depth", "ner", "pos", "comes_first", "is_punct", "parent_label",
-                "child_label"]
+    out["type"] = "GOVERNOR"
+
+    features = list(out.keys())
 
     for feat in features:
-        governor[feat + governor["dep"]] = governor[feat]
+        out[feat + governor["dep"]] = out[feat]
 
-    governor = {k + "g":v for k, v in governor.items() if k not in ["dependent", "governor"]}
-    return governor
+    return {k + "g":v for k,v in out.items()}
 
 
 def in_compression(vertex, current_compression):
@@ -416,8 +410,8 @@ def get_global_feats(sentence, feats, vertex, current_compression):
     depf = "dep"
     if "depg" in feats:
         depf = "depg"
-    elif "depgd" in feats:
-        depf = "depgd"
+    elif "depd" in feats:
+        depf = "depd"
     else:
         depf = "dep"
 
