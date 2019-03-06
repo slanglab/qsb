@@ -18,11 +18,11 @@ def len_current_compression(current_compression, sentence):
 
 def pick_l2r_connected(frontier, current_compression, sentence):
     connected = get_connected(sentence, frontier, current_compression)
-    unconnected = [o for o in frontier if o not in connected]
 
     if len(connected) > 0:
         options = list(connected)
     else:
+        unconnected = [o for o in frontier if o not in connected]
         options = list(unconnected)
 
     options.sort()
