@@ -16,7 +16,7 @@
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage{booktabs}
-
+\usepackage[ruled,vlined]{algorithm2e}
 \usepackage{latexsym}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -98,7 +98,7 @@ Sequence to sequence taggers \cite{filippova2015sentence}   & linear            
 \textbf{Transition-based insertion (this work)}  & \textbf{linear}     &      \textbf{yes}   \\
 ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & yes      \\
 \end{tabular}
-\caption{Three algorithms for sentence compression. \ahcomment{Add results here too?} Integer linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-hard problem (\S\ref{s:ilps}), with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints in quadratic time.} 
+\caption{Three algorithms for sentence compression. \ahcomment{Add results here too?} Integer linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-hard problem (\S\ref{s:ilps}), with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints in linear time.} 
 \label{t:algos}
 \end{table*}
 
@@ -122,26 +122,40 @@ This integer linear programming approach also easily accommodates constrained co
 We contrast transition-based compression and integer programming approaches with sequence to sequence methods for the compression task \cite{filippova2015sentence}. These techniques achieve high automatic evaluation scores by labeling input tokens with a 1 or a 0, indicating if the word should be included in a shortening. Such methods are also linear in the token length of the input sequence, where ILPs incur exponential cost. However, at this time, sequence to sequence taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
 
 
-\begin{table*}[]
-\centering
-\begin{tabular}{llp{70mm}}
-\textbf{Operation} &             \textbf{Definition}                                                    &      \textbf{Description}    \\ \hline
-\ahcomment{TODO}   & TODO & TODO \\ \hline                                           
-\end{tabular}
-\caption{A transition-based sentence compression system with a \textsc{Prune} and \textsc{Insert} operation. The state of the compression system is a tuple $(V, B)$, where $V$ is a subset of vertexes from the original sentence $s$, $B$ is an ordered buffer of tokens and $[v|B]$ indicates that $v \in V$ is at the head of the buffer. \ahcomment{TODO}. These operations can fully reconstruct all shortenings in a standard compression corpus \cite{filippova2013overcoming}.}
-\label{t:ops}
-\end{table*}
+\begin{algorithm}[]
+\SetKwInOut{Input}{input}
+\SetAlgoLined
+\Input{Query tokens $Q$, $b \in \mathbb{R^+}$, sentence $S$}
+ $ C \gets Q;  F \gets S \setminus Q$; \\
+ \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
+  $v_i \gets \pi(F)$; \\
+  \If{$p(v_i | C) > .5$}{
+   $C \gets C \cup \{v_i\}$\;
+   }
+  $F \gets F \setminus  \{v_i\}$ 
+ }
+\KwRet{$\ell(C)$}
+ \caption{Bottom-up compression}
+\end{algorithm}
+
 
 \subsection{Transition-based compression}
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints. 
-Our stateful approach recalls early solutions to the sentence compression problem \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}, which also shortened sentences by executing grammatically-motivated operations on syntax trees. We present the formal details in Section \ref{s:system}. 
 
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. At a high-level, such methods need to add subtrees which contain query terms and remove subtrees which do not contain query terms, until identifying a compression which satisfies the length constraint. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+We present the formal details in Section \ref{s:system}. 
+
+Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
 \section{Transition-based sentence compression}\label{s:system}
 
-In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. Our compression system maintains a state representing the current compression, which is repeatedly modified by a small set of operations. We formally describe the system (\S\ref{s:formal}), present a method for generating oracle paths to gold standard shortenings (\S\ref{s:oracle}), and detail a computational model of oracle compression (\S\ref{s:modeling}). We then demonstrate and evaluate a method which uses this model for constrained compression (\S\ref{s:transition}), and analyze its computational costs (\S\ref{s:costs}).
+In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. Our compression system maintains a state representing the current compression, which is repeatedly modified by a small set of operations. 
+
+
+\ahcomment{need a diagram}
+
+
+%We formally describe the system (\S\ref{s:formal}), present a method for generating oracle paths to gold standard shortenings (\S\ref{s:oracle}), and detail a computational model of oracle compression (\S\ref{s:modeling}). We then demonstrate and evaluate a method which uses this model for constrained compression (\S\ref{s:transition}), and analyze its computational costs (\S\ref{s:costs}).
 
 \subsection{Formal description}\label{s:formal}
 
@@ -149,32 +163,18 @@ Our transition-based sentence compression system shortens a sentence $s$ by exec
 
 \ahcomment{This needs to be redone}
 
-%We define four principal operations, which reference the vertex $v$ at the head of the buffer, $[v|B]$. The operation \textbf{\textsc{Prune}} removes all vertexes in $T(v)$ from $V$. The operation \textbf{\textsc{Insert}} adds $T(v)$ into $V$. Executing a \textsc{Prune} or \textsc{Insert} also pops the token $v$ from the head of the buffer. The compression system can also execute the operations \textbf{\textsc{NoPrune}} and \textbf{\textsc{NoInsert}}, which pop $v$ from the buffer without inserting or pruning $T(v)$.\footnote{These two operations have different preconditions (Table \ref{t:ops}). The distinction between each operation is important for modeling (\S\ref{s:modeling}).}
-
-%To generate a compression, we first execute the $\textbf{\textsc{Start}}$ operation which sets $V=\emptyset$ and defines $B=[v_1, v_2 ... v_{|s|}]$, where $v_1, v_2 ... v_{|s|}$ are the tokens in $s$, arranged breadth-first from the root of the sentence, and $|s|$ is the token length of the original sentence. After the buffer is empty, we execute a $\textbf{\textsc{Stop}}$ operation and all tokens in $V$ are linearized in their original order to return a shortened sentence. Table \ref{t:ops} formally defines all operations. The appendix also includes a complete, worked example. 
-
-%\begin{figure*}[htb!]
-%\centering
-%\includegraphics[width=.85\textwidth]{example.pdf}
-%\caption{Our model learns to perform binary classification based on the markup $\bm{x}_j=m(V_j,v_j,o_j,s)$ (\S\ref{s:modeling}). The model uses two separate sequences of fully-connected layers: one is responsible for binary \textsc{Prune} decisions, the other for binary \textsc{Insert} decisions. The appropriate task for the LSTM (i.e. prune decision vs. insert decision) is always clear from context (\S\ref{s:oracle}). The markup ``shows'' the LSTM what a proposed change to the state of the compression system would ``look'' like if the operation proposal $o_j$ were to be carried out. At each timestep, LSTM must decide if the stateful compression system should accept the operation proposal, $o_j \in \{\textsc{Prune}, \textsc{Insert}\}$. In this case, $s$ is ``She said that the protocol limits fire risk'' and $V_j$ is ``the protocol limits fire risk''.  The LSTM must decide if the compression system should execute $o_j$= \textsc{Prune} on the subtree headed at $v_j$ = \textit{risk}, governed by a $\texttt{dobj}$ edge in the parse of $s$. }
-%\label{f:example}
-%\end{figure*}
-
-In our transition-based compressor, only some operations are valid for some configurations of the state. If $v \notin V$, then $\textsc{Prune}$ is not valid as $T(v)$ cannot be removed from $V$. Similarly, if $v \in V$, then $\textsc{Insert}$ is not valid as $T(v)$ cannot be added to $V$. Table \ref{t:ops} includes these preconditions in the definition of each operation.
-
 \subsection{Oracle paths}\label{s:oracle}
 
 We identified the operations in our compression system empirically: we found that for all compressions in a large, standard corpus \cite{filippova2013overcoming} there exists an oracle path of at most $|s|$ operations which can fully reconstruct the shortened sentence, where $|s|$ denotes the token length of the original sentence.
 
-We identify the oracle path by executing  a sequence of operations. Let $(V_j, v_j | B)$ denote the state at timestep $j$. The oracle operation at step $j$ is unambiguously determined by $c_g$, the vertexes in the gold compression. For instance, if $v_j \in V_j$ but $v_j \notin c_g$, then the oracle must execute \textsc{Prune}. This is because $B$ is arranged breadth-first, so our system can only remove $v_j$ at timesteps $j^{\prime} \leq j$. If the vertex is not pruned at timestep $j$, the system will never have an opportunity to remove it and will never recover $c_g$. Similarly, if $v_j \in c_g \cap V$ then the oracle operation at timestep $j$ must be $\textsc{NoPrune}$. This is because if the system were to prune $v_j$ at timestep $j$, it will not have the opportunity to reinsert the vertex again at a later timestep. We use analogous reasoning to identify oracle $\textsc{Insert}$ and $\textsc{NoInsert}$ operations. By executing each oracle operation in sequence, we compress $s$ to $c_g$ and identify the oracle path.
-
-Because it is only possible to prune $v_j$ if $v_j \in V$, and only possible to insert $v_j$ if $v_j \notin V$ (\S\ref{s:formal}), we interpret the oracle path as a sequence of binary decisions. If $v_j \in V_j$, the compression system must decide to execute $\textsc{Prune}$ or $\textsc{NoPrune}$. If $v_j \notin V_j$, it must decide to execute $\textsc{Insert}$ or $\textsc{NoInsert}$. We use this interpretation of the oracle path during modeling.
+We identify the oracle path by executing a sequence of operations. \ahcomment{This can be redone/simplified}
 
 \subsection{Modeling}\label{s:modeling}
 
-In our framework (\S\ref{s:oracle}), the oracle compression process is a series of binary decisions. At each step $j$ the oracle must decide to execute (or not execute) some operation proposal, $o_j \in \{\textsc{Prune}, \textsc{Insert}\}$. We train an LSTM \cite{Hochreiter1997LongSM} to predict the binary oracle decision $y_j \in \{0,1\}$ where $y_j=1$ indicates that the compression system accepts the proposal at timestep $j$ (e.g. executes $\textsc{Prune}$) and $y_j=0$ indicates that the compression system does not accept the proposal (e.g. executes $\textsc{NoPrune}$).
+In our framework (\S\ref{s:oracle}), the oracle compression process is a series of binary decisions. At each step $j$ the oracle must decide to execute (or not add) some proposed vertex $o_j$.
 
-\ahcomment{All this LSTM crapola can go. Add some discussion of features}
+\ahcomment{Add some discussion of features}
+
 
 %To train the LSTM, we encode both the state of the compression system and the operation proposal into a sequence of input symbols $\bm{x}_j$, called the markup. The LSTM predicts $p(y_j=1 | \bm{x}_j)$, the probability of a binary oracle decision, given the markup. 
 
@@ -297,9 +297,7 @@ Finally, \citet{Li2013DocumentSV} solicit annotations for ``guided'' compression
 
 \section{Conclusion and future work}
 
-This work introduces a new, neural, transition-based method for extractive sentence compression, in the spirit of early syntactic approaches to the compression task \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}. We show that this top-down approach is both more computationally efficient than ILP-based methods, and better reconstructs known-good sentence shortenings.  
-
-In future work, we plan to examine bottom-up compression methods, which start from the leaves of the original sentence and proceed to the root. Such methods might require a smaller number of local decisions about adding (or not adding) vertexes, leading to greater computational efficiency.
+This work introduces a new, neural, transition-based method for extractive sentence compression, in the spirit of early syntactic approaches to the compression task \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS}. We show that this top-down approach is both more computationally efficient than ILP-based methods, and better reconstructs known-good sentence shortenings. 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
