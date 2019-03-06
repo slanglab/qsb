@@ -227,6 +227,15 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
     dep = [de for de in sentence['basicDependencies'] if de["dependent"] == vertex][0]
 
     feats = get_features_of_dep(dep, sentence, depths)
+
+    try:
+        dep = [de for de in sentence['basicDependencies'] if de["governor"] == vertex][0]
+        feats1 = get_features_of_dep(dep, sentence, depths)
+        for f in feats1:
+            feats["dg" + f] = feats1[f]
+    except IndexError:# leaf vx
+        pass
+
     feats["discon_suffix"] = feats["governorGloss"][-2:]
     feats["gov_is_root"] = governor == 0
     verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,
@@ -254,6 +263,7 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
         feats["is_missing"] = 1
     else:
         feats["is_missing"] = 0
+
     if verby:
         if n_verbs_in_s(sentence) == 1:
             feats["only_verb"] = True
@@ -264,6 +274,7 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
             gov = get_token_from_sentence(sentence=sentence, vertex=governor)
             feats["gov_discon"] = gov["word"]
             feats["pos_discon"] = gov["pos"]
+
     feats = {k + "d": v for k, v in feats.items()}
     return feats
 
