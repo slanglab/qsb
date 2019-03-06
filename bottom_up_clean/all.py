@@ -25,20 +25,19 @@ def get_features_of_dep(dep, sentence, depths):
     # similar https://arxiv.org/pdf/1510.08418.pdf
 
     out = defaultdict()
-    out["ner"] = depentent_token["ner"]
-    out["pos"] = depentent_token["pos"]
-    out["depth"] = depths[dep["dependent"]]
-    out["position"] = float(dep["dependent"]/len(sentence["tokens"]))
-    out["is_punct"] = dep["dependentGloss"] in PUNCT
-    out["last2"] = dep["dependentGloss"][-2:]
+    out["ner_dependent"] = depentent_token["ner"]
+    out["pos_dependent"] = depentent_token["pos"]
+    out["depth_dependent"] = depths[dep["dependent"]]
+    out["position_dependent"] = float(dep["dependent"]/len(sentence["tokens"]))
+    out["is_punct_dependent"] = dep["dependentGloss"] in PUNCT
+    out["last2_dependent"] = dep["dependentGloss"][-2:]
     out["last2_gov"] = dep["governorGloss"][-2:]
     out["comes_first"] = dep["governor"] < dep["dependent"]
     out["governorGloss"] = dep["governorGloss"]
     out["dependentGloss"] = dep["dependentGloss"]
     out["pos_gov"] = governor_token["pos"]
-    out["type"] = "CHILD"
     out["dep"] = dep["dep"]
-    out["compound_off_q"] = dep["governor"] in sentence["q"]
+    out["governor_in_q"] = dep["governor"] in sentence["q"]
 
     return dict(out)
 
@@ -323,10 +322,11 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
-    features = ["is_punct", "last2", "last2_gov", "pos_gov", "comes_first", "depth", "compound_off_q",
-                "position", "governorGloss", "dependentGloss", "ner", "pos", "type"]
+    out["type"] = "CHILD"
 
-    for feat in features:
+    kys = list(out.keys())
+
+    for feat in kys:
         out[feat + child["dep"]] = out[feat]
 
     # exclude the literal dependent and governor from the output
