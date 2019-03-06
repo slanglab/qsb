@@ -4,12 +4,44 @@ from code.treeops import bfs
 import numpy as np
 import copy
 
+from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction import FeatureHasher
 
 PUNCT = [_ for _ in string.punctuation]
+
+
+def get_features_of_dep(dep, sentence, depths):
+    '''
+    Dep is some dependent in basicDependencies
+    '''
+    governor_token = get_token_from_sentence(sentence=sentence,
+                                             vertex=dep["governor"])
+
+    depentent_token = get_token_from_sentence(sentence=sentence, vertex=dep["dependent"])
+
+    # similar https://arxiv.org/pdf/1510.08418.pdf
+
+    out = defaultdict()
+    out["ner"] = depentent_token["ner"]
+    out["pos"] = depentent_token["pos"]
+    out["depth"] = depths[dep["dependent"]]
+    out["position"] = float(dep["dependent"]/len(sentence["tokens"]))
+    out["is_punct"] = dep["dependentGloss"] in PUNCT
+    out["last2"] = dep["dependentGloss"][-2:]
+    out["last2_gov"] = dep["governorGloss"][-2:]
+    out["comes_first"] = dep["governor"] < dep["dependent"]
+    out["governorGloss"] = dep["governorGloss"]
+    out["dependentGloss"] = dep["dependentGloss"]
+    out["pos_gov"] = governor_token["pos"]
+    out["type"] = "CHILD"
+    out["dep"] = dep["dep"]
+    out["compound_off_q"] = dep["governor"] in sentence["q"]
+
+    return dict(out)
+
 
 def len_current_compression(current_compression, sentence):
     '''get the character length of the current compression'''
@@ -33,7 +65,7 @@ def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
     T = {i for i in sentence["q"]}
     F = set()
     d, pi_bfs, c = bfs(g=sentence, hop_s=0)
-    
+
     # init frontier
     for i in sentence["tokens"]:
         if i["index"] not in T:
@@ -51,12 +83,10 @@ def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
         else:
             path.append((copy.deepcopy(T), v, 0))
         F.remove(v)
-    
+
     assert T == set(sentence["compression_indexes"])
-        
+
     return path
-
-
 
 def train_clf(training_paths="training.paths", validation_paths="validation.paths", vectorizer=DictVectorizer(sparse=True)):
     '''Train a classifier on the oracle path, and check on validation paths'''
@@ -101,7 +131,10 @@ def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
 
     depths = get_depths(sentence)
 
-    while len(frontier) > 0:
+    lt = len_current_compression(current_compression, sentence)
+
+    while len(frontier) > 0 and lt < sentence["r"]:
+
         vertex = frontier_selector(frontier=frontier,
                                    current_compression=current_compression,
                                    sentence=sentence)
@@ -132,14 +165,16 @@ def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
                             frontier.add(i)
         frontier.remove(vertex)
 
-    return current_compression
+        lt = len_current_compression(current_compression, sentence)
 
+    return current_compression
 
 
 def current_compression_has_verb(sentence, current_compression):
     '''returns boolean: does the current compression have a verb?'''
     current_pos = {_["pos"][0].lower() for _ in sentence["tokens"] if _["index"] in current_compression}
     return any(i == "v" for i in current_pos)
+
 
 def gov_is_verb(vertex, sentence):
     '''returns boolean: is the governor a verb?'''
@@ -150,12 +185,14 @@ def gov_is_verb(vertex, sentence):
     else:
         return False
 
+
 def get_f1(predicted, jdoc):
     '''get the f1 score for the predicted vertexs vs. the gold'''
     original_ixs = [_["index"] for _ in jdoc["tokens"]]
     y_true = [_ in jdoc['compression_indexes'] for _ in original_ixs]
     y_pred = [_ in predicted for _ in original_ixs]
     return f1_score(y_true=y_true, y_pred=y_pred)
+
 
 def gov_of_proposed_is_verb_and_current_compression_no_verb(sentence, vertex, current_compression):
     if gov_is_verb(vertex, sentence):
@@ -232,8 +269,8 @@ def get_local_feats(vertex, sentence, depths, current_compression):
                                          depths=depths)
     elif proposed_child(current_compression, sentence, vertex):
         feats = featurize_governor_proposal(sentence=sentence,
-                                          dependent_vertex=vertex,
-                                          depths=depths)
+                                            dependent_vertex=vertex,
+                                            depths=depths)
 
     else:
         feats = featurize_disconnected_proposal(sentence=sentence,
@@ -278,40 +315,24 @@ def get_token_from_sentence(sentence, vertex):
     '''Get token from a sentence. Assume token is in the sentence'''
     return [_ for _ in sentence["tokens"] if _["index"] == vertex][0]
 
+
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex
              and _["dependent"] == dependent_vertex][0]
 
-    governor_token = get_token_from_sentence(sentence=sentence,
-                                             vertex=child["governor"])
-
-    depentent_token = get_token_from_sentence(sentence=sentence, vertex=child["dependent"])
-
-    # similar https://arxiv.org/pdf/1510.08418.pdf
-
-    child["ner"] = depentent_token["ner"]
-    child["pos"] = depentent_token["pos"]
-    child["depth"] = depths[child["dependent"]]
-    child["position"] = float(child["dependent"]/len(sentence["tokens"]))
-    child["is_punct"] = child["dependentGloss"] in PUNCT
-    child["last2"] = child["dependentGloss"][-2:]
-    child["last2_gov"] = child["governorGloss"][-2:]
-    child["pos_gov"] = governor_token["pos"]
-    child["comes_first"] = child["governor"] < child["dependent"]
-    child["type"] = "CHILD"
-    child["compound_off_q"] = child["governor"] in sentence["q"]
+    out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
     features = ["is_punct", "last2", "last2_gov", "pos_gov", "comes_first", "depth", "compound_off_q",
                 "position", "governorGloss", "dependentGloss", "ner", "pos", "type"]
 
     for feat in features:
-        child[feat + child["dep"]] = child[feat]
+        out[feat + child["dep"]] = out[feat]
 
     # exclude the literal dependent and governor from the output
-    child = {k:v for k, v in child.items() if k not in ["dependent", "governor"]}
-    feats = child
-    return feats
+    assert "dependent" not in out
+    assert "governor" not in out
+    return out
 
 def count_children(sentence, vertex):
     '''returns: count of children of vertex in the parse'''
@@ -331,7 +352,7 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
         governor["ner"] = "O"
         governor["pos"] = "O"
 
-     # 0 means governor is root, usually if of the governing verb. Note flip of gov/dep in numerator
+    # 0 means governor is root, usually if of the governing verb. Note flip of gov/dep in numerator
     if governor["governor"] == 0:
         governor["position"] = float(governor["dependent"]/len(sentence["tokens"]))
     else:
@@ -392,7 +413,7 @@ def get_global_feats(sentence, feats, vertex, current_compression):
 
     feats["left_add"] = vertex < min(current_compression)
 
-    depf = "dep" 
+    depf = "dep"
     if "depg" in feats:
         depf = "depg"
     elif "depgd" in feats:
@@ -405,6 +426,15 @@ def get_global_feats(sentence, feats, vertex, current_compression):
     feats["left_add_dep"] = str(feats['left_add']) + feats[depf]
 
     governor = get_governor(vertex, sentence)
+    children = get_children(sentence, vertex)
+
+    governor_dep = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor][0]
+
+    feats["global_gov_depGloss"] = governor_dep["dependentGloss"]
+    feats["global_gov_govGloss"] = governor_dep["governorGloss"]
+    feats["global_gov_govDep"] = governor_dep["dep"]
+    feats["global_children_count"] = count_children(sentence, governor)
+
     assert type(governor) == int
     if proposed_child(current_compression, sentence, vertex) or proposed_parent(governor=governor, current_compression=current_compression):
         feats["disconnected"] = 0
