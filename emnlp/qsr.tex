@@ -95,7 +95,7 @@ While older compression methods based on integer linear programming could trivia
 \begin{tabular}{lccc}
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained}  \\ \hline
 Sequence to sequence taggers \cite{filippova2015sentence}   & linear              & no         \\   
-\textbf{Transition-based insertion (this work)}  & \textbf{linear}     &      \textbf{yes}   \\
+\textbf{Bottom-up compression (this work)}  & \textbf{linear}     &      \textbf{yes}   \\
 ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & yes      \\
 \end{tabular}
 \caption{Three algorithms for sentence compression. \ahcomment{Add results here too?} Integer linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-hard problem (\S\ref{s:ilps}), with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints in linear time.} 
@@ -125,14 +125,12 @@ We contrast transition-based compression and integer programming approaches with
 \begin{algorithm}[]
 \SetKwInOut{Input}{input}
 \SetAlgoLined
-\Input{Query tokens $Q$, $b \in \mathbb{R^+}$, sentence $S$}
+\Input{Query tokens $Q$, $b \in \mathbb{R^+}$, a sentence $S$}
  $ C \gets Q;  F \gets S \setminus Q$; \\
  \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
   $v_i \gets \pi(F)$; \\
-  \If{$p(v_i | C) > .5$}{
-   $C \gets C \cup \{v_i\}$\;
-   }
-  $F \gets F \setminus  \{v_i\}$ 
+  $F \gets F \setminus  \{v_i\}$ \\
+  \lIf{$p(v_i | C) > .5$}{$C \gets C \cup \{v_i\}$}
  }
 \KwRet{$\ell(C)$}
  \caption{Bottom-up compression}
@@ -141,11 +139,7 @@ We contrast transition-based compression and integer programming approaches with
 
 \subsection{Transition-based compression}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints. 
-
-We present the formal details in Section \ref{s:system}. 
-
-Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}). Like ILP-based methods, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
 \section{Transition-based sentence compression}\label{s:system}
 
@@ -284,16 +278,11 @@ We define one unit of computational cost to be the computation required to evalu
 
 \subsection{Applications}
 
-Traditional study of sentence compression is motivated by text summarization techniques, which create synopses by selecting and (sometimes) shortening sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,martins2009summarization}. 
-In these settings, it is important for compressions to retain ``important'' information from sources because they must stand-in for longer sentences within summaries.
-
-Our concern with constrained compression is better suited to search applications, in which user input defines important information in source documents. For instance, constrained compression could be used to generate query-biased snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS,kanungo2009predicting}.\footnote{We note that version 7.5 of Apache Lucene, the leading open source search engine, does not perform sentence compression in generating snippets. \url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} Constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Particular forms of query-focused summarization, like summarizing people \cite{w04} or companies \cite{filippova2009company}, also require compressions with hard lexical constraints. 
+Traditional study of sentence compression is motivated by text summarization techniques, which create synopses by selecting and (sometimes) shortening sentences \cite{Knight2000StatisticsBasedS,vanderwende2007beyond,martins2009summarization}.  Our concern with constrained compression is better suited to search applications, in which user input defines important information in source documents. For instance, constrained compression could be used to generate query-biased snippets on a search engine results page \cite{tombros1998advantages,Metzler2008MachineLS,kanungo2009predicting}.\footnote{We note that version 7.5 of Apache Lucene, the leading open source search engine, does not perform sentence compression in generating snippets. \url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} Constrained compressions could also be used as part of new forms of search user interfaces \cite{hearst2009search}, such as concept map browsers \cite{falke2017graphdocexplore}. Particular forms of query-focused summarization, like summarizing people \cite{w04} or companies \cite{filippova2009company}, also require compressions with hard lexical constraints. 
 
 \subsection{Related work}
 
-To our knowledge, this work is the first study of length and lexically constrained compression. We formalize the problem as a strictly extractive task, following a line of research in which compressions are formed by deleting tokens from an original sentence \cite{clarke2008global,filippova2008dependency,filippova2015sentence}. However, our transition-based framework might be extended with abstractive operations in future work, following recent interest in blending summarization techniques \cite{P17-1099}. Other approaches compress sentences by generating instead of deleting words \cite{rush2015neural,mallinson18}. \ahcomment{not ready for users. cite zhang}
-
-Finally, \citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, in which humans are directed to include particular words in manually shortening sentences. The authors hypothesize that this form of supervision can improve downstream summarization tasks, but do not examine the compression problem under lexical constraints.
+To our knowledge, this work is the first study of length and lexically constrained compression.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, in which humans are directed to include particular words in manually shortening sentences, but do not examine the compression problem under lexical constraints.} We formalize the problem as a strictly extractive task, following a line of research in which compressions are formed by deleting tokens from an original sentence \cite{clarke2008global,filippova2008dependency,filippova2015sentence}. Other approaches compress sentences by generating instead of deleting words \cite{rush2015neural,mallinson18}. \ahcomment{not ready for users. cite zhang} Our transition-based framework might be extended with abstractive operations in future work, following recent interest in blending summarization techniques \cite{P17-1099}.
 
 \section{Conclusion and future work}
 
