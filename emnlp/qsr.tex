@@ -69,7 +69,7 @@
 
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical, length and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings, which constructs constrained compressions in linear time. We show that this approach is much faster than ILP-based methods, and achieves superior performance in reconstructing known-good shortenings.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical, length and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings, which constructs constrained compressions in linear time. This approach is much faster than ILP-based methods, and achieves superior performance in reconstructing known-good constrained shortenings.
 \end{abstract}
 
 \section{Introduction}
@@ -103,7 +103,7 @@ ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & y
 \end{table*}
 
 
-Therefore, in this work, we present a new method for compressing sentences, which efficiently accommodates lexical and length constraints. Our transition-based, stateful compression method is inspired by similar approaches to transition-based dependency parsing \cite{nivre2003,D14-1082}. We compare this technique to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. We show that our method has lower theoretical and empirical computational costs while better reconstructing known-good, constrained shortenings. 
+Therefore, in this work, we present a new method for compressing sentences, which efficiently accommodates lexical and length constraints. Our transition-based, stateful compression method is inspired by similar approaches to transition-based dependency parsing \cite{nivre2003,D14-1082}. We compare this technique to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. We show that our method has lower theoretical and empirical computational costs, while better reconstructing known-good, constrained shortenings. 
 
 \section{Methods for sentence compression}
 
@@ -111,11 +111,11 @@ This work contrasts traditional ILP-based compression with our novel transition-
 
 \subsection{ILP-based compression}\label{s:ilps}
 
-One common approach for shortening sentences formulates compression as an ILP task. ILP-based methods assign binary variables to each token in a sentence \cite{clarke2008global} or subtree in a dependency parse \cite{filippova2008dependency}. These variables indicate if the corresponding sentence component is included in a compression. Each such component is also assigned a local weight, indicating its worthiness for inclusion in a shortened sentence. Local weights are either learned from direct supervision \cite{filippova2013overcoming,Wang2017CanSH}, or inferred from sources like corpus statistics, importance score metrics and n-gram language models \cite{clarke2008global,filippova2008dependency}.
+One common approach for shortening sentences formulates compression as an ILP task. ILP-based methods assign binary variables to each token in a sentence \cite{clarke2008global} or subtree in a dependency parse \cite{filippova2008dependency}, indicating if the corresponding sentence component is included in a compression. Such methods then represent the global quality of a compression the sum of local component weights, which are inferred from corpus statistics \cite{clarke2008global,filippova2008dependency} or learned from direct supervision \cite{filippova2013overcoming,Wang2017CanSH}.
 
-Such ILP methods represent the overall quality of a compression by summing the local weights of sentence components to compute a global objective score.  The task of identifying the best possible solution to an integer programming objective is a well-known, NP-hard problem \cite{clarke2008global}. In the worst case, such problems require exponential computation in the length of the input sequence. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among all possible configurations of binary variables (each may be set to 0 or 1). 
+The task of identifying the global optimum of such an integer programming objective is a well-known, NP-hard problem \cite{clarke2008global}, requiring worst-case exponential computation in the length of the input sequence. Researchers use off-the-shelf ILP solvers to identify the highest-scoring compression, from among all possible configurations of binary variables. 
 
-This integer linear programming approach also easily accommodates constrained compression. Researchers will customarily add constraint terms to the ILP objective to enforce hand-build semantic restrictions \cite{clarke2008global} or syntactic requirements \cite{filippova2008dependency}. Adding additional length or lexical requirements to ILPs is straightforward: practitioners must specify that optimal solutions must be shorter than some character budget, and must specify that binary variables marking inclusion of particular words must be set to 1. In practice, we have found that translating a sentence compression objective into an integer linear program can be a challenging and error-prone programming task. These engineering difficulties are a disadvantage of ILPs.
+This integer linear programming approach easily accommodates constrained compression. Researchers often add constraint terms to the ILP objective to enforce hand-build semantic restrictions \cite{clarke2008global} or syntactic requirements \cite{filippova2008dependency}. Adding additional length or lexical requirements to ILPs is straightforward: practitioners must specify that optimal solutions must be shorter than some character budget, and must specify that binary variables marking inclusion of particular words must be set to 1.\footnote{In practice, we have found that translating a sentence compression objective into an integer linear program can be a challenging and error-prone programming task. These engineering difficulties are a disadvantage of ILPs.}
 
 \subsection{Sequence to sequence compression}
 
@@ -141,8 +141,6 @@ We contrast transition-based compression and integer programming approaches with
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}). Like ILP-based techniques, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
-\ahcomment{bottom up presumes query is at leaves. say additive}
-
 \section{Additive compression}\label{s:system}
 
 In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. 
@@ -157,11 +155,11 @@ The chief advantage of this method is that can construct constrained compression
 Our method builds a compression by maintaining a state
 $(C,F)$ over at most $|V|$ timesteps. $C$ is a set of tokens which will be included in the final compression. $F$ is a set of frontier tokens.
 
-We initialize $C$ with $Q$ and initialize $F$ with $V \setminus Q$. Then, at each timestep, we decide to either add or  not add some vertex $v_i \in F_i$ to $C_i$. After the decision, we remove $v_i$ from $F_i$. 
+During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ in the frontier to $C$, the current compression. We then remove $v$ from $F$. 
 
 We continue adding vertexes until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
 
-We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$. In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
+We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$, we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
 At training time, we use an oracle to decide if $v_i$ should be added to $C_i$. If $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
