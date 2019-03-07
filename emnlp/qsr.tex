@@ -141,26 +141,47 @@ We contrast transition-based compression and integer programming approaches with
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}). Like ILP-based techniques, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
-\section{Transition-based sentence compression}\label{s:system}
+\ahcomment{bottom up presumes query is at leaves. say additive}
 
-In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. Where some previous approaches shorten sentences by removing components from a well-formed tree from the \textit{top down} \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,Filippova2015FastKS}, our method constructs a compression of a sentence from the \textit{bottom up} by adding vertexes to a set of query nodes $Q$ until exhausting a character-based length budget $r \in \mathbb{R}^{+}$. (Query vertexes are leaves at the bottom of dependency parse.)
+\section{Additive compression}\label{s:system}
 
-\subsection{Formal Description}
+In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. 
 
-Our method builds a compression $C$ over at most $|V|$ timesteps by maintaining a state
+Where much prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}
+shortens a sentence by \textit{removing} subtrees from a grammatical parse, our method offers the new idea of constructing a shortening by iteratively \textit{adding} vertexes to a compression. 
+
+We show that this additive approach can construct constrained compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (Figure \ref{f:qf}) which must provide rapid feedback during browsing.
+
+\subsection{Formal Description}\label{s:formal}
+
+Our additive approach builds a compression $C$ over at most $|V|$ timesteps by maintaining a state
 $(C_i,F_i)$. $C_i$ is the set of tokens in the current compression and $F_i$ is a set of frontier tokens, considered for possible inclusion in the compression at timestep $i$.
 
-We initialize $C_0=Q$ and $F_0 = V \setminus Q$. Then, at each timestep, we decide if some vertex $v_i \in F_i$ should be added to $C_i$. We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$.  We continue adding vertexes until either the frontier is empty or $\ell(C)$ is longer than the length constraint. 
+We initialize $C$ with $Q$ and initialize $F = V \setminus Q$. Then, at each timestep, we decide if some vertex $v_i \in F_i$ should be added to $C_i$. We continue adding vertexes until either the frontier is empty or $\ell(C)$ is longer than the length constraint. 
+
+We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$. In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
 At training time, we use an oracle to decide if $v_i$ should be added to $C_i$: if $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
-In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
 \ahcomment{need a diagram}
 
 \subsection{Modeling}\label{s:modeling}
 
-We use a model of oracle decisions to decide if $v_i$ should be added to $C_i$ at test time.  We model each oracle decision $y_i \in \{0,1\}$ with binary logistic regression, using features which are similar to prior approaches to supervised compression \cite{filippova2013overcoming,Filippova2015FastKS}.  
+\ahcomment{In describing this, the key point is that there is info about the edges you can use.}
+
+\ahcomment{there is also global info you can use}
+
+At test time, we use a model of oracle decisions to decide if $v_i$ should be added to $C_i$.  We model each oracle decision $y_i \in \{0,1\}$ with binary logistic regression.
+
+Prior approaches to supervised, dependency-based sentence compression 
+
+using features which are similar to prior approaches to supervised compression \cite{filippova2013overcoming,Filippova2015FastKS}.  
+
+
+\ahcomment{Describe oracle paths}
+
+
 
 \ahcomment{Add some discussion of features}
 
@@ -272,6 +293,8 @@ Traditional study of sentence compression is motivated by text summarization tec
 \subsection{Related work}
 
 To our knowledge, this work is the first study of length and lexically constrained compression.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, in which humans are directed to include particular words in manually shortening sentences, but do not examine the compression problem under lexical constraints.} We formalize the problem as a strictly extractive task, following a line of research in which compressions are formed by deleting tokens from an original sentence \cite{clarke2008global,filippova2008dependency,filippova2015sentence}. Other approaches compress sentences by generating instead of deleting words \cite{rush2015neural,mallinson18}. \ahcomment{not ready for users. cite zhang} Our transition-based framework might be extended with abstractive operations in future work, following recent interest in blending summarization techniques \cite{P17-1099}.
+
+Where much prior work shortens sentences by removing subtrees from the \textit{top down} \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,almeida2013fast,Filippova2015FastKS} \ahcomment{the have no query + length constraint, we have linear time. we share transition based, although they not described in those terms}
 
 \section{Conclusion and future work}
 
