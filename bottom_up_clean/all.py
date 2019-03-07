@@ -12,7 +12,6 @@ from sklearn.feature_extraction import FeatureHasher
 
 PUNCT = [_ for _ in string.punctuation]
 
-
 def get_features_of_dep(dep, sentence, depths):
     '''
     Dep is some dependent in basicDependencies
@@ -232,13 +231,10 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
 
     feats = {}
 
-    ## see deadcode/improves_discon_perf.py
+    ## Note: see deadcode/improves_discon_perf.py  Cut some feats that increase F1 a bit b/c hard to justify
 
     feats["gov_is_root"] = governor == 0
-    verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,
-                                                                    vertex,
-                                                                    current_compression)
-    feats["proposed_governed_by_verb"] = verby
+
     feats["is_next_tok"] = vertex == max(current_compression) + 1
 
     if (vertex + 1 in current_compression and vertex - 1 in current_compression):
@@ -246,15 +242,10 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
     else:
         feats["is_missing"] = 0
 
-    if verby:
-        if n_verbs_in_s(sentence) == 1:
-            feats["only_verb"] = True
-        else:
-            feats["only_verb"] = False
-        if governor != 0:
-            gov = get_token_from_sentence(sentence=sentence, vertex=governor)
-            feats["gov_discon"] = gov["word"]
-            feats["pos_discon"] = gov["pos"]
+    verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,
+                                                                    vertex,
+                                                                    current_compression)
+    feats["proposed_governed_by_verb"] = verby
 
     return feats
 
@@ -267,7 +258,7 @@ def proposed_child(current_compression, sentence, vertex):
     return any(d["dependent"] in current_compression for d in dependents)
 
 def get_local_feats(vertex, sentence, depths, current_compression):
-    '''get the features that are local to the vertex to be added, and its relationship to the tree #TODO'''
+    '''get the features that are local to the vertex to be added'''
     governor = get_governor(vertex, sentence)
     if proposed_parent(governor, current_compression):
         #assert vertex not in current_compression /// this does not apply w/ full frontier
