@@ -38,7 +38,7 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
+%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
@@ -155,13 +155,11 @@ The chief advantage of this method is that can construct constrained compression
 Our method builds a compression by maintaining a state
 $(C,F)$ over at most $|V|$ timesteps. $C$ is a set of tokens which will be included in the final compression. $F$ is a set of frontier tokens.
 
-During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ in the frontier to $C$, the current compression. We then remove $v$ from $F$. 
-
-We continue adding vertexes until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
+During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ in the frontier to $C$, the current compression. We also remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
 
 We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$, we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
-At training time, we use an oracle to decide if $v_i$ should be added to $C_i$. If $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
+At training time, we use an oracle to decide if $v$ should be added to $C$. If $v$ is included in a gold compression, the vertex is added to $C$. At runtime, we use a model of oracle decisions $p(v |C)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
 \ahcomment{need a diagram}
 
