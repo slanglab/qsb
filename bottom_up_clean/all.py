@@ -238,6 +238,9 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
 
     feats = {}
 
+    '''
+    This inclues perf but there is not really a ton of reason to include this. The F and A features are for EDGES but there is no edge here
+
     try:
         dep = [de for de in sentence['basicDependencies'] if de["governor"] == vertex][0]
         feats1 = get_features_of_dep(dep, sentence, depths)
@@ -253,6 +256,7 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
             feats["dgl" + f] = feats1[f]
     except IndexError:# leaf vx
         pass
+    '''
 
     feats["gov_is_root"] = governor == 0
     verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,
