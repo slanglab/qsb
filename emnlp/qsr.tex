@@ -203,14 +203,13 @@ This defines our test set of 6,827 tuples, each of the form $(s,q,b,c)$. Each tu
 known-good compression.
 
 \begin{table}[]
-\begin{tabular}{lrr}
+\begin{tabular}{lrrl}
 \centering
-Approach & F1 & SLOR  \\ \hline
-Query terms only {\small (lower bound)} & 0.381 & -0.088 \\
-Supervised ILP  &  0.854   &  0.776       \\
-\textbf{Additive compression} &  \textbf{0.875}  & \textbf{0.800}   \\
+Approach & F1 & SLOR &  Speed \\ \hline
+Supervised ILP  &  0.854   &  0.776   &  300  ms / $s$  \ahcomment{var} \\
+\textbf{Additive shortening} &  \textbf{0.875}  & \textbf{0.800} & 10 ms / $s$  \\
 \end{tabular}
-\caption{Test F1 scores for two compression methods, for the constrained compression task. \ahcomment{Add Wall Clock + complexity} We also show scores for SLOR, an automated readability metric (\S\ref{s:readabilityinformativeness}). The difference in token-level F1 scores and SLOR scores for each compression method is statistically significant {\small $(p < 10^{-2})$}. Selecting only query terms for a compression achieves an F1 = 0.381, which is the lower bound for this task.}
+\caption{Test F1 scores, SLOR scores and average runtimes for two compression methods, for the constrained compression task. \ahcomment{Add Wall Clock + complexity}. The difference in token-level F1 scores and SLOR scores for each compression method is statistically significant {\small $(p < 10^{-2})$}. Selecting only query terms for a compression achieves an F1 = 0.381, which is the lower bound for this task.}
 \label{t:results}
 \end{table}
 
@@ -246,9 +245,9 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 ILP-based approaches to sentence compression formalize the task as an integer linear programming optimization task, a well-known NP-hard problem with exponential worst-case complexity (\S\ref{s:ilps}).\footnote{The complexity is exponential in $|V|$ if the ILP selects tokens like \citet{clarke2008global}, and exponential in $|E|$ if the ILP selects edges like \citet{filippova2008dependency} or \citet{filippova2013overcoming}.} One advantage of our transition-based framework is that it can perform query-focused, budget-constrained compression that is linear in $|V|$, the token length of $S$. We initialize the frontier $F$ with all $v_i \in V \setminus Q$. We then remove one vertex $v_i$ from $F$ at each timestep. Therefore, our approach must evaluate no more than $|V|$ vertexes to generate a compression. 
 
-\subsection{Empirical costs}\label{s:empiricalcost}
+We test if the theoretical advantage of our system translates to a practical speed up.
 
-Practical ILP systems \ahcomment{some sort of comment on how it works}. However, the theoretical advantage of our system translates to a practical speed.
+\ahcomment{More here}
 
 \section{Applications and related work}
 
