@@ -87,17 +87,10 @@ def pick_l2r_connected(frontier, current_compression, sentence):
     options.sort()
     return options[0]
 
-
 def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
     T = {i for i in sentence["q"]}
-    F = set()
-    d, pi_bfs, c = bfs(g=sentence, hop_s=0)
 
-    # init frontier
-    for i in sentence["tokens"]:
-        if i["index"] not in T:
-            F.add(i["index"])
-    F.add(0)
+    F = init_frontier(sentence, sentence["q"])
 
     path = []
     while len(F) > 0:
@@ -148,13 +141,14 @@ def get_depths(sentence):
     return depths
 
 
+def init_frontier(sentence, Q):
+    F = {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
+    F.add(0)
+    return F
+
 def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
     current_compression = {i for i in sentence["q"]}
-    frontier = set()
-
-    # init frontier
-    for i in sentence["tokens"]:
-        frontier.add(i["index"])
+    frontier = init_frontier(sentence, sentence["q"])
 
     depths = get_depths(sentence)
 
@@ -238,25 +232,7 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
 
     feats = {}
 
-    '''
-    This inclues perf but there is not really a ton of reason to include this. The F and A features are for EDGES but there is no edge here
-
-    try:
-        dep = [de for de in sentence['basicDependencies'] if de["governor"] == vertex][0]
-        feats1 = get_features_of_dep(dep, sentence, depths)
-        for f in feats1:
-            feats["dg" + f] = feats1[f]
-    except IndexError:# root vx
-        pass
-
-    try:
-        dep = [de for de in sentence['basicDependencies'] if de["dependent"] == vertex][0]
-        feats1 = get_features_of_dep(dep, sentence, depths)
-        for f in feats1:
-            feats["dgl" + f] = feats1[f]
-    except IndexError:# leaf vx
-        pass
-    '''
+    ## see deadcode/improves_discon_perf.py
 
     feats["gov_is_root"] = governor == 0
     verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,

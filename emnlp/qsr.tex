@@ -121,7 +121,7 @@ This integer linear programming approach also easily accommodates constrained co
 
 We contrast transition-based compression and integer programming approaches with sequence to sequence methods for the compression task \cite{filippova2015sentence}. These techniques achieve high automatic evaluation scores by labeling input tokens with a 1 or a 0, indicating if the word should be included in a shortening. Such methods are also linear in the token length of the input sequence, where ILPs incur exponential cost. However, at this time, sequence to sequence taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
 
-
+\ahcomment{Issue w/ terminating correctly.}
 \begin{algorithm}[]
 \SetKwInOut{Input}{input}
 \SetAlgoLined
@@ -130,7 +130,7 @@ We contrast transition-based compression and integer programming approaches with
  \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
   $v \gets \pi(F)$; \\
   $F \gets F \setminus  \{v\}$ \\
-  \lIf{$p(v | C) > .5$}{$C \gets C \cup \{v\}$}
+  \If{$p(v | C) > .5$ and $\ell(C \cup \{v\}) < b$}{$C \gets C \cup \{v\}$}
  }
 \KwRet{$\ell(C)$}
  \caption{Bottom-up compression}
@@ -150,9 +150,9 @@ In this work, we present a new transition-based sentence compression system, ins
 Our method builds a compression $C$ over at most $|V|$ timesteps by maintaining a state
 $(C_i,F_i)$. $C_i$ is the set of tokens in the current compression and $F_i$ is a set of frontier tokens, considered for possible inclusion in the compression at timestep $i$.
 
-We initialize $C_0=Q$ and $F_0 = V \setminus Q$. Then, at each timestep, we decide if some vertex $v_i \in F_i$ should be added to $C_i$. We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$. 
+We initialize $C_0=Q$ and $F_0 = V \setminus Q$. Then, at each timestep, we decide if some vertex $v_i \in F_i$ should be added to $C_i$. We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$.  We continue adding vertexes until either the frontier is empty or $\ell(C)$ is longer than the length constraint. 
 
-At training time, we use an oracle to decide if $v_i$ should be added to $C_i$, denoted $C_i \gets v_i \cup C_i$: if $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
+At training time, we use an oracle to decide if $v_i$ should be added to $C_i$: if $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
 In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
