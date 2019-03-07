@@ -95,7 +95,7 @@ While older compression methods based on integer linear programming could trivia
 \begin{tabular}{lccc}
 \textbf{Approach} & \textbf{Worst-case complexity} & \textbf{Constrained}  \\ \hline
 Sequence to sequence taggers \cite{filippova2015sentence}   & linear              & no         \\   
-\textbf{Bottom-up compression (this work)}  & \textbf{linear}     &      \textbf{yes}   \\
+\textbf{Additive compression (this work)}  & \textbf{linear}     &      \textbf{yes}   \\
 ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & yes      \\
 \end{tabular}
 \caption{Three algorithms for sentence compression. \ahcomment{Add results here too?} Integer linear programming methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical constraints, and can make use of large parallel corpora of sentence--compression pairs. But these methods formulate the compression task as an NP-hard problem (\S\ref{s:ilps}), with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with a linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised, transition-based approach (\S\ref{s:system}) which can be used to compress sentences under lexical and length constraints in linear time.} 
@@ -133,7 +133,7 @@ We contrast transition-based compression and integer programming approaches with
   \If{$p(v | C) > .5$ and $\ell(C \cup \{v\}) < b$}{$C \gets C \cup \{v\}$}
  }
 \KwRet{$\ell(C)$}
- \caption{Bottom-up compression}
+ \caption{Additive compression}
 \end{algorithm}
 
 
@@ -150,25 +150,26 @@ In this work, we present a new transition-based sentence compression system, ins
 Where much prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}
 shortens a sentence by \textit{removing} subtrees from a grammatical parse, our method offers the new idea of constructing a shortening by iteratively \textit{adding} vertexes to a compression. 
 
-We show that this additive approach can construct constrained compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (Figure \ref{f:qf}) which must provide rapid feedback during browsing.
+This additive approach can construct constrained compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (Figure \ref{f:qf}) which must provide rapid feedback during browsing.
 
 \subsection{Formal Description}\label{s:formal}
 
-Our additive approach builds a compression $C$ over at most $|V|$ timesteps by maintaining a state
-$(C_i,F_i)$. $C_i$ is the set of tokens in the current compression and $F_i$ is a set of frontier tokens, considered for possible inclusion in the compression at timestep $i$.
+Our method builds a compression by maintaining a state
+$(C,F)$ over at most $|V|$ timesteps. $C$ is a set of tokens which will be included in the final compression. $F$ is a set of frontier tokens.
 
-We initialize $C$ with $Q$ and initialize $F = V \setminus Q$. Then, at each timestep, we decide if some vertex $v_i \in F_i$ should be added to $C_i$. We continue adding vertexes until either the frontier is empty or $\ell(C)$ is longer than the length constraint. 
+We initialize $C$ with $Q$ and initialize $F$ with $V \setminus Q$. Then, at each timestep, we decide to either add or  not add some vertex $v_i \in F_i$ to $C_i$. After the decision, we remove $v_i$ from $F_i$. 
+
+We continue adding vertexes until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
 
 We select $v_i$ from $F_i$ according to some policy $\pi$, denoted $v_i = \pi(F_i)$. In this work we use a rule-based policy $\pi$: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$ we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
-At training time, we use an oracle to decide if $v_i$ should be added to $C_i$: if $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
-
+At training time, we use an oracle to decide if $v_i$ should be added to $C_i$. If $v_i$ is included in a gold compression, the vertex is added to $C_i$. At runtime, we use a model of oracle decisions $p(v_i|C_i)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
 \ahcomment{need a diagram}
 
 \subsection{Modeling}\label{s:modeling}
 
-\ahcomment{In describing this, the key point is that there is info about the edges you can use.}
+\ahcomment{In describing this, the key point is that there is info about the edges you can use. Cite prior work}
 
 \ahcomment{there is also global info you can use}
 
@@ -178,6 +179,7 @@ Prior approaches to supervised, dependency-based sentence compression
 
 using features which are similar to prior approaches to supervised compression \cite{filippova2013overcoming,Filippova2015FastKS}.  
 
+\ahcomment{credit that k path one}
 
 \ahcomment{Describe oracle paths}
 
