@@ -69,7 +69,7 @@
 
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical and length requirements on compression systems. This study introduces a new transition-based, neural compression method which accommodates such requirements by pruning syntactic dependency subtrees.  We show that our technique is more computationally efficient than previous ILP-based approaches, and achieves superior performance in reconstructing known-good shortenings under constraints.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical, length and latency requirements on compression systems. This study introduces a new transition-based technique which accommodates such requirements, by building up a compression in linear time. We show that this approach is much faster than ILP-based techniques, crucial for interactive search applications. Our method also achieves superior performance in reconstructing known-good shortenings.
 \end{abstract}
 
 \section{Introduction}
@@ -150,7 +150,7 @@ In this work, we present a new transition-based sentence compression system, ins
 Where much prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}
 shortens a sentence by \textit{removing} subtrees from a grammatical parse, our method offers the new idea of constructing a shortening by iteratively \textit{adding} vertexes to a compression. 
 
-This additive approach can construct constrained compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (Figure \ref{f:qf}) which must provide rapid feedback during browsing.
+The chief advantage of this method is that can construct constrained compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing.
 
 \subsection{Formal Description}\label{s:formal}
 
@@ -287,6 +287,8 @@ ILP-based approaches to sentence compression formalize the task as an integer li
 Practical ILP systems \ahcomment{some sort of comment on how it works}. However, the theoretical advantage of our system translates to a practical speed.
 
 \section{Applications and related work}
+
+\ahcomment{Some stuff on heer here}
 
 \subsection{Applications}
 
