@@ -159,7 +159,11 @@ During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at 
 
 We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$, we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
-\ahcomment{need a diagram}
+\begin{figure}[h]
+\includegraphics[width=8cm]{sample.jpg}
+\caption{Additive compression in 4 timesteps, where $Q$=$\{1,2\}$. $y$ indicates the decision at each timestep.}
+\end{figure}
+
 
 \subsection{Inclusion decisions: oracle and modeling}\label{s:modeling}
 
