@@ -169,7 +169,7 @@ At training time, we use an oracle to decide if $v$ should be added to $C$. If $
 
 \ahcomment{there is also global info you can use}
 
-At test time, we use a model of oracle decisions to decide if $v_i$ should be added to $C_i$.  We model each oracle decision $y_i \in \{0,1\}$ with binary logistic regression.
+At test time, we use a model of oracle decisions to decide if $v$ should be added to $C$.  We model each oracle decision $y_i \in \{0,1\}$ with binary logistic regression.
 
 Prior approaches to supervised, dependency-based sentence compression 
 
@@ -272,7 +272,7 @@ Researchers often use human judgements of \textit{importance} and \textit{readab
 
 In a traditional importance evaluation, humans judge the degree to which a compression retains the most ``important'' information from a source sentence. However, in our constrained compression setting, a user's query determines the ``important'' information from $s$, which must be included in a compression. Thus, human importance evaluations are inappropriate.
  
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Our method achieves a slightly higher SLOR score, which indicates that it might produce slightly more readable compressions (Table \ref{t:results}). The appendix contains additional details of our implementation of SLOR. 
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Our method achieves that it might produce slightly more readable compressions (Table \ref{t:results}). The appendix contains additional details of our implementation of SLOR. 
 
 \section{Computational costs of transition-based compression}\label{s:costs}
 
