@@ -1,4 +1,4 @@
-
+import numpy as np
 import json
 import random
 import pickle
@@ -28,4 +28,8 @@ def test():
 
 if __name__ == '__main__':
     import timeit
-    print(timeit.repeat("test()", repeat=3, number=100, setup="from __main__ import test"))
+    all_ = []
+    for i in range(1000):
+        a = timeit.timeit("test()", setup="from __main__ import test", number=1)
+        all_.append(a)
+    print(np.mean(all_), np.std(all_))
