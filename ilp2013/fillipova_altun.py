@@ -54,8 +54,8 @@ def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_de
     # Gurobi runs slower when PoolSearchMode=2 b/c it does a grid search for
     # the best solutions but 'tevs
     # http://www.gurobi.com/documentation/8.0/examples/poolsearch_py.html#subsubsection:poolsearch.py
-    m.setParam(GRB.Param.PoolSearchMode, 2)
-    m.setParam(GRB.Param.PoolSolutions, k)
+    #m.setParam(GRB.Param.PoolSearchMode, 2)
+    #m.setParam(GRB.Param.PoolSolutions, k)
 
     '''init the X variables'''
     Xs = {}

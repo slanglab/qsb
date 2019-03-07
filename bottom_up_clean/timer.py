@@ -24,7 +24,7 @@ with open(fn, "r") as inf:
 def test():
     """Stupid test function"""
     s = random.sample(S, k=1)[0]
-    run_model(s, r=s["r"], Q=s["q"], vocabs=vocabs, weights=weights) 
+    run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights) 
 
 if __name__ == '__main__':
     import timeit
