@@ -148,70 +148,34 @@ In this work, we present a new transition-based sentence compression system, ins
 Where much prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}
 shortens a sentence by \textit{removing} subtrees from a grammatical parse, our method offers the new idea of constructing a shortening by iteratively \textit{adding} vertexes to a compression. 
 
-The chief advantage of this method is that can construct constrained compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing.
+The chief advantage of this method is that can construct constraineds compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing.
 
 \subsection{Formal Description}\label{s:formal}
 
 Our method builds a compression by maintaining a state
 $(C,F)$ over at most $|V|$ timesteps. $C$ is a set of tokens which will be included in the final compression. $F$ is a set of frontier tokens.
 
-During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ in the frontier to $C$, the current compression. We also remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
+During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. After the decision, we remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
 
 We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$, we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
-At training time, we use an oracle to decide if $v$ should be added to $C$. If $v$ is included in a gold compression, the vertex is added to $C$. At runtime, we use a model of oracle decisions $p(v |C)$ to determine if a vertex should be included. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
-
 \ahcomment{need a diagram}
 
-\subsection{Modeling}\label{s:modeling}
+\subsection{Inclusion decisions: oracle and modeling}\label{s:modeling}
 
-\ahcomment{In describing this, the key point is that there is info about the edges you can use. Cite prior work}
+We use an oracle to decide if a given $v$ should be added to the compression: if $v$ is included in a gold compression, the vertex is added to $C$. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
-\ahcomment{there is also global info you can use}
+We use such oracle paths to train a model of oracle inclusion decisions, $p(y  = 1 | v, C, S)$. After initially implementing a neural approach \cite{D14-1082}, we instead chose to instead implement feature-based, binary logistic regression which can run quickly without access to a GPU. This allows our method to be used in search applications in fields like social science and journalism, where expensive custom hardware is not available. 
 
-At test time, we use a model of oracle decisions to decide if $v$ should be added to $C$.  We model each oracle decision $y_i \in \{0,1\}$ with binary logistic regression.
+The features in our model fall into two classes. 
 
-Prior approaches to supervised, dependency-based sentence compression 
+\textbf{Local features} describe the properties of the edge $(u,v)$ between $v$ and $u \in C$. Such features are based on previous approaches to supervised non-neural sentence compression \cite{filippova2013overcoming,almeida2013fast,Filippova2015FastKS}, including structural features (e.g.~vertex depth in tree), lexical features, and semantic features (e.g.~NER tag). Unlike previous work, our local features indicate if $u$ governs $v$ or a dependent of $v$. This allows our model to reason about the sorts of governors which should be included in a compression (e.g.~verbs) and the sorts of dependents which might not be added to $C$ (e.g.~modifiers). We describe the features in detail in our appendix and supporting code. (If $v$ is disconnected from $C$, no local features are used.)  
 
-using features which are similar to prior approaches to supervised compression \cite{filippova2013overcoming,Filippova2015FastKS}.  
+\textbf{Global features} represent the relationship between $v$ and the overall compression $C$. Global features include information such as the position of $v$ in the sentence, relative to the right-most and left-most vertex in $C$. Such global features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to include or not include gaps.
 
 \ahcomment{credit that k path one}
 
 \ahcomment{Describe oracle paths}
-
-
-
-\ahcomment{Add some discussion of features}
-
-
-%To train the LSTM, we encode both the state of the compression system and the operation proposal into a sequence of input symbols $\bm{x}_j$, called the markup. The LSTM predicts $p(y_j=1 | \bm{x}_j)$, the probability of a binary oracle decision, given the markup. 
-
-%The markup is the deterministic (rather than learned) output of a function $\bm{x}_j=m(V_j,v_j,o_j,s)$, which inserts additional symbols into $s$, the original sequence of tokens in the sentence (see Figure \ref{f:example}). The markup function adds four kinds of symbols.
-
-%\begin{enumerate}
-%\item{\textbf{Deletion indicators} tag tokens from $s$ which are not included in the compression at timestep $j$. (These indicators are denoted with strikethrough text in Figure \ref{f:example}.) The markup function concatenates a deletion indicator to all $t_i \in \{s\} \setminus V_j$, where $\{s\}$ denotes the unordered set of tokens from $s$.} 
-%\item{\textbf{Sentence brackets} represent the start and end of the original, uncompressed sentence $s$. Sentence brackets are shown with $\langle s \rangle$ and $\langle / s \rangle$ in Figure \ref{f:example}.}
-%\item{\textbf{Compression brackets} show the location of a compression within $s$. If the operation proposal is \textsc{Prune}, these brackets show the start and end of the compression $V_j$ within $s$. If the operation proposal is \textsc{Insert}, these brackets show the start and end of the compression $V_{j+1}$, if the proposed operation were to be accepted at timestep $j$. Compression brackets are shown with $\langle c \rangle$ and $\langle / c \rangle$ in Figure \ref{f:example}. 
-
-%In some cases, some of the tokens in the span from $\langle c \rangle$ to $\langle /c \rangle$ might not be in $V_j$. (For instance, a system might have pruned a modifier in this span at an earlier timestep.)  The markup function will tag these tokens (among others) with deletion indicators.}
-%\item{\textbf{Subtree brackets} represent the start and end of $T(v)$, defined previously (\S\ref{s:formal}) as the tokens in the subtree which would be pruned or inserted by the operation proposal $o_j$. Subtree brackets have a more complex structure which encodes $(i)$ the type of the operation proposal and $(ii)$ the syntactic role of $T(v)$ within $s$. Figure \ref{f:example} shows the subtree brackets $\langle \textsc{Prune} \texttt{dobj} ? \rangle$ and $\langle / \textsc{Prune} \texttt{dobj} ? \rangle$. Details of the structure of these brackets are provided in the appendix.}
-%\end{enumerate}
-
-%Including the three sets of inline bracket symbols, along with the deletion indicator symbols, allows the LSTM to model the relationship between $(a)$ the tokens to be pruned or inserted, $(b)$ the current compression, $(c)$ the operation proposal, and $(d)$ the original sentence $s$. Prior work shows that LSTMs appear capable of modeling bracketing within a sentence \cite{Vinyals2015GrammarAA,karpathy,Aharoni2017TowardsSN}.
-
-%Our architecture (Figure \ref{f:example}) follows recent work on LSTM classification for sentence-level tasks \cite{D17-1070}. Specifically, we predict binary, oracle operations using a Bi-LSTM layer, a max pooling layer, and two separate sequences of fully-connected layers: one for \textsc{Prune} vs. \textsc{NoPrune} decisions, and one for \textsc{Insert} vs. \textsc{NoInsert} decisions. We interpret the shared Bi-LSTM layer as learning deep features from the markup, and each sequence of fully-connected layers as using those features to perform a different kind of binary classification.
-
-%\footnote{The symbols $\langle {o \cdot d} \rangle$ and $\langle / {o \cdot d} \rangle$  allow us to encode some aspects of syntax trees using a vanilla LSTM , without the added complexities of explicitly encoding nested structures into the architecture of the network \cite{Tai2015ImprovedSR,Dyer2016RecurrentNN}.} }
-
-%It lets the LSTM reason about the relationship between the to-prune/insert span, versus the rest of the sentence, by using inline start/end markup symbols. This is motivated by prior work showing that LSTMs are good at modeling inline bracketing within a sentence (CITE: the "parsing as foreign language" paper, and maybe a "LSTMs learn paren balancing" paper, maybe Karpathy or that newer Goldberg one)
-
- %$(i)$ the first and last  $V_{j + 1}$, if the operation were to be ex
-
-%In this section, we refer to all tokens in $V_j$ as the compression, $c_j$.
-
-% about if these tokens are included or not included in t
-
-%``shows'' the model what a compressed sentence would ``look'' like if the compression system were to execute the operation $o$ given the state $(V, [v|B])$. In the case of insert operations, this means that the markup ``shows'' what the resulting compression would be, if the subtree $T(v)$ were to be copied into $V$. In the case of prune operations, this means that the function ``shows'' what the compression would be if $T(v)$ were to be removed from $V$.
 
 \section{Automatic evaluation of constrained compression}\label{s:autoeval}
 
@@ -240,7 +204,7 @@ known-good compression.
 Approach & F1 & SLOR  \\ \hline
 Query terms only {\small (lower bound)} & 0.381 & -0.088 \\
 Supervised ILP  &  0.854   &  0.776       \\
-\textbf{Transition-based deletion} &  \textbf{0.875}  & \textbf{0.800}   \\
+\textbf{Additive compression} &  \textbf{0.875}  & \textbf{0.800}   \\
 \end{tabular}
 \caption{Test F1 scores for two compression methods, for the constrained compression task. \ahcomment{Add Wall Clock + complexity} We also show scores for SLOR, an automated readability metric (\S\ref{s:readabilityinformativeness}). The difference in token-level F1 scores and SLOR scores for each compression method is statistically significant {\small $(p < 10^{-2})$}. Selecting only query terms for a compression achieves an F1 = 0.381, which is the lower bound for this task.}
 \label{t:results}
