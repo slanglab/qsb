@@ -131,7 +131,8 @@ def train_clf(training_paths="training.paths", validation_paths="validation.path
 
     print(clf.score(X_val, y_val))
     print(clf.score(X_train, y_train))
-    return clf, vectorizer
+
+    return clf, vectorizer, clf.predict_proba(X_val)
 
 
 def get_depths(sentence):
@@ -367,6 +368,8 @@ def get_global_feats(sentence, feats, vertex, current_compression):
     '''return global features of the edits'''
     lt = len_current_compression(current_compression, sentence)
     len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
+
+    # these two help. it is showing the method is able to reason about what is left in the compression
     feats["over_r"] = lt + len_tok > sentence["r"]
     feats["remaining"] = (lt + len_tok)/sentence["r"]
 
