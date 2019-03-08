@@ -45,7 +45,7 @@
 \DeclareMathOperator*{\argmaxA}{arg\,max} % Jan Hlavacek
 
 % Extractive sentence compression under lexical and length constraints
-\title{Transition-based Sentence Compression with Lexical and Length Constraints}
+\title{Additive Compression with Lexical and Length Constraints}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -69,7 +69,7 @@
 
 
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical, length and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings, which constructs constrained compressions in linear time. This approach is much faster than ILP-based methods, and better reconstructs known-good shortenings under constraints.
+Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical, length and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings, which constructs constrained compressions in linear time, by growing a subgraph in a dependency parse. Our approach is much faster than ILP-based methods, and better reconstructs known-good shortenings under constraints.
 \end{abstract}
 
 \section{Introduction}
@@ -117,13 +117,13 @@ In such user-facing settings, low latency is paramount \cite{Nielsen,Liu2014TheE
 
 One established method for sentence compression shortens sentences using integer linear programming (ILP) techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}. ILP-based methods assign binary variables to each token in a sentence \cite{clarke2008global} or subtree in a dependency parse \cite{filippova2008dependency}, indicating if the corresponding sentence component is included in a compression. Such methods then represent the global quality of a compression as the sum of local component weights, which are learned from either direct or indirect supervision.
 
-Such ILP methods easily accommodate constrained compression. Practitioners must specify that optimal solutions need to be shorter than some character budget, and must include query terms.\footnote{In practice, we have found that translating a sentence compression objective into an integer linear program can be a challenging and error-prone programming task. These engineering difficulties are a disadvantage of ILPs.}
+ILP methods easily accommodate constrained compression. Practitioners must specify that optimal solutions need to be shorter than some character budget, and must include query terms.\footnote{In practice, we have found that translating a sentence compression objective into an integer linear program can be a challenging and error-prone programming task. These engineering difficulties are a disadvantage of ILPs.}
 
 However, the task of identifying the global optimum of such an integer programming objective is a well-known, NP-hard problem \cite{clarke2008global}, requiring worst-case exponential computation in the length of the input sequence. In practice, ILP methods use off-the-shelf solvers to identify the highest-scoring compression, from among all possible configurations of binary variables. 
 
 \subsection{Sequence to sequence compression}
 
-Some work uses sequence to sequence methods for the compression task \cite{filippova2015sentence}: labeling input tokens with a 1 or a 0, indicating if the word should be included in a shortening. These techniques achieve high automatic evaluation scores, and are also linear in the token length of the input sequence. However, at this time, sequence to sequence taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
+Another approach to sentence compression uses sequence to sequence methods to label input tokens with a 1 or a 0, indicating if the word should be included in a shortening \cite{filippova2015sentence}. These techniques achieve high automatic evaluation scores, and are also linear in the token length of the input sequence. However, at this time, sequence to sequence taggers are unsuitable for query-focused applications because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
 
 \begin{algorithm}[]
 \SetKwInOut{Input}{input}
@@ -142,21 +142,17 @@ Some work uses sequence to sequence methods for the compression task \cite{filip
 
 \section{Additive compression}\label{s:system}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}). We describe our technique as additive compression, because it constructs a compression by growing a subgraph in the dependency parse of a sentence. 
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}), inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a subgraph in the dependency parse of a sentence. This approach differs from prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}, which
+shortens a sentence by \textit{pruning} subtrees. 
 
-Like ILP-based techniques, transition-based approaches can easily accommodate lexical and length restrictions. We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}), making the method well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing.
 
-In this work, we present a new transition-based sentence compression system, inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. 
-
-Where much prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}
-shortens a sentence by \textit{removing} subtrees from a grammatical parse, our method offers the new idea of constructing a shortening by iteratively \textit{adding} vertexes to a compression. 
-
-The chief advantage of this method is that can construct constraineds compressions (\S\ref{s:formal}) in linear time (\S\ref{s:costs}), making it well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing.
+We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
 
 \subsection{Formal Description}\label{s:formal}
 
 Our method builds a compression by maintaining a state
-$(C,F)$ over at most $|V|$ timesteps. $C$ is a set of tokens which will be included in the final compression. $F$ is a set of frontier tokens.
+$(C,F)$ over at most $|S|$ timesteps. $C$ is a set of tokens from $S$ which will be included in the final compression, where $S$ are tokens in the original sentence. $F$ is a set of frontier tokens.
 
 During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. After the decision, we remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}}
 
@@ -230,6 +226,9 @@ Any details on transition-based compression go here.
 
 %We initialize $(V, [v|B])$ with the smallest subtree from the dependency parse of $s$ which is (1) rooted at a verb and (2) contains all of the tokens in $q$. For roughly two-thirds of sentences $V$ is simply equal to all tokens in the original sentence. In the remaining cases, all tokens in $q$ are contained in some subclause of the sentence; the compression is formed by shortening this subclause, instead of shortening the whole sentence. In more than 95\% of sentences, the compression system must make additional \textsc{Prune} decisions after initializing with the smallest subtree.
 
+\subsection{Implementation: min compression baseline? }\label{s:transition}
+\ahcomment{some discussion of headlines}
+
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
 We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach proposes representing each edge in a syntax tree with a vector of binary features, then learning weights for each feature using a structured perceptron trained on a corpus of $(s,c)$ pairs. Learned weights are used to compute a global compression objective, subject to structural constraints which ensure the output is a valid tree.
@@ -249,9 +248,10 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 ILP-based approaches to sentence compression formalize the task as an integer linear programming optimization task, a well-known NP-hard problem  (\S\ref{s:ilps}), with exponential worst-case complexity.\footnote{The complexity is exponential in $|V|$ if the ILP selects tokens like \citet{clarke2008global}, and exponential in $|E|$ if the ILP selects edges like \citet{filippova2008dependency} or \citet{filippova2013overcoming}.} One advantage of our transition-based framework is that it can perform query-focused, budget-constrained compression that is linear in $|V|$, the token length of $S$. Compression is linear because we initialize the frontier $F$ with all $v_i \in V \setminus Q$, and then remove one vertex $v_i$ from $F$ at each timestep. For this reason, our approach must evaluate no more than $|V|$ vertexes to generate a compression. 
 
 We test if the theoretical advantage of our system translates to a practical speedup by sampling 10,000 sentences with replacement from the test set, and performing compression with an ILP. We then repeat this experiment with our additive compression approach (Table \ref{t:results}). Our linear additive technique is \ahcomment{TODO} faster than existing methods. The appendix contains additional computational details.
+
 \section{Conclusion and future work}
 
-This work introduces a new, neural, transition-based method for extractive sentence compression. Our approach is both more computationally efficient than ILP-based methods, and better reconstructs known-good sentence shortenings under constraints. 
+This work introduces a new, neural, transition-based method for extractive sentence compression. Our approach is both more computationally efficient than ILP-based methods, and better reconstructs known-good sentence shortenings under constraints. \ahcomment{Some comment on connection to headline method. both specify required tokens}
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
