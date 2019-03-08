@@ -145,16 +145,14 @@ Another approach to sentence compression uses sequence to sequence methods to la
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}), inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a subgraph in the dependency parse of a sentence. This approach differs from some prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}, which
 shortens a sentence by \textit{pruning} subtrees. 
 
-The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}), making the method well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing.
-
-We show that our transition-based method has a lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than the leading, supervised ILP technique \cite{filippova2013overcoming}.
+The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}), making the method well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing. We show that such theoretical gains translate to actual lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than supervised ILP techniques \cite{filippova2013overcoming}.
 
 \subsection{Formal Description}\label{s:formal}
 
 Our method builds a compression by maintaining a state
 $(C,F)$ over at most $|S|$ timesteps, where $C$ is a set of tokens from $S$ which will be included in the final compression and $S$ is the set of tokens from the original sentence. $F$ is a set of frontier tokens.
 
-During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. After the decision, we remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}} Figure \ref{f:walkthru} shows a step-by-step example.
+During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. We such discuss decisions in detail in \S\ref{s:modeling}. At each timestep, we also remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}} Figure \ref{f:walkthru} shows a step-by-step example.
 
 We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$, we proceed in left-to-right order. Learned policies \cite{sutton2018reinforcement} might improve performance, but are left for future work. 
 
