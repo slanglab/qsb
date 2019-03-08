@@ -142,7 +142,7 @@ Another approach to sentence compression uses sequence to sequence methods to la
 
 \section{Additive compression}\label{s:system}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}), inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a subgraph in the dependency parse of a sentence. This approach differs from some prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}, which
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}), inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}, which
 shortens a sentence by \textit{pruning} subtrees. 
 
 The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}), making the method well-suited to interactive search applications (e.g.~Figure \ref{f:qf}) which must provide rapid, query-focused snippets during browsing. We show that such theoretical gains translate to actual lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than supervised ILP techniques \cite{filippova2013overcoming}.
@@ -199,14 +199,17 @@ and we interpret the length of $c$ (in characters) as the character budget $b$.
 This defines our test set of 6,827 tuples, each of the form $(s,q,b,c)$. Each tuple consists of a sentence, a lexical constraint, a budget constraint and a
 known-good compression.
 
+Prior empirical studies of user search behavior have found that search queries are often short (several tokens long), and often restricted to particular parts of speech (nouns, proper nouns and adjectives). To construct a realistic experiment, we sample query tokens from compressions to match the observed distribution of token counts \cite[table 6] {Jansen2000RealLR}, and observed distribution of part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{We reject samples in which the query length is longer than 6 tokens, which are poorly suited our setting. We manually map part-of-speech tags from \citet{Barr2008TheLS} to Penn tags, described in supporting code. We reject sampled part-of-speech tags which occur in fewer than 1\% of cases.}
+
 \begin{table}[]
 \begin{tabular}{lrrl}
 \centering
 Approach & F1 & SLOR &  Speed {\small (ms / $s$)}  \\ \hline
 Supervised ILP &  {\small 0.854}   &  {\small 0.776 }  & {\small $\mu=$ .115} ({\small $ \sigma=.074$}) \\
 Additive compression &  {\small \textbf{0.875}}  & {\small \textbf{0.800} }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
+Random addition  &  {\small 0.690}  & {\small 0.800 }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
 \end{tabular}
-\caption{Test F1 scores, SLOR scores and average runtimes for two compression methods, for the constrained compression task. The difference in token-level F1 scores and SLOR scores for each compression method is statistically significant {\small $(p < 10^{-2})$}. Selecting only query terms for a compression achieves an F1 = 0.381, which is the lower bound for this task.}
+\caption{Test F1 scores, SLOR scores and average runtimes for two compression methods, for the constrained compression task. The difference in token-level F1 scores and SLOR scores for each compression method is statistically significant {\small $(p < 10^{-2})$}. Additive compression with random decisions achieves F1 = 0.690, which is the lower bound for this task.}
 \label{t:results}
 \end{table}
 
@@ -246,6 +249,10 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 ILP-based approaches to sentence compression formalize the task as an integer linear programming optimization task, a well-known NP-hard problem  (\S\ref{s:ilps}), with exponential worst-case complexity.\footnote{The complexity is exponential in $|V|$ if the ILP selects tokens like \citet{clarke2008global}, and exponential in $|E|$ if the ILP selects edges like \citet{filippova2008dependency} or \citet{filippova2013overcoming}.} One advantage of our transition-based framework is that it can perform query-focused, budget-constrained compression that is linear in $|V|$, the token length of $S$. Compression is linear because we initialize the frontier $F$ with all $v_i \in V \setminus Q$, and then remove one vertex $v_i$ from $F$ at each timestep. For this reason, our approach must evaluate no more than $|V|$ vertexes to generate a compression. 
 
 We test if the theoretical advantage of our system translates to a practical speedup by sampling 10,000 sentences with replacement from the test set, and performing compression with an ILP. We then repeat this experiment with our additive compression approach (Table \ref{t:results}). Our linear additive technique is \ahcomment{TODO} faster than existing methods. The appendix contains additional computational details.
+
+\ahcomment{query bias in the experiment setup?}
+
+\ahcomment{does it EVER connect a disconnected tree?}
 
 \section{Conclusion and future work}
 

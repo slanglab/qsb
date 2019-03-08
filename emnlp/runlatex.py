@@ -100,12 +100,12 @@ def run_pdflatex_log(target, logfile, stepnum=None, **clean_args):
             myprint("Command failed.")
         elif FLAGS.verbose:
             myprint("Command failed. Output:")
-            print open(logfile).read()
+            print(open(logfile).read())
             myprint("Above: raw output after failed command")
             myprint("Full output: {logfile}".format(**locals()))
         else:
             myprint("Command failed. Cleaned output (full output in {logfile}):\n".format(**locals()))
-            print clean_output(open(logfile).read(), **clean_args)
+            print(clean_output(open(logfile).read(), **clean_args))
             myprint("Above: cleaned output after failed command: {cmd1}".format(**locals()))
             myprint("Full output: {logfile}".format(**locals()))
     return ret
@@ -121,7 +121,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def myprint(s):
-    print bcolors.OKBLUE + "[runlatex] " + s + bcolors.ENDC
+    print(bcolors.OKBLUE + "[runlatex] " + s + bcolors.ENDC)
 
 def qtex():
     target = findtarget()
@@ -131,13 +131,13 @@ def qtex():
         if FLAGS.interactive:
             pass
         elif FLAGS.verbose:
-            print open(logfile).read()
+            print(open(logfile).read())
         else:
             myprint("Cleaned output:")
-            print clean_output(open(logfile).read())
+            print(clean_output(open(logfile).read()))
         myprint("Successfully built {target}.pdf".format(**locals()))
     else:
-        print clean_output(open(logfile).read())
+        print(clean_output(open(logfile).read()))
         myprint("Error {ret} while compiling {target}.pdf".format(**locals()))
 
 
@@ -160,7 +160,7 @@ def gotex():
     if ret==0:
         files = glob.glob("texlogs/%s.gotex.*.log" % target)
         logfile = sorted(files)[-1]
-        print clean_output(open(logfile).read())
+        print(clean_output(open(logfile).read()))
         myprint("Successfully built {target}.pdf".format(**locals()))
     else:
         myprint("Error {ret} while compiling {target}.pdf".format(**locals()))
@@ -223,7 +223,7 @@ def clean_output(s, clean_natbib=False):
     s = re.sub(r'\[.{0,5}\{%s\S*?\}\]' % BASE, "", s)
     s = re.sub(r'\{%s\S*?\}' % BASE, "", s)
     s = re.sub(r'\<%s\S*?\>' % BASE, "", s)
-    for i in xrange(5):
+    for i in range(5):
         s = re.sub(r'(^|\s)[\(\)](\s|$)', "", s)
     s = "\n".join(L.strip() for L in s.split("\n") if L.strip())
     return s
