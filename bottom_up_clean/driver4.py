@@ -4,23 +4,6 @@ import argparse
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected
 
-with open("empirical.csv", "r") as inf:
-    lns = [_.replace("\n", "").split(",") for _ in inf]
-    lns = [(_[0], float(_[1])) for _ in lns]
-
-
-other = 100 - sum([_[1] for _ in lns])
-lns.append((0, other))
-
-empirical_length_probability = [_[1]/100 for _ in lns]
-
-
-POS = {
-"proper-noun":["NNP", "NNPS"], # proper-noun (40.2%)
-"noun":["NN", "NNP"], #2601 (30.9%)
-"adjective":["JJ", "JJR", "JJS"], #599 (7.1%)
-"preposition": ["IN"] # (3.7%)
-}
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
