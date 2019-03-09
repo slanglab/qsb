@@ -16,7 +16,7 @@ def make_paths(fn):
             for _ in tqdm(inf):
                 s = json.loads(_)
                 try:
-                    pp = oracle_path_wild_frontier(sentence=s, pi=pick_l2r_connected)
+                    pp = oracle_path(sentence=s, pi=pick_l2r_connected)
                     pp = [(list(p[0]), p[1], p[2]) for p in pp] 
                     of.write(json.dumps({"paths":pp, "sentence":s}) + "\n")
                     successes += 1

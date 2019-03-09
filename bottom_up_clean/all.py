@@ -86,7 +86,9 @@ def pick_l2r_connected(frontier, current_compression, sentence):
     options.sort()
     return options[0]
 
-def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
+
+def oracle_path(sentence, pi = pick_l2r_connected):
+    '''produce all oracle paths, according to policy pi'''
     T = {i for i in sentence["q"]}
 
     F = init_frontier(sentence, sentence["q"])
@@ -106,6 +108,7 @@ def oracle_path_wild_frontier(sentence, pi = pick_l2r_connected):
     assert T == set(sentence["compression_indexes"])
 
     return path
+
 
 def train_clf(training_paths="training.paths", validation_paths="validation.paths", vectorizer=DictVectorizer(sparse=True)):
     '''Train a classifier on the oracle path, and check on validation paths'''
@@ -142,11 +145,30 @@ def get_depths(sentence):
 
 
 def init_frontier(sentence, Q):
+    '''initalize the frontier for additive compression'''
     out = {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
     out.add(0)
     return out
 
-def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
+
+def make_decision(vertex, sentence, depths, current_compression, vectorizer, clf):
+    feats = get_local_feats(vertex=vertex,
+                            sentence=sentence,
+                            depths=depths,
+                            current_compression=current_compression)
+
+    feats = get_global_feats(sentence=sentence,
+                            feats=feats,
+                            vertex=vertex,
+                            current_compression=current_compression)
+
+    X = vectorizer.transform([feats])
+    y = clf.predict(X)[0]
+    return y
+
+
+def runtime_path(sentence, frontier_selector, clf, vectorizer):
+    '''Run additive compression, but use a model not oracle to make an addition decision'''
     current_compression = {i for i in sentence["q"]}
     frontier = init_frontier(sentence, sentence["q"])
 
@@ -161,29 +183,13 @@ def runtime_path_wild_frontier(sentence, frontier_selector, clf, vectorizer):
                                    sentence=sentence)
 
         if vertex != 0: # bug here?
-            feats = get_local_feats(vertex=vertex,
-                                    sentence=sentence,
-                                    depths=depths,
-                                    current_compression=current_compression)
-
-            feats = get_global_feats(sentence=sentence,
-                                     feats=feats,
-                                     vertex=vertex,
-                                     current_compression=current_compression)
-
-            X = vectorizer.transform([feats])
-            y = clf.predict(X)[0]
+            y = make_decision(vertex, sentence, depths, current_compression, vectorizer, clf)
 
             if y == 1:
                 current_compression.add(vertex)
-                if vertex != 0:
-                    for i in get_dependents_and_governors(vertex, sentence, current_compression):
-                        if i not in current_compression and i is not None:
-                            frontier.add(i)
-                else:
-                    for i in get_children(sentence, vertex):
-                        if i["dependent"] not in current_compression and i is not None:
-                            frontier.add(i)
+                for i in get_dependents_and_governors(vertex, sentence, current_compression):
+                    if i not in current_compression and i is not None:
+                        frontier.add(i)
         frontier.remove(vertex)
 
         lt = len_current_compression(current_compression, sentence)

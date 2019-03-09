@@ -2,7 +2,7 @@ import json
 import pickle
 import argparse
 
-from bottom_up_clean.all import train_clf, runtime_path_wild_frontier, get_f1, pick_l2r_connected
+from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected
 
 with open("empirical.csv", "r") as inf:
     lns = [_.replace("\n", "").split(",") for _ in inf]
@@ -39,10 +39,10 @@ if __name__ == "__main__":
     for pno, paths in enumerate(open(args.validation_paths, "r")):
         paths = json.loads(paths)
         sentence = paths["sentence"]
-        predicted = runtime_path_wild_frontier(sentence,
-                                               frontier_selector=pick_l2r_connected,
-                                               clf=clf,
-                                               vectorizer=vectorizer)
+        predicted = runtime_path(sentence,
+                                 frontier_selector=pick_l2r_connected,
+                                 clf=clf,
+                                 vectorizer=vectorizer)
 
         ### check if the sentence has any non trees?
         hit_sentence = False
