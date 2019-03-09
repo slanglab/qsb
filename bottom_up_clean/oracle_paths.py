@@ -5,6 +5,7 @@ from tqdm import tqdm
 import json
 import pickle
 
+from bottom_up_clean.query_maker import get_q
 
 def make_paths(fn):
     paths_loc = fn.replace(".jsonl", ".paths")
@@ -15,6 +16,7 @@ def make_paths(fn):
         with open(fn, "r") as inf:
             for _ in tqdm(inf):
                 s = json.loads(_)
+                s["q"] = get_q(s)
                 try:
                     pp = oracle_path(sentence=s, pi=pick_l2r_connected)
                     pp = [(list(p[0]), p[1], p[2]) for p in pp] 

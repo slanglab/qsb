@@ -4,6 +4,8 @@ import argparse
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected
 
+from bottom_up_clean.query_maker import get_q
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
@@ -22,6 +24,7 @@ if __name__ == "__main__":
     for pno, paths in enumerate(open(args.validation_paths, "r")):
         paths = json.loads(paths)
         sentence = paths["sentence"]
+        sentence["q"] = get_q(sentence)
         predicted = runtime_path(sentence,
                                  frontier_selector=pick_l2r_connected,
                                  clf=clf,
