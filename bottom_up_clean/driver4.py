@@ -22,9 +22,6 @@ POS = {
 "preposition": ["IN"] # (3.7%)
 }
 
-
-import ipdb;ipdb.set_trace()
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
 parser.add_argument('-training_paths', type=str, default="training.paths")
@@ -37,7 +34,7 @@ if __name__ == "__main__":
                                                  validation_paths=args.validation_paths)
 
     tot = 0
-    
+
     totalNonTrees = 0
     for pno, paths in enumerate(open(args.validation_paths, "r")):
         paths = json.loads(paths)
