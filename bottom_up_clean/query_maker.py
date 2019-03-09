@@ -66,12 +66,12 @@ def get_q(sentence):
 
     breaker = 0
 
-    while(len(q) < querylen) and breaker < 100:
+    while(len(q) < querylen) and breaker < 10000:
 
         pos = draw_pos()
 
         qtok = [_ for _ in sentence["tokens"] if coursener[_["pos"]] == pos
-                and _["index"] in cix]
+                and _["index"] in cix and _["index"] not in q]
 
         random.shuffle(qtok)
 
