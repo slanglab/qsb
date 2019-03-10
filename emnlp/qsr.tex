@@ -63,20 +63,13 @@
 \begin{document}
 \maketitle
 
-% \ahcomment{Proposed revision: In this work we present a new, transition-based framework for extractive sentence compression. We use this framework to construct a sentence compression system based on a very simple neural network, which achieves large gains in automatic evaluation measures over previous state-of-the-art approaches. Unlike prior techniques, our method also allows accommodates lexical and length constraints without incurring exponential computational costs. This makes our method better suited to user-facing search applications, where length and lexical constraints are paramount.}
-
-% \ahcomment{note: gurobi pool search mode is turned ON which makes everythign go slower. you should turn this off if you start making arguments about wall clock time}
-
-
 \begin{abstract}
-Traditional approaches to extractive sentence compression seek to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional lexical, length and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings, which constructs constrained compressions in linear time, by growing a subgraph in a dependency parse. Our approach is much faster than ILP-based methods, and better reconstructs known-good shortenings under constraints.
+Extractive sentence compression seeks to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional length, lexical and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings. Our method constructs compressions in linear time by growing a forest in a dependency parse, achieving a 100X speed up over traditional ILP-based methods. Our technique also better reconstructs known-good shortenings under constraints.
 \end{abstract}
 
 \section{Introduction}
 
-Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface and must contain a user's query term, which defines the ``important'' information in the sentence. An example of such a compression is shown in Figure \ref{f:qf}.
-
-This study examines the English-language compression problem with such length and lexical requirements: compressed sentences are (1) required to include a list of query words $Q$ and (2) required to be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. 
+Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface and often must contain a user's query term, which defines the ``important'' information in the sentence. Query-focused applications applications also require low latency to support interactive browsing. An example application is shown in Figure \ref{f:qf}.
 
 \begin{figure}[htb!]
 %\fbox{
@@ -88,8 +81,9 @@ This study examines the English-language compression problem with such length an
 %}
 \end{figure}
 
+This study examines the English-language compression problem with such length and lexical requirements. In constrained compression, source sentences $S$ are shortened to compressions $C$ which (1) include query words $Q$ and (2) are shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, the task is to construct a function $(S,Q,b) \rightarrow c$, such that $c$ respects $Q$ and $b$.
 
-While older compression methods based on integer linear programming could trivially accommodate such restrictions \cite{clarke2008global,filippova2013overcoming}, recent work adopts a sequence to sequence paradigm which can often reconstruct gold-standard shortenings, but which does not give practitioners such control \cite{filippova2015sentence}. This makes existing sequence to sequence techniques unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length and lexical constraints are paramount. 
+Older compression methods  \cite{clarke2008global,filippova2013overcoming} based on integer linear programming can trivially accommodate such restrictions, but rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}. Newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require access to specialized graphics processing hardware (GPU) to achieve low latency which is a barrier for practitioners in fields like social science and journalism. These deficits make existing compression techniques unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency constraints are paramount. 
 
 \begin{table*}[htb!]
 \begin{tabular}{lccc}
@@ -102,10 +96,9 @@ ILP    \cite{filippova2013overcoming,Wang2017CanSH}       &   exponential    & y
 \label{t:algos}
 \end{table*}
 
+We thus present a new method for constrained compression, inspired by transition-based parsing \cite{nivre2003}, which grows a forest in a dependency parse in linear time. We compare this \textit{additive compression} method to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
 
-Therefore, in this work, we present a new method for compressing sentences, which efficiently accommodates lexical and length constraints. Our transition-based, stateful compression method is inspired by similar approaches to transition-based dependency parsing \cite{nivre2003,D14-1082}. We compare this technique to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. We show that our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
-
-\section{Related work}
+\section{Related work}\label{s:relatedwork}
 
 The extractive sentence compression task is to shorten a sentence $s$ to a compression $c$ by removing tokens \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}.\footnote{Other approaches compress sentences by generating language instead of deleting words \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} This work considers extractive compression in a constrained setting: in which compressions must contain the words $Q$ and adhere to a character budget constraint $b$. To our knowledge, this work is the first study of length and lexically constrained compression.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, in which humans are directed to include particular words in manually shortening sentences in an attempt to improve summarization quality. The authors do not examine the compression problem under lexical and length constraints.} 
 
