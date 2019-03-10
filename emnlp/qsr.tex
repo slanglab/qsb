@@ -102,7 +102,7 @@ We thus present a new method for constrained compression which grows a forest in
 
 Extractive compression shortens a sentence by removing tokens \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}, typically for extractive summarization \cite{Knight2000StatisticsBasedS,almeida2013fast,P16-1188}.\footnote{Some methods shorten sentences via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}: users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under length and lexical constraints.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, but do not examine the compression problem under lexical and length constraints.}
 
-    Our interest in constrained compression is motivated by search user interfaces \cite{hearst2009search}, which require query-biased snippets for search engine results pages \cite{tombros1998advantages}\footnote{Version 7.5 of Apache Lucene, the leading open source search engine, does not perform sentence compression in generating snippets. \url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}}. New forms of search interfaces such as concept map browsers could also make use of constrained compressions \cite{marchionini2006exploratory,emnlp2017conceptmaps}. Because such user-facing settings require low-latency techniques \cite{Nielsen,heerschei,Liu2014TheEO}, we prioritized computational efficiency in designing a solution to the compression task. We also avoided neural approaches which achieve low latency with an expensive GPU.
+Our interest in constrained compression is motivated by search user interfaces \cite{hearst2009search}, which require query-biased snippets for search engine results pages \cite{tombros1998advantages}.\footnote{Version 7.5 of Apache Lucene, the leading open source search engine, does not perform sentence compression in generating snippets. \url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} New search interfaces such as concept map browsers could also make use of constrained compressions \cite{marchionini2006exploratory,emnlp2017conceptmaps}. Because such user-facing systems require low-latency \cite{Nielsen,heerschei,Liu2014TheEO}, we prioritized computational efficiency in designing a solution to the constrained task. We also avoided neural approaches which achieve low latency with expensive GPUs.
 
 We compare our approach to ILP compression techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily specify that optimal solutions need to be shorter than some character budget, and need to include query terms. However, the task of identifying the global optimum of such an integer programming objective is a well-known, NP-hard problem \cite{clarke2008global}, requiring worst-case exponential computation in the length of the input sequence. In practice, ILP methods use off-the-shelf solvers to identify the highest-scoring compression, from among all possible configurations of binary variables. 
 
@@ -110,37 +110,25 @@ At this time, sequence to sequence sentence compression \cite{filippova2015sente
 
 \section{Additive compression}\label{s:system}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints (\S\ref{s:system}), inspired by similar approaches in transition-based parsing \cite{nivre2003,D14-1082}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,filippova2015sentence}, which
-shortens a sentence by \textit{pruning} subtrees. 
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
+shortens a sentence by \textit{pruning} subtrees \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS,filippova2015sentence}. 
 
-The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}). Such theoretical gains translate to actual lower computational cost (\S\ref{s:costs}), while achieving better performance in constrained compression (\S\ref{s:autoeval}) than supervised ILP techniques.
+The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}). Such gains translate to actually lower computational cost, while achieving better performance in constrained compression than supervised ILPs (\S\ref{s:autoeval}).
 
-\begin{algorithm}[]
-\SetKwInOut{Input}{input}
-\SetAlgoLined
-\Input{$s=(V,E)$, $Q \subseteq V$, $b \in \mathbb{R^+}$}
- $ C \gets Q;  F \gets V \setminus Q$; \\
- \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
-  $v \gets \pi(F)$; \\
-  $F \gets F \setminus  \{v\}$ \\
-  \If{$p(v | C) > .5$* and $\ell(C \cup \{v\}) < b$}{$C \gets C \cup \{v\}$}
- }
-\KwRet{$\ell(C)$}
- \caption{Additive compression {\small(test time*)}}
-\end{algorithm}\label{a:algo}
+
 
 \subsection{Formal Description}\label{s:formal}
 
 Our method builds a compression by maintaining a state
-$(C,F)$ over at most $|S|$ timesteps, where $C$ is a set of tokens from $S$ which will be included in the final compression and $S$ is the set of tokens from the original sentence. $F$ is a set of frontier tokens.
+$(C,F)$ over at most $|S|$ timesteps, where $C$ is a set of tokens from $S$ which will be included in the final compression and $S$ is the set of tokens from the original sentence. $F$ is a set of frontier tokens. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. We such discuss decisions in detail in \S\ref{s:modeling}. At each timestep, we also remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}} Figure \ref{f:walkthru} shows a step-by-step example.
+During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. We such discuss decisions in detail in \S\ref{s:modeling}. At each timestep, we also remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}} The appendix includes a formal algorithm.
 
-We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring or non-neighboring vertex is available in $F$, we proceed in left-to-right order.
-
+We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring (or non-neighboring) vertex is in $F$, we choose the leftmost vertex in the sentence from among possible choices.
+ 
 \begin{figure}[h]
-\includegraphics[width=8cm]{sample.jpg}
-\caption{Additive compression in 4 timesteps, where $Q$=$\{1,2\}$. $y$ indicates the decision at each timestep.}
+\includegraphics[width=8cm]{additive.pdf}
+\caption{Additive compression in 5 timesteps, from left to right. $C$ is shown with black shading, $F$ is shown with grey shading and $v= \pi(F)$ is shown as a square. The final compression is $\{1,2,3,5\}$. Before step 1, $C \gets Q = \{1,2\}$. }
 \end{figure}\label{f:walkthru}
 
 
@@ -148,17 +136,15 @@ We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In 
 
 We use an oracle to decide if a given $v$ should be added to the compression: if $v$ is included in a gold compression, the vertex is added to $C$. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
 
-We use such oracle paths to train a model of oracle inclusion decisions, $p(y  = 1 | v, C, S)$. After initially implementing a neural approach \cite{D14-1082}, we instead chose to instead implement feature-based, binary logistic regression which can run quickly without access to a GPU. This allows our method to be used in search applications in fields like social science and journalism, where expensive custom hardware is not available. 
+We use such oracle paths to train a model of oracle inclusion decisions, $p(y  = 1 | v, C, S)$. Instead of a neural approach \cite{D14-1082}, we chose to implement feature-based, binary logistic regression which can run quickly without access to a GPU. This allows our method to be used in search applications in fields like social science and journalism, where expensive custom hardware is not available. 
 
 The features in our model fall into two classes. 
 
-\textbf{Local features} describe the properties of the edge $(u,v)$ between $v$ and $u \in C$. Such features are based on previous approaches to supervised non-neural sentence compression \cite{filippova2013overcoming,almeida2013fast,Filippova2015FastKS}, including structural features (e.g.~vertex depth in tree), lexical features, and semantic features (e.g.~NER tag). Unlike previous work, our local features indicate if $u$ governs $v$ or a dependent of $v$. This allows our model to reason about the sorts of governors which should be included in a compression (e.g.~verbs) and the sorts of dependents which might not be added to $C$ (e.g.~modifiers). We describe the features in detail in our appendix and supporting code. (If $v$ is disconnected from $C$, no local features are used.)  
+\textbf{Local features} describe the properties of the edge $(u,v)$ between $v \in F$ and $u \in C$. Such features are based on previous approaches to supervised non-neural sentence compression \cite{filippova2013overcoming,almeida2013fast,Filippova2015FastKS}, including structural features (e.g.~vertex depth in tree), lexical features, and semantic features (e.g.~NER tag). Our local features indicate if $u$ governs $v$ or vice versa. This allows our model to reason about the sorts of governors which should be included in a compression (e.g.~verbs) and the sorts of dependents which might not be added to $C$ (e.g.~modifiers). We describe the features in detail in our appendix and supporting code. If $v$ is disconnected from $C$, as in step 3 of Figure \ref{f:walkthru}, no local features are used.
 
 \textbf{Global features} represent the relationship between $v$ and the overall compression $C$. Global features include information such as the position of $v$ in the sentence, relative to the right-most and left-most vertex in $C$. Such global features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to include or not include gaps.
 
 \ahcomment{credit that k path one}
-
-\ahcomment{Describe oracle paths}
 
 \section{Constrained compression: Automatic Evaluation}\label{s:autoeval}
 
