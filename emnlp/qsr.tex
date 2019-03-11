@@ -110,39 +110,29 @@ At this time, sequence to sequence sentence compression \cite{filippova2015sente
 
 \section{Additive compression}\label{s:system}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compression, because it constructs a compression by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
-shortens a sentence by \textit{pruning} subtrees \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS,filippova2015sentence}. 
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compression, because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
+compresses sentences by \textit{pruning} subtrees \cite{Jing2000SentenceRF,Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS,filippova2015sentence}. 
 
-The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}). Such gains translate to actually lower computational cost, while achieving better performance in constrained compression than supervised ILPs (\S\ref{s:autoeval}).
+The chief advantage of additive compression is that it can construct constrained compressions in linear rather than exponential time (\S\ref{s:costs}). Such gains translate to lower latency while achieving better performance in constrained compression than supervised ILPs (\S\ref{s:autoeval}).
 
-
-
-\subsection{Formal Description}\label{s:formal}
+\subsection{Additive procedure}\label{s:formal}
 
 Our method builds a compression by maintaining a state
-$(C,F)$ over at most $|S|$ timesteps, where $C$ is a set of tokens from $S$ which will be included in the final compression and $S$ is the set of tokens from the original sentence. $F$ is a set of frontier tokens. Figure \ref{f:walkthru} shows a step-by-step example. 
+$(C_i,F_i)$ where $C_i \subseteq S$ is a set of compression tokens, $F_i  \subseteq S$ is a set of frontier tokens, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C \gets Q$ and $F \gets V \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v \in F$ to $C$. We such discuss decisions in detail in \S\ref{s:modeling}. At each timestep, we also remove $v$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order. \ahcomment{explain}} The appendix includes a formal algorithm.
+During initialization, we set $C_0 \gets Q$ and $F_0 \gets S \setminus Q$. Then, at each timestep, we decide to either add or not add some vertex $v_i \in F$ to $C$. We discuss such decisions in detail in \S\ref{s:modeling}. At each timestep, we also remove $v_i$ from $F$. We continue adding vertexes to $C$ until either $F$ is empty or the linearized compression, $\ell(C)$, is longer than the length constraint.\footnote{We linearize tokens in their original sentence order, which is typical in English-language compression.} The appendix details the process with a formal algorithm.
 
 We select $v$ from $F$ according to some policy $\pi$, denoted $v = \pi(F)$. In this work we use a rule-based policy: neighbors of $C$ are selected from $F$ before non-neighbors. If more than one neighboring (or non-neighboring) vertex is in $F$, we choose the leftmost vertex in the sentence from among possible choices.
  
 \begin{figure}[h]
-\includegraphics[width=8cm]{additive.pdf}
-\caption{Additive compression in 5 timesteps, from left to right. $C$ is shown with black shading, $F$ is shown with grey shading and $v= \pi(F)$ is shown as a square. The final compression is $\{1,2,3,5\}$. At step 1, $C \gets Q = \{1,2\}$ and $F \gets S \setminus Q$.  }
+\includegraphics[width=8.2cm]{additive.pdf}
+\caption{Additive compression in 5 timesteps, from left to right. Each $C_i$ is shown in black and each $F_i$ is shown in grey. The vertex $v= \pi(F)$ is shown as a square. The final compression is $\{1,2,3,5\}$. At initialization (far left), $C_0 \gets Q = \{1,2\}$ and $F_0 \gets S \setminus Q$.  }
 \end{figure}\label{f:walkthru}
 
 
-\subsection{Inclusion decisions: oracle and modeling}\label{s:modeling}
+\subsection{Inclusion decisions}\label{s:modeling}
 
-We use an oracle to decide if a given $v$ should be added to the compression: if $v$ is included in a gold compression, the vertex is added to $C$. This method of determining paths based on oracle decisions can reconstruct all shortenings in a large, standard compression corpus \cite{filippova2013overcoming}.
-
-We use such oracle paths to train a model of oracle inclusion decisions, $p(y  = 1 | v, C, S)$. Instead of a neural approach \cite{D14-1082}, we chose to implement feature-based, binary logistic regression which can run quickly without access to a GPU. This allows our method to be used in search applications in fields like social science and journalism, where expensive custom hardware is not available. 
-
-The features in our model fall into two classes. 
-
-\textbf{Local features} describe the properties of the edge $(u,v)$ between $v \in F$ and $u \in C$. Such features are based on previous approaches to supervised non-neural sentence compression \cite{filippova2013overcoming,almeida2013fast,Filippova2015FastKS}, including structural features (e.g.~vertex depth in tree), lexical features, and semantic features (e.g.~NER tag). Our local features indicate if $u$ governs $v$ or vice versa. This allows our model to reason about the sorts of governors which should be included in a compression (e.g.~verbs) and the sorts of dependents which might not be added to $C$ (e.g.~modifiers). We describe the features in detail in our appendix and supporting code. If $v$ is disconnected from $C$, as in step 3 of Figure \ref{f:walkthru}, no local features are used.
-
-\textbf{Global features} represent the relationship between $v$ and the overall compression $C$. Global features include information such as the position of $v$ in the sentence, relative to the right-most and left-most vertex in $C$. Such global features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to include or not include gaps.
+Our compression approach decides to add or not add some vertex $v_i$ at each timestep. We learn such decisions using a corpus of tuples $(S,Q,b,C_g)$, where $C_g$ is some known-good compression of $S$ respecting $Q$ and $b$ (\S\ref{s:intro}). Given $(S,Q,b,C_g)$, we can construct an oracle compression path by initializing $C_0$ with $Q$, adopting policy $\pi$ and choosing to add $v_i$ to $C_i$ iff $v_i \in C_g$. We then use oracle paths to train a model of oracle inclusion decisions, $p(y_i  = 1 | v_i, C_i, F_i, S_i)$. We discuss our model in (\S\ref{s:transition}). Our oracle procedure can reconstruct all compressions in a large, standard corpus \cite{filippova2013overcoming}. 
 
 \section{Evaluation}\label{s:autoeval}
 
@@ -173,7 +163,11 @@ Rand.  &  {\small 0.690}  & { X }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
 
 \subsection{Implementation: transition-based compression}\label{s:transition}
 
-Any details on transition-based compression go here.
+We learn a model $p(y_i  = 1 | v_i, C_i, F_i, S_i)$ to perform compression. Instead of a neural approach \cite{D14-1082}, we implement feature-based, binary logistic regression which can run quickly without access to a GPU. This allows our method to be used in search applications in fields like social science and journalism, where expensive custom hardware is not available. The features in our model fall into two classes.
+
+\textbf{Local features} describe the properties of the edge $(u,v)$ between $v \in F$ and $u \in C$. Such features are based on previous approaches to supervised non-neural sentence compression \cite{filippova2013overcoming,almeida2013fast,Filippova2015FastKS}, including structural features (e.g.~vertex depth in tree), lexical features, and semantic features (e.g.~NER tag). Our local features indicate if $u$ governs $v$ or vice versa. This allows our model to reason about the sorts of governors which should be included in a compression (e.g.~verbs) and the sorts of dependents which might not be added to $C$ (e.g.~modifiers). We describe the features in detail in our appendix and supporting code. If $v$ is disconnected from $C$, as in step 3 of Figure \ref{f:walkthru}, no local features are used.
+
+\textbf{Global features} represent the relationship between $v$ and the overall compression $C$. Global features include information such as the position of $v$ in the sentence, relative to the right-most and left-most vertex in $C$. Such global features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to include or not include gaps.
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
