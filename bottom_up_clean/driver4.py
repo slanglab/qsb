@@ -24,7 +24,8 @@ if __name__ == "__main__":
     for pno, paths in enumerate(open(args.validation_paths, "r")):
         paths = json.loads(paths)
         sentence = paths["sentence"]
-        sentence["q"] = get_q(sentence)
+        #sentence["q"] = get_q(sentence)
+        print([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]])
         predicted = runtime_path(sentence,
                                  frontier_selector=pick_l2r_connected,
                                  clf=clf,
