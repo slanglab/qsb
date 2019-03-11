@@ -57,7 +57,7 @@ def load_dataset(glob_string="sentence-compression/data/sent-comp*source"):
                     r = len(" ".join([i["word"] for i in ln["tokens"] if
                             i['index'] in ln["compression_indexes"]]))
                     ln["r"] = r
-                    ln["q"] = get_q(ln)
+                    ln["q"] = list(get_q(ln))
                     sources.append(ln)
                 except AssertionError:
                     pass  # in a rare cases (~1/1000) there is no possible Q
