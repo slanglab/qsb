@@ -1,7 +1,7 @@
 '''
 - Make a validation and training set from the processed data
 - Also make the vocabs for the ilp
-- Also determine a q and r based on NER in gold compression
+- Also determine a q and r
 - Also create an oracle path
 '''
 
@@ -11,12 +11,11 @@ import json
 import glob
 import copy
 
+from bottom_up_clean.query_maker import get_q
 from code.log import logger
 from unidecode import unidecode
 from ilp2013.fillipova_altun_supporting_code import get_tok
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
-from code.utils import get_ner_spans_in_compression
-from code.treeops import find_maximal_subtrees
 
 random.seed(1)
 
@@ -54,14 +53,10 @@ def load_dataset(glob_string="sentence-compression/data/sent-comp*source"):
         with open(source, "r") as inf:
             for ln in inf:
                 ln = json.loads(ln)
-                q = [i for _ in get_ner_spans_in_compression(ln) for i in _]
                 r = len(" ".join([i["word"] for i in ln["tokens"] if
                         i['index'] in ln["compression_indexes"]]))
                 ln["r"] = r
-                ln["q"] = q
-                trees = find_maximal_subtrees(copy.deepcopy(ln), ln["compression_indexes"])
-                oracle = get_oracle(copy.deepcopy(ln), ln["compression_indexes"], trees)
-                ln["oracle"] = oracle
+                ln["q"] = get_q(ln)
                 sources.append(ln)
     return sources
 
@@ -88,7 +83,6 @@ if __name__ == "__main__":
     with open("preproc/100k", "wb") as of:
         dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:100000]] 
         pickle.dump(dt, of)
-
 
     def get_toks(jdoc):
         for t in jdoc['tokens']:
