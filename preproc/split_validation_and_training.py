@@ -11,6 +11,7 @@ import json
 import glob
 import copy
 
+from tqdm import tqdm
 from bottom_up_clean.query_maker import get_q
 from code.log import logger
 from unidecode import unidecode
@@ -18,7 +19,6 @@ from ilp2013.fillipova_altun_supporting_code import get_tok
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 
 random.seed(1)
-
 
 validation_size = 25000
 
@@ -51,13 +51,16 @@ def load_dataset(glob_string="sentence-compression/data/sent-comp*source"):
 
     for source in glob.glob(glob_string):
         with open(source, "r") as inf:
-            for ln in inf:
-                ln = json.loads(ln)
-                r = len(" ".join([i["word"] for i in ln["tokens"] if
-                        i['index'] in ln["compression_indexes"]]))
-                ln["r"] = r
-                ln["q"] = get_q(ln)
-                sources.append(ln)
+            for ln in tqdm(inf):
+                try:
+                    ln = json.loads(ln)
+                    r = len(" ".join([i["word"] for i in ln["tokens"] if
+                            i['index'] in ln["compression_indexes"]]))
+                    ln["r"] = r
+                    ln["q"] = get_q(ln)
+                    sources.append(ln)
+                except AssertionError:
+                    pass  # in a rare cases (~1/1000) there is no possible Q
     return sources
 
 
