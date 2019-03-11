@@ -75,7 +75,7 @@ Traditional study of extractive sentence compression seeks to create short, read
 %\fbox{
 %\begin{minipage}{7.6 cm}
 \includegraphics[width=8.5cm]{qf.pdf}
-\caption{A search interface (boxed, top) returns a headline $h$ above a constrained compression $c$, shortened from a sentence $s$ in a query-relevant document (italics, bottom). The constrained compression must contain the users' query terms (bold), and must not exceed 75 characters in length.}
+\caption{A search interface (boxed, top) returns a headline $h$ above a constrained compression $C$, shortened from a sentence $S$ in a query-relevant document (italics, bottom). The constrained compression must contain $Q$, the users' query terms (bold), and must not exceed $b=$75 characters in length.}
 \label{f:qf}
 %\end{minipage}
 %}
@@ -145,7 +145,7 @@ We compare additive compression to a supervised ILP baseline in terms of latency
 In order to evaluate different approaches to constrained compression, we require an evaluation dataset of sentences, constraints and known-good shortenings which respect the constraints. Formally, this means we need tuples $(S, Q, b, C_g)$, where $C_g$ respects $Q$ and $b$ (\S\ref{s:intro}).
 
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
-as a collection of input triples and constrained compressions.\footnote{See appendix for discussion of preprocessing.} For each $S$--$C_g$ pair in the dataset, we define $b$ as the character length of $C_g$. We then sample a query $Q$ from the tokens in $C_g$, based on the observed distribution of token counts \cite{Jansen2000RealLR}, and observed distribution of part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{We reject samples in which the query length is longer than 6 tokens, which are poorly suited our setting. We manually map part-of-speech tags from \citet{Barr2008TheLS} to Penn tags, described in supporting code. We reject sampled part-of-speech tags which occur in fewer than 5\% of real queries.} Because we mimic real world behavior, search queries are often short (several tokens long), and often restricted to particular parts of speech (nouns and proper nouns). Sampled queries include ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR.'' By sampling queries and defining budgets in this manner, we create a dataset of \ahcomment{X} tuples of the form $(S,Q,b,C)$.
+as a collection of input triples and constrained compressions. For each $S$--$C_g$ pair in the dataset, we define $b$ as the character length of $C_g$. We then sample a query $Q$ from the tokens in $C_g$, based on the observed distribution of token counts \cite{Jansen2000RealLR}, and observed distribution of part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{See appendix for detailed discussion of preprocessing and query sampling.} Because we mimic real world behavior, search queries are often short (several tokens long), and often restricted to particular parts of speech (nouns and proper nouns). Sampled queries include ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR.'' By sampling queries and defining budgets in this manner, we create a dataset of \ahcomment{X} tuples of the form $(S,Q,b,C)$.
 
 \begin{table}[]
 \begin{tabular}{lrrl}
@@ -179,13 +179,13 @@ To our knowledge, a public implementation of this method does not exist. We reim
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
-Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate extractive sentence compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. In our constrained compression setting, $Q$ determines the ``important'' information from $S$. Thus, human importance evaluations are inappropriate.
+Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. In our constrained compression setting, $Q$ determines the ``important'' information from $S$. Thus, human importance evaluations are inappropriate.
 
 We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Based on SLOR scores, our method might produce slightly more readable compressions (Table \ref{t:results}). The appendix details our implementation of SLOR. 
 
 \subsection{Latency evaluation}\label{s:costs}
 
-ILP-based approaches to sentence compression formalize the task as an integer linear programming optimization task, a well-known NP-hard problem  (\S\ref{s:relatedwork}), with exponential worst-case complexity.\footnote{The complexity is exponential in $|V|$ if the ILP selects tokens like \citet{clarke2008global}, and exponential in $|E|$ if the ILP selects edges like \citet{filippova2008dependency} or \citet{filippova2013overcoming}.} One advantage of our transition-based framework is that it can perform query-focused, budget-constrained compression that is linear in $|V|$, the token length of $S$. Compression is linear because we initialize the frontier $F$ with all $v_i \in V \setminus Q$, and then remove one vertex $v_i$ from $F$ at each timestep until $F$ is empty.
+ILP-based compression techniques incur exponential worst-case complexity (\S\ref{s:relatedwork}).\footnote{ILPs are exponential in $|V|$ if when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} Our additive framework is linear in $|V|$, the token length of $S$. Compression is linear because we initialize the frontier $F$ with all $v_i \in V \setminus Q$, and then remove one vertex $v_i$ from $F$ at each timestep until $F$ is empty.
 
 We test if the theoretical advantage of our system translates to a practical speedup by sampling 10,000 sentences with replacement from the test set, and performing compression with an ILP. We then repeat this experiment with our additive compression approach (Table \ref{t:results}). Our linear additive technique is \ahcomment{TODO} faster than existing methods. The appendix contains additional computational details.
 
