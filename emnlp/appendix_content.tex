@@ -1,12 +1,5 @@
 \appendix
 
-\begin{figure*}[htb!]
-\centering
-\includegraphics[width=.75\textwidth]{worked.pdf}
-\caption{Nine operations of our transition-based compression return the compression: ``Jack went up the hill". At each timestep, the compression has state $(V_j, [v_j|B])$. In the diagram, the tokens in $V_j$ are shown in bold. The token $v_j$ is shown in the third column.}
-\label{f:example}
-\end{figure*}
-
 \section{Appendix}
 
 \begin{algorithm}[]
@@ -17,11 +10,17 @@
  \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
   $v \gets \pi(F)$; \\
   $F \gets F \setminus  \{v\}$ \\
-  \If{$p(v | C) > .5$* and $\ell(C \cup \{v\}) < b$}{$C \gets C \cup \{v\}$}
+  \If{$p(v | C) > .5$* and $\ell(C \cup \{v\}) \leq b$}{$C \gets C \cup \{v\}$}
  }
 \KwRet{$\ell(C)$}
  \caption{Additive compression {\small(test time*)}}
 \end{algorithm}\label{a:algo}
+
+\subsection{Query sampling}
+We reject samples in which the query length is longer than 6 tokens, which are poorly suited our setting. We manually map part-of-speech tags from \citet{Barr2008TheLS} to Penn tags, described in supporting code. We reject sampled part-of-speech tags which occur in fewer than 5\% of real queries.
+
+\subsection{Preprocessing}
+We re-tokenize, parse and tag the \citet{filippova2013overcoming} dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}. \citet{filippova2013overcoming} transforms compressions during preprocessing. We reimplement these transformations using UD (see next section), after parsing and tagging the untransformed compressions from the dataset.
 
 \subsection{Reimplementation of \citet{filippova2013overcoming}: additional details}
 

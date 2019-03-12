@@ -25,7 +25,6 @@ if __name__ == "__main__":
         paths = json.loads(paths)
         sentence = paths["sentence"]
         #sentence["q"] = get_q(sentence)
-        print([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]])
         predicted = runtime_path(sentence,
                                  frontier_selector=pick_l2r_connected,
                                  clf=clf,
@@ -45,4 +44,3 @@ if __name__ == "__main__":
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
     print("F1={}".format(tot/(totalVal)))
     print("Pct. forest={}".format(totalNonTrees / totalVal))
-

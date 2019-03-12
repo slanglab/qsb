@@ -118,14 +118,15 @@ compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBase
 \begin{figure}[h]
 \includegraphics[width=8.2cm]{additive.pdf}
 \caption{A stateful procedure (from left to right) produces the compression $\{$A,C,B,E$\}$.}
-\end{figure}\label{f:walkthru}
+\label{f:walkthru}
+\end{figure}
 
 \subsection{Additive procedure}\label{s:formal}
 
 Our method builds a compression by maintaining a state
-$(C_i,P_i)$ where $C_i \subseteq S$ is a set of compression tokens, $P_i  \subseteq S$ is a priority queue, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
+$(C_i,P_i)$ where $C_i \subseteq S$ is a set of compression tokens, $P_i  \subseteq S$ is a priority queue of vertexes, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P)$ from the head of $P$. Neighbors of $C$ get higher priority than non-neighbors in the queue. (We break ties in left-to-right order, by sentence position.) At each timestep, we decide to accept or reject $v_i$. If we accept, $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P$ is empty or the character length of $C$ is greater than the length constraint.\footnote{We linearize tokens in their original sentence order, which is typical in English-language compression.} The appendix includes a formal algorithm. \ahcomment{revisit stopping criteria}
+During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P)$ from the head of $P$. Neighbors of $C$ get higher priority than non-neighbors in the queue. (We break ties in left-to-right order, by sentence position.) We then evaluate $v_i$ for inclusion in $C_i$. If we accept $v_i$, and if adding $v_i$ will not exceed $b$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P$ is empty or the character length of $C$ is equal to the length constraint.\footnote{We linearize tokens in their original sentence order, which is typical in English-language compression.} The appendix includes a formal algorithm. \ahcomment{revisit stopping criteria}
 
 Our additive framework is linear in the token length of $S$ because $P_0  \gets S \setminus Q$ at initialization, and because we pop and evaluate one vertex from $P$ at each timestep, in the worst case.
 

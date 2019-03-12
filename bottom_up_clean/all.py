@@ -158,9 +158,9 @@ def make_decision(vertex, sentence, depths, current_compression, vectorizer, clf
                             current_compression=current_compression)
 
     feats = get_global_feats(sentence=sentence,
-                            feats=feats,
-                            vertex=vertex,
-                            current_compression=current_compression)
+                             feats=feats,
+                             vertex=vertex,
+                             current_compression=current_compression)
 
     X = vectorizer.transform([feats])
     y = clf.predict(X)[0]
@@ -186,10 +186,12 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer):
             y = make_decision(vertex, sentence, depths, current_compression, vectorizer, clf)
 
             if y == 1:
-                current_compression.add(vertex)
-                for i in get_dependents_and_governors(vertex, sentence, current_compression):
-                    if i not in current_compression and i is not None:
-                        frontier.add(i)
+                wouldbe = len_current_compression(current_compression | {vertex}, sentence)
+                if wouldbe <= sentence["r"]:
+                    current_compression.add(vertex)
+                    for i in get_dependents_and_governors(vertex, sentence, current_compression):
+                        if i not in current_compression and i is not None:
+                            frontier.add(i)
         frontier.remove(vertex)
 
         lt = len_current_compression(current_compression, sentence)
