@@ -129,7 +129,7 @@ During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then,
 
 We compare additive compression to a supervised ILP baseline in terms of latency, readability and token-level F1 score. F1 is the standard automatic evaluation metric for the compression task, used to measure how well each compression method can reconstruct known-good shortenings. Our method achieves higher F1 scores, higher automatic readability scores and 100X lower latency (Table \ref{t:results}) than ILP techniques. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
-\subsection{Synthetic constrained compression experiment}
+\subsection{Synthetic constrained compression experiment}\label{s:constrained}
 
 In order to evaluate different approaches to constrained compression, we require a dataset of sentences, constraints and known-good shortenings, which respect the constraints. This means we need tuples $(S, Q, b, C_g)$, where $C_g$ is a known-good compression of $S$ which respects $Q$ and $b$ (\S\ref{s:intro}).
 
@@ -151,9 +151,11 @@ Rand.  &  {\small 0.690}  & { X }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
 \subsection{Implementation: additive compression}\label{s:transition}
 
 Additive compression accepts or rejects some candidate vertex $v_i$ at each timestep $i$. 
-We learn such decisions using a corpus of tuples $(S,Q,b,C_g)$, where $C_g$ is some known-good compression of $S$ respecting $Q$ and $b$ (\S\ref{s:intro}). Given $(S,Q,b,C_g)$ and $\pi$ we can construct a unique oracle compression path by initializing $C_0$ with $Q$, choosing $v_i = h(P)$ at each timestep, and adding $v_i$ to $C_i$ iff $v_i \in C_g$. We use such oracle paths to train a model (\S\ref{s:transition}) of oracle inclusion decisions, ${p(y_i  = 1 | v_i, C_i, P_i, S_i)}$. This procedure can reconstruct all compressions in a large, standard corpus \cite{filippova2013overcoming}. 
+We learn such decisions using a corpus of tuples $(S,Q,b,C_g)$ (\S\ref{s:constrained}). 
 
-We learn a model $p(y_i  = 1 | v_i, C_i, P_i, S_i)$ to perform compression. We initially experimented with neural models \cite{D14-1082}, but found that feature-based, binary logistic regression achieved similar performance with much lower latency. Non-neural approaches allow our method to be used in fields like social science and journalism, where expensive graphics hardware is not available. The features in our model fall into three classes.
+Given $(S,Q,b,C_g)$, we can construct a unique oracle compression path by $(1)$ initializing $C_0$ with $Q$, $(2)$ choosing $v_i = h(P)$ at each timestep, and $(3)$ adding $v_i$ to $C_i$ iff $v_i \in C_g$. This procedure can reconstruct all $C_g$ in the corpus \cite{filippova2013overcoming}. 
+
+We then use such oracle paths to train a model of oracle inclusion decisions, ${p(y_i  = 1 | v_i, C_i, P_i, S_i)}$. We initially experimented with neural techniques, following the \citet{D14-1082} approach to transition-based parsing. But we found that feature-based, binary logistic regression achieved similar performance with much lower latency. Non-neural approaches allow our method to be used in fields like social science and journalism, where expensive graphics hardware is not available. The features in our model fall into 3 classes.
 
 \textbf{Local features} describe the properties of the edge $(u,v)$ between $v_i \in F$ and $u \in C_i$. Such features are based on previous approaches to supervised, feature-based compression \cite{filippova2013overcoming,almeida2013fast,Filippova2015FastKS}, including structural features (e.g.~vertex depth in tree), lexical features (e.g.~governor word), and semantic features (e.g.~NER tag). Local features also indicate if $u$ governs $v_i$ or vice versa. This allows our model to reason about the sorts of governors which should be included in a compression (e.g.~verbs) and the sorts of dependents which might not be added to $C_i$ (e.g.~modifiers). We describe the features in detail in our appendix and supporting code. If $v_i$ is disconnected from $C_i$, as in step 3 of Figure \ref{f:walkthru}, no local features are used.
 
