@@ -129,15 +129,14 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-epochs', nargs="?", default=20, type=int)
-    parser.add_argument("-file", default="preproc/100k")
     args = parser.parse_args()
     vocab = get_all_vocabs()
-    with open(args.file, "rb") as of:
+    with open("preproc/training.ilp",  "rb") as of:
         data = pickle.load(of)
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    #init_checkpoints(data, vocab)
+    init_checkpoints(data, vocab)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)

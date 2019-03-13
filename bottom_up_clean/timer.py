@@ -30,7 +30,7 @@ with open(args.path_to_set_to_evaluate, "r") as inf:
 
 def test_ILP():
     """Do compression"""
-    s = random.sample(S, k=1)[0]
+    s = random.sample(S, k=1)[0]["sentence"]
     run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights) 
 
 
@@ -38,6 +38,6 @@ if __name__ == '__main__':
 
     all_ = []
     for i in tqdm(range(10000)):
-        a = timeit.timeit("test()", setup="from __main__ import test_ILP", number=1)
+        a = timeit.timeit("test_ILP()", setup="from __main__ import test_ILP", number=1)
         all_.append(a)
     print(np.mean(all_), np.std(all_))

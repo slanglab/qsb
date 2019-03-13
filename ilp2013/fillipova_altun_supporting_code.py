@@ -583,6 +583,7 @@ def get_featurized_dependency_scores(jdoc, vs, weights):
     '''
     def to_edge(d):
         return (d["governor"], d["dependent"])
+    import ipdb;ipdb.set_trace()
     out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=to_edge(d), jdoc=jdoc, vocabs=vs).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
     out = {k:float(v) for k,v in out.items()}
     return out
