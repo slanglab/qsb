@@ -71,20 +71,19 @@ if __name__ == "__main__":
     data = [d for d in data if len(d["q"]) > 0]
 
     # this is for validation. note: no tree transform.
-    # this will go to human experiments
     # the prune based models do not use transforms so the transform happens there
     with open("preproc/validation.jsonl", "w") as of:
         dt = "\n".join([json.dumps(_) for _ in data[-validation_size:]])
         of.write(dt)
 
-    # this is to train lstm taggers 
+    # this is to train stateful models
     with open("preproc/training.jsonl", "w") as of:
         dt = [json.dumps(_) for _ in data[0:-validation_size]]
         of.write("\n".join(dt))
 
     # this is to train the ILP from F & A
-    with open("preproc/100k", "wb") as of:
-        dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:100000]] 
+    with open("preproc/training.ilp", "wb") as of:
+        dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:-validation_size]] 
         pickle.dump(dt, of)
 
     def get_toks(jdoc):
