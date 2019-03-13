@@ -160,7 +160,7 @@ The appendix contains additional details regarding model tuning and implementati
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
-We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach represents each edge in a syntax tree with a vector of binary features, then learns weights for each feature using a structured perceptron trained on a corpus of $(S,C_g)$ pairs. Learned weights are used to compute a global compression objective, subject to structural constraints which ensure the output is a valid tree.
+We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach represents each edge in a syntax tree with a vector of binary features, then learns weights for each feature using a structured perceptron trained on a corpus of sentence--compression pairs. Learned weights are used to compute a global compression objective, subject to structural constraints which ensure the output is a valid tree. This approach can easily perform constrained compression: after training the model, we specify that output must contain the query and respect the character budget.
 
 To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of  0.690 on the unconstrained compression task, lower than the result reported by the original authors. There are some important differences between our reimplementation and the method reported in \citet{filippova2013overcoming}. We describe these differences in detail in the appendix.
 
@@ -172,7 +172,7 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \subsection{Latency evaluation}\label{s:costs}
 
-Unlike ILPs, our method is linear instead of exponential in the worst-case. We test if the theoretical advantage of our system translates to a practical speedup by sampling 10,000 sentences with replacement from the test set, and performing compression with an ILP. We then repeat this experiment with our additive compression approach (Table \ref{t:results}). Our linear additive technique is \ahcomment{TODO} faster than existing methods. The appendix contains additional computational details.
+Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by compressing 10,000 sentences sampled with replacement from the test set, and observing the wall clock speed. We repeat this experiment with our additive compression approach. Our method is \ahcomment{TODO} faster (Table \ref{t:results}). The appendix contains additional computational details.
 
 
 \begin{table}[]
