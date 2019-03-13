@@ -3,7 +3,7 @@ import string
 from code.treeops import bfs
 import numpy as np
 import copy
-
+import random
 from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
@@ -11,6 +11,19 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction import FeatureHasher
 
 PUNCT = [_ for _ in string.punctuation]
+
+
+def get_marginal(fn = "training.paths"):
+    all_decisions = []
+    with open(fn, "r") as inf:
+        for ln in inf:
+            ln = json.loads(ln)
+            for p in ln["paths"]:
+                decision = p[-1]
+                all_decisions.append(decision)
+
+    return np.mean(all_decisions)
+
 
 def get_features_of_dep(dep, sentence, depths):
     '''
@@ -151,24 +164,33 @@ def init_frontier(sentence, Q):
     return out
 
 
-def make_decision(vertex, sentence, depths, current_compression, vectorizer, clf):
-    feats = get_local_feats(vertex=vertex,
-                            sentence=sentence,
-                            depths=depths,
-                            current_compression=current_compression)
+def make_decision_lr(**kwargs):
+    feats = get_local_feats(vertex=kwargs["vertex"],
+                            sentence=kwargs["sentence"],
+                            depths=kwargs["depths"],
+                            current_compression=kwargs["current_compression"])
 
-    feats = get_global_feats(sentence=sentence,
+    # note: adds to feats dict
+    feats = get_global_feats(vertex=kwargs["vertex"],
+                             sentence=kwargs["sentence"],
                              feats=feats,
-                             vertex=vertex,
-                             current_compression=current_compression)
+                             current_compression=kwargs["current_compression"])
 
-    X = vectorizer.transform([feats])
-    y = clf.predict(X)[0]
+    X = kwargs["vectorizer"].transform([feats])
+    y = kwargs["clf"].predict(X)[0]
     return y
 
 
-def runtime_path(sentence, frontier_selector, clf, vectorizer):
-    '''Run additive compression, but use a model not oracle to make an addition decision'''
+def make_decision_random(**kwargs):
+    draw = random.uniform(0, 1)
+    return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
+
+def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
+    '''
+    Run additive compression, but use a model not oracle to make an addition decision
+    
+    The model is provided w/ the decider variable. It is either logistic regression or random based on marginal
+    '''
     current_compression = {i for i in sentence["q"]}
     frontier = init_frontier(sentence, sentence["q"])
 
@@ -183,7 +205,13 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer):
                                    sentence=sentence)
 
         if vertex != 0: # bug here?
-            y = make_decision(vertex, sentence, depths, current_compression, vectorizer, clf)
+            y = decider(vertex=vertex,
+                                sentence=sentence,
+                                depths=depths,
+                                current_compression=current_compression,
+                                vectorizer=vectorizer,
+                                marginal=marginal,
+                                clf=clf)
 
             if y == 1:
                 wouldbe = len_current_compression(current_compression | {vertex}, sentence)
@@ -436,3 +464,11 @@ def get_dependents_and_governors(vertex, sentence, tree):
     if governor["governor"] not in tree:
         out.append(governor["governor"])
     return out
+
+def has_forest(predicted, sentence):
+    ''' is the prediction a forest or a tree?'''
+    for p in predicted:
+        gov = [_['governor'] for _ in sentence["basicDependencies"] if _["dependent"] == p][0]
+        if gov not in predicted | {0}:
+            return True
+    return False

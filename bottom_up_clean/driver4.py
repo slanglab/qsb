@@ -2,7 +2,7 @@ import json
 import pickle
 import argparse
 
-from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected
+from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
 
 from bottom_up_clean.query_maker import get_q
 
@@ -10,6 +10,7 @@ from bottom_up_clean.query_maker import get_q
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
 parser.add_argument('-training_paths', type=str, default="training.paths")
+parser.add_argument('-random', dest='random', action='store_true', default=False)
 
 args = parser.parse_args()
 
@@ -20,27 +21,28 @@ if __name__ == "__main__":
 
     tot = 0
 
+    marginal = get_marginal(args.training_paths)
+
     totalNonTrees = 0
     for pno, paths in enumerate(open(args.validation_paths, "r")):
         paths = json.loads(paths)
         sentence = paths["sentence"]
-        #sentence["q"] = get_q(sentence)
+        if args.random is True:
+            decider=make_decision_random
+        else:
+            decider=make_decision_lr
         predicted = runtime_path(sentence,
                                  frontier_selector=pick_l2r_connected,
                                  clf=clf,
-                                 vectorizer=vectorizer)
+                                 vectorizer=vectorizer,
+                                 marginal=marginal,
+                                 decider=decider)
 
         ### check if the sentence has any non trees?
-        hit_sentence = False
-        for p in predicted:
-            gov = [_['governor'] for _ in sentence["basicDependencies"] if _["dependent"] == p][0]
-            if gov not in predicted | {0}:
-                hit_sentence = True
-        if hit_sentence:
+        if has_forest(predicted, sentence):
             totalNonTrees += 1
 
-        f1s = get_f1(predicted, sentence)
-        tot += f1s
+        tot += get_f1(predicted, sentence)
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
     print("F1={}".format(tot/(totalVal)))
     print("Pct. forest={}".format(totalNonTrees / totalVal))
