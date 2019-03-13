@@ -101,7 +101,7 @@ We thus present a new method for constrained compression which grows a forest in
 
 Extractive compression shortens a sentence by removing tokens \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}, typically for extractive summarization \cite{Knight2000StatisticsBasedS,almeida2013fast,P16-1188}.\footnote{Some methods shorten sentences via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}: users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under length and lexical constraints.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, but do not examine the compression problem under lexical and length constraints.}
 
-Our interest in constrained compression is motivated by search user interfaces \cite{hearst2009search}, which often display query-biased snippets \cite{tombros1998advantages}.\footnote{Apache Lucene (v7.5) does not perform sentence compression in generating snippets. \ahcomment{TODO CITE. see comment}} 
+Our interest in constrained compression is motivated by search user interfaces \cite{hearst2009search}, which often display query-biased snippets \cite{tombros1998advantages}.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}} 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
 Because such user-facing systems require low-latency \cite{Nielsen,heerschei,Liu2014TheEO}, we prioritize computational efficiency in designing a solution to the constrained task. 
 
@@ -112,23 +112,25 @@ At this time, sequence to sequence sentence compression \cite{filippova2015sente
 \section{Additive compression}\label{s:system}
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compression because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
-compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of additive compression is that it can construct constrained compressions in linear time, leading to lower latency than ILP-based techniques (\S\ref{s:autoeval}).
+compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of additive compression is that it can construct constrained compressions in linear time, leading to lower latency than ILP-based techniques (\S\ref{s:autoeval}). 
+
+Additive compression assumes a boolean relevance model, which defines some initial compression, containing the user's query term. Many search interfaces (Figure \ref{f:qf}) require this form of constrained compression.
 
 
 \begin{figure}[h]
 \includegraphics[width=8.2cm]{additive.pdf}
-\caption{A stateful procedure (from left to right) produces the compression $\{$A,C,B,E$\}$.}
+\caption{A stateful procedure (from left to right) produces the compression $\{$A,C,B,E$\}$. Each candidate $v_i$ is boxed. All rejected candidates $\neg C$ are unshaded.}
 \label{f:walkthru}
 \end{figure}
 
 \subsection{Additive procedure}\label{s:formal}
 
 Our method builds a compression by maintaining a state
-$(C_i,P_i)$ where $C_i \subseteq S$ is a set of compression tokens, $P_i  \subseteq S$ is a priority queue of vertexes, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
+$(C_i,P_i)$ where $C_i \subseteq S$ is a set of added candidates, $P_i  \subseteq S$ is a priority queue of vertexes, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P)$ from the head of $P$. Neighbors of $C$ get higher priority than non-neighbors in the queue. (We break ties in left-to-right order, by sentence position.) We then evaluate $v_i$ for inclusion in $C_i$. If we accept $v_i$, and if adding $v_i$ will not exceed $b$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P$ is empty or the character length of $C$ is equal to the length constraint.\footnote{We linearize tokens in their original sentence order, which is typical in English-language compression.} The appendix includes a formal algorithm. \ahcomment{revisit stopping criteria}
+During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P)$ from the head of $P$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P$ get higher priority than non-neighbors in the queue. We break ties in left-to-right order, by sentence position.) If we accept $v_i$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P$ is empty or $C$ is $b$ characters long.\footnote{We linearize $C$ by vertex position, which is common for English-language compression.} The appendix includes a formal algorithm. Note that we do not accept tokens which would break the character budget. 
 
-Our additive framework is linear in the token length of $S$ because $P_0  \gets S \setminus Q$ at initialization, and because we pop and evaluate one vertex from $P$ at each timestep, in the worst case.
+Our additive framework is linear in the token length of $S$ because $P_0  \gets S \setminus Q$, and because we pop and evaluate one vertex from $P$ at each timestep, in the worst case.
 
 \section{Evaluation}\label{s:autoeval}
 
@@ -140,18 +142,6 @@ In order to evaluate different approaches to constrained compression, we require
 
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
 as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we define $b$ as the character length of $C_g$, and we sample some query $Q$ from the tokens in $C_g$. We sample $Q$ to mimic the observed distribution of query token lengths \cite{Jansen2000RealLR} and observed distribution of query part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{See appendix for detailed discussion of preprocessing and query sampling. Queries are short sets of proper nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR.'' } By sampling queries and defining budgets in this manner, we create a dataset of \ahcomment{X} tuples of the form $(S,Q,b,C_g)$.
-
-\begin{table}[]
-\begin{tabular}{lrrl}
-\centering
-Approach & F1 & SLOR &  Speed {\small (sec. / sentence)}  \\ \hline
-ILP &  {\small 0.854}   &  {\small 0.776 }  & {\small $\mu=$ .115} ({\small $ \sigma=.074$}) \\
-Additive &  {\small \textbf{0.875}}  & {\small \textbf{0.800} }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
-Rand.  &  {\small 0.690}  & { X }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
-\end{tabular}
-\caption{Test F1 scores, SLOR scores and average latency for three compression methods, for the constrained compression task. The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Additive compression with random decisions (Rand.) achieves F1 = 0.690, which is the lower bound for this task.}
-\label{t:results}
-\end{table}
 
 \subsection{Implementation: additive compression}\label{s:transition}
 
@@ -166,7 +156,7 @@ We then use a collection of such oracle paths to train a model of oracle inclusi
 
 \textbf{Interaction features} are formed by crossing all local features with the dependency type of the edge $(u,v_i)$.
 
-The appendix contains additional details regarding model tuning and implementation \ahcomment{Discuss tuning appendix}
+The appendix contains additional details regarding model tuning and implementation.
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
@@ -184,9 +174,22 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 Unlike ILPs, our method is linear instead of exponential in the worst-case. We test if the theoretical advantage of our system translates to a practical speedup by sampling 10,000 sentences with replacement from the test set, and performing compression with an ILP. We then repeat this experiment with our additive compression approach (Table \ref{t:results}). Our linear additive technique is \ahcomment{TODO} faster than existing methods. The appendix contains additional computational details.
 
+
+\begin{table}[]
+\begin{tabular}{lrrl}
+\centering
+Approach & F1 & SLOR &  Speed {\small (sec. / sentence)}  \\ \hline
+ILP &  {\small 0.854}   &  {\small 0.776 }  & {\small $\mu=$ .115} ({\small $ \sigma=.074$}) \\
+Additive &  {\small \textbf{0.875}}  & {\small \textbf{0.800} }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
+Rand.  &  {\small 0.690}  & { X }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
+\end{tabular}
+\caption{Test F1 scores, SLOR scores and average latency for three compression methods, for the constrained compression task. The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Additive compression which accepts or rejects randomly at the marginal training-time acceptance rate (Rand.) achieves F1 = 0.490, which is the lower bound for this task.}
+\label{t:results}
+\end{table}
+
 \section{Conclusion and future work}
 
-This work introduces a new additive method for extractive sentence compression, which is more computationally efficient than ILP-based methods and better reconstructs known-good sentence shortenings under constraints. 
+This work introduces a new additive method for extractive sentence compression under lexical and length constraints. Our approach is much faster than ILP-based techniques, and better reconstructs known-good sentence shortenings under constraints. 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
