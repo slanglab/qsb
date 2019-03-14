@@ -367,9 +367,6 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
     governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
 
-    # same interaction feats on gov side
-    dependent_token = get_token_from_sentence(sentence=sentence, vertex=governor["dependent"])
-
     out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
     out["type"] = "GOVERNOR"
@@ -399,53 +396,59 @@ def get_connected(sentence, frontier, current_compression):
             out.add(dependent)
     return {i for i in out if i in frontier}
 
-
-def get_global_feats(sentence, feats, vertex, current_compression):
-    '''return global features of the edits'''
-    lt = len_current_compression(current_compression, sentence)
-    len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
-
-    # these two help. it is showing the method is able to reason about what is left in the compression
-    feats["over_r"] = lt + len_tok > sentence["r"]
-    feats["remaining"] = (lt + len_tok)/sentence["r"]
-
-    feats['middle'] = vertex > min(current_compression) and vertex < max(current_compression)
-
-    feats["right_add"] = vertex > max(current_compression)
-
-    feats["left_add"] = vertex < min(current_compression)
-
+def get_depf(feats):
     try:
-        depf = "dep"
         if "depg" in feats:
             depf = "depg"
         elif "depd" in feats:
             depf = "depd"
         else:
             depf = "dep"
-
-        feats['middle_dep'] = str(feats['middle']) + feats[depf]
-        feats['right_add_dep'] = str(feats['right_add']) + feats[depf]
-        feats["left_add_dep"] = str(feats['left_add']) + feats[depf]
     except KeyError:
-        pass
+        depf = "discon"
+    return depf
+
+def get_global_feats(sentence, feats, vertex, current_compression):
+    '''return global features of the edits'''
+
+    featsg = {}
+
+    lt = len_current_compression(current_compression, sentence)
+    len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
+
+    # these two help. it is showing the method is able to reason about what is left in the compression
+    featsg["over_r"] = lt + len_tok > sentence["r"]
+    featsg["remaining"] = (lt + len_tok)/sentence["r"]
+
+    featsg['middle'] = vertex > min(current_compression) and vertex < max(current_compression)
+
+    featsg["right_add"] = vertex > max(current_compression)
+
+    featsg["left_add"] = vertex < min(current_compression)
+
+    depf = get_depf(feats)
 
     governor = get_governor(vertex, sentence)
-    children = get_children(sentence, vertex)
 
     governor_dep = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor][0]
 
-    feats["global_gov_depGloss"] = governor_dep["dependentGloss"]
-    feats["global_gov_govGloss"] = governor_dep["governorGloss"]
-    feats["global_gov_govDep"] = governor_dep["dep"]
-    feats["global_children_count"] = count_children(sentence, governor)
+    featsg["global_gov_depGloss"] = governor_dep["dependentGloss"]
+    featsg["global_gov_govGloss"] = governor_dep["governorGloss"]
+    featsg["global_gov_govDep"] = governor_dep["dep"]
+    featsg["global_children_count"] = count_children(sentence, governor)
 
     assert isinstance(governor, int)
     if proposed_child(current_compression, sentence, vertex) or proposed_parent(governor=governor, current_compression=current_compression):
-        feats["disconnected"] = 0
+        featsg["disconnected"] = 0
     else:
-        feats["disconnected"] = 1
+        featsg["disconnected"] = 1
 
+    for f in featsg:
+        feats[f] = featsg[f]
+        try:
+            feats[f + feats[depf]] = featsg[f]
+        except KeyError:
+            pass
     return feats
 
 def get_children(sentence, vertex):
