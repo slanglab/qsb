@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    init_checkpoints(data, vocab)
+    # init_checkpoints(data, vocab)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)

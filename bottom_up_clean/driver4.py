@@ -19,6 +19,12 @@ if __name__ == "__main__":
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
                                                  validation_paths=args.validation_paths)
 
+    with open("bottom_up_clean/clf.p", "wb") as of:
+        pickle.dump(clf, of)
+
+    with open("bottom_up_clean/vectorizer.p", "wb") as of:
+        pickle.dump(vectorizer, of)
+
     tot = 0
 
     marginal = get_marginal(args.training_paths)
