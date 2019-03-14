@@ -5,6 +5,9 @@ import random
 import pickle
 import argparse
 import timeit
+import csv
+
+from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected
 from ilp2013.fillipova_altun import run_model
 from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
 
@@ -29,7 +32,6 @@ with open(vectorizer, "rb") as of:
     vectorizer = pickle.load(of)
 
 
-from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected
 
 decider=make_decision_lr
 marginal = None
@@ -66,4 +68,10 @@ def test_additive():
 
 
 if __name__ == '__main__':
-    mean,var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
+    with open("bottom_up_clean/timer.csv", "w") as of:
+        writer = csv.writer(of)
+        mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        writer.writerow([mean, var, "additive"]) 
+        mean,var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
+
+        writer.writerow([mean, var, "ilp"]) 
