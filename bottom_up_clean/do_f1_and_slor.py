@@ -6,7 +6,6 @@ import numpy as np
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
 
-from klm.query import slor, LM, get_unigram_probs
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
@@ -15,9 +14,6 @@ parser.add_argument('-random', dest='random', action='store_true', default=False
 
 args = parser.parse_args()
 
-lm = LM()
-
-unigram_log_probs_ = get_unigram_probs() 
 
 if __name__ == "__main__":
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
@@ -49,7 +45,6 @@ if __name__ == "__main__":
                                  marginal=marginal,
                                  decider=decider)
         compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted] 
-        slors.append(slor(" ".join(compression), lm=lm, unigram_log_probs_=unigram_log_probs_))
         ### check if the sentence has any non trees?
         if has_forest(predicted, sentence):
             totalNonTrees += 1
@@ -62,4 +57,4 @@ if __name__ == "__main__":
         writer.writerow(out)
     print("F1={}".format(tot/(totalVal)))
     print("Pct. forest={}".format(totalNonTrees / totalVal)) 
-    print("slor mean/std={},{}".format(np.mean(slors), np.std(slors)))
+    #print("slor mean/std={},{}".format(np.mean(slors), np.std(slors)))
