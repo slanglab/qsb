@@ -90,4 +90,4 @@ if __name__ == '__main__':
  
         mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
 
-        writer.writerow([mean, var, "random"]) 
+        writer.writerow([mean, var, "make_decision_random"]) 
