@@ -1,3 +1,4 @@
+import csv
 import json
 import pickle
 import argparse
@@ -55,6 +56,10 @@ if __name__ == "__main__":
 
         tot += get_f1(predicted, sentence)
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
+    with open("bottom_up_clean/results.csv", "a") as of:
+        writer = csv.writer(of)
+        out = [tot/totalVal, np.mean(slors), np.std(slors), decider.__name__]
+        writer.writerow(out)
     print("F1={}".format(tot/(totalVal)))
     print("Pct. forest={}".format(totalNonTrees / totalVal)) 
     print("slor mean/std={},{}".format(np.mean(slors), np.std(slors)))
