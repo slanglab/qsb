@@ -209,3 +209,16 @@ def ner_to_s(tok):
     if tok["ner"] == "ORGANIZATION":
         return "O"
     return "X"
+
+
+def get_parent(v, jdoc):
+    '''get the parent of v in the jdoc'''
+    parent = [_ for _ in jdoc["basicDependencies"]
+              if int(_["dependent"]) == int(v)]
+    if parent == []:
+        return None
+    else:
+        assert len(parent) == 1 or int(v) == 0
+        return parent[0]["governor"]
+
+

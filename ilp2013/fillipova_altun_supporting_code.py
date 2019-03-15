@@ -25,6 +25,17 @@ PUNCT.append("''")
 PUNCT.append('``')
 
 
+
+def get_gold_y(jdoc):
+    return [o["index"] in jdoc["compression_indexes"] for o in jdoc["tokens"]]
+
+
+def get_pred_y(predicted_compression, original_indexes):
+    assert all(type(o) == int for o in predicted_compression)
+    return [o in predicted_compression for o in original_indexes]
+
+
+
 def get_oracle_r(source_jdoc):
     '''
     Get the oracle compression length, in chars
