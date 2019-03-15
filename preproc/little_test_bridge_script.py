@@ -4,7 +4,6 @@
 
 import json
 from preproc.split_validation_and_training import load_dataset
-from preproc.lstm_preproc import just_save_sentences
 
 dt = load_dataset("sentence-compression/data/comp-data.eval.source")
 
@@ -15,8 +14,3 @@ with open("preproc/test.jsonl", "w") as of:
     of.write("\n".join(dt))
 
 
-
-just_save_sentences('sentence-compression/data/test_set.jsonl',
-                    range(1, 1000000),
-                    corpus="preproc/test.jsonl",
-                    cap=1000000)
