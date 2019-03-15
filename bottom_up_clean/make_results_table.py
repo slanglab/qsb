@@ -1,5 +1,7 @@
 '''Take all of the results and make a big table'''
 
+# scp ahandler@server:/pathTo/bottom_up_clean/*.csv bottom_up_clean/
+
 import csv
 from collections import defaultdict
 
@@ -45,9 +47,23 @@ def todec(float_):
     small = "{\small " + dec + " }" 
     return small
 
+
+def todec_bold(float_):
+    dec = "{:.3f}".format(float_)
+    small = "\\textbf{\small " + dec + "}" 
+    return small
+
+
 for method in ['ilp', 'make_decision_random', 'make_decision_lr']:
-    print("&".join([print_method[method],
-          todec(method2f1[method]),
-          todec(method2slormu[method]),
-          todec(method2time_mu[method]) + "( " + "{})".format(todec(method2time_sigma[method])),
-          ]) + "\\\\")
+    if method != "make_decision_lr":
+        print("&".join([print_method[method],
+              todec(method2f1[method]),
+              todec(method2slormu[method]),
+              todec(method2time_mu[method]) + "(" + "{})".format(todec(method2time_sigma[method])),
+              ]) + "\\\\")
+    else:
+        print("&".join(["\\textbf{" + print_method[method] + "}",
+              todec_bold(method2f1[method]),
+              todec_bold(method2slormu[method]),
+              todec_bold(method2time_mu[method]) + "(" + "{})".format(todec_bold(method2time_sigma[method])),
+              ]) + "\\\\")
