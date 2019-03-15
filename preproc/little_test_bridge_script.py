@@ -15,6 +15,6 @@ with open("preproc/test.jsonl", "w") as of:
     dt = [json.dumps(_) for _ in dt]
     of.write("\n".join(dt))
 
-with open("preproc/training.ilp", "wb") as of:
+with open("preproc/test.ilp", "wb") as of:
     dt = [filippova_tree_transform(json.loads(i)) for i in dt]
     pickle.dump(dt, of)

@@ -1,3 +1,4 @@
+preproc/*paths
 models/*
 .pytest_cache/
 tuning/tuner.csv
