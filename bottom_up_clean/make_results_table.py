@@ -25,7 +25,7 @@ print_method["ilp"] = "ILP"
 
 with open(results_fn, "r") as inf:
     reader = csv.reader(inf)
-    header = reader.next()
+    header = next(reader)
     for ln in reader:
         f1, slor_mu, slor_std, method = ln
         method2f1[method] = float(f1)
@@ -35,7 +35,7 @@ with open(results_fn, "r") as inf:
 
 with open(timer_fn, "r") as inf:
     reader = csv.reader(inf)
-    header = reader.next()
+    header = next(reader)
     for ln in reader:
         time_mu, time_sigma, method = ln
         method2time_mu[method] = float(time_mu)
@@ -44,13 +44,13 @@ with open(timer_fn, "r") as inf:
 
 def todec(float_):
     dec = "{:.3f}".format(float_)
-    small = "{\small " + dec + " }" 
+    small = "{\small " + dec + "}"
     return small
 
 
 def todec_bold(float_):
     dec = "{:.3f}".format(float_)
-    small = "\\textbf{\small " + dec + "}" 
+    small = "\\textbf{\small " + dec + "}"
     return small
 
 
@@ -59,11 +59,11 @@ for method in ['ilp', 'make_decision_random', 'make_decision_lr']:
         print("&".join([print_method[method],
               todec(method2f1[method]),
               todec(method2slormu[method]),
-              todec(method2time_mu[method]) + "(" + "{})".format(todec(method2time_sigma[method])),
+              todec(method2time_mu[method]) + " (" + "{})".format(todec(method2time_sigma[method])),
               ]) + "\\\\")
     else:
         print("&".join(["\\textbf{" + print_method[method] + "}",
               todec_bold(method2f1[method]),
               todec_bold(method2slormu[method]),
-              todec_bold(method2time_mu[method]) + "(" + "{})".format(todec_bold(method2time_sigma[method])),
+              todec_bold(method2time_mu[method]) + " (" + "{})".format(todec_bold(method2time_sigma[method])),
               ]) + "\\\\")
