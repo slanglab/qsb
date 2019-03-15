@@ -1,6 +1,7 @@
 '''Take all of the results and make a big table'''
 
 import csv
+from collections import defaultdict
 
 results_fn = "bottom_up_clean/results.csv"
 
@@ -8,11 +9,17 @@ timer_fn = "bottom_up_clean/timer.csv"
 
 results = []
 
-method2slormu = {}
-method2slor_std = {}
-method2f1 = {}
-method2time_mu = {}
-method2time_sigma = {}
+method2slormu = defaultdict(float)
+method2slor_std = defaultdict(float)
+method2f1 = defaultdict(float)
+method2time_mu = defaultdict(float)
+method2time_sigma = defaultdict(float)
+
+print_method = {}
+print_method["make_decision_lr"] = "Additive"
+print_method["make_decision_random"] = "Rand."
+print_method["ilp"] = "ILP"
+
 
 with open(results_fn, "r") as inf:
     reader = csv.reader(inf)
@@ -34,12 +41,13 @@ with open(timer_fn, "r") as inf:
 
 
 def todec(float_):
-    return "{:.3f}".format(float_)
+    dec = "{:.3f}".format(float_)
+    small = "{\small " + dec + " }" 
+    return small
 
-for method in ['make_decision_lr', 'make_decision_random']:  # ['ilp']
-    print(method,
+for method in ['ilp', 'make_decision_random', 'make_decision_lr']:
+    print("&".join([print_method[method],
           todec(method2f1[method]),
-          todec(method2time_mu[method]),
-          todec(method2time_sigma[method]),
           todec(method2slormu[method]),
-          todec(method2slor_std[method]))
+          todec(method2time_mu[method]) + "( " + "{})".format(todec(method2time_sigma[method])),
+          ]) + "\\\\")
