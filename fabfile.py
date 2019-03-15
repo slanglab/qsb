@@ -7,8 +7,6 @@ python3
 '''
 from __future__ import with_statement
 from fabric import Connection
-from fabric import task
-from code.log import logger
 import os
 
 local = Connection("localhost").local
@@ -45,3 +43,8 @@ def preproc():
         print("[*] Can't find data. Do you need to run download? Try $fab download")
 
 
+def train_ilp():
+    local("python ilp2013/fillipova_altun_learning.py")
+
+def f1_and_slor():
+    local("./scripts/bottom_up.sh")
