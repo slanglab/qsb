@@ -10,10 +10,8 @@ import random
 import pickle
 import argparse
 from sklearn.metrics import f1_score
-from code.printers import pretty_print_conl
+
 from ilp2013.fillipova_altun_supporting_code import *
-from code.utils import get_NER_query
-from code.utils import get_gold_y,get_pred_y
 
 random.seed(1)
 
@@ -136,7 +134,7 @@ if __name__ == "__main__":
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    # init_checkpoints(data, vocab)
+    #init_checkpoints(data, vocab)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)
