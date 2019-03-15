@@ -1,4 +1,3 @@
-from code.utils import get_ner_spans_in_compression
 from collections import defaultdict
 import numpy as np
 

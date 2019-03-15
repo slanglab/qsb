@@ -3,8 +3,8 @@
 
 echo "f1,slor mu, slor std,method" > bottom_up_clean/results.csv
 
-TRAIN=preproc/training.paths
-VALIDATION=preproc/validation.paths
+TRAIN=preproc/mini.training.paths
+VALIDATION=preproc/mini.validation.paths
 
 # get slor and f1 for random
 python bottom_up_clean/do_f1_and_slor.py -training_paths $TRAIN -validation_paths $VALIDATION -random

@@ -1,9 +1,3 @@
-import re
-from code.treeops import dfs
-from collections import Counter
-from code.treeops import get_walk_from_root
-from charguana import get_charset
-
 
 def get_parent(v, jdoc):
     '''get the parent of v in the jdoc'''

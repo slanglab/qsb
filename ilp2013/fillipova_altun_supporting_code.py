@@ -2,7 +2,7 @@
 This file holds helper methods for the structured perceptron
 '''
 from __future__ import division
-from code.treeops import bfs
+from bottom_up_clean.all import bfs
 from unidecode import unidecode
 import gzip
 import string
