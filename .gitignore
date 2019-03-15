@@ -1,3 +1,7 @@
+preproc/*
+*arpa*
+klm/*klm
+klm/*json
 preproc/*paths
 models/*
 .pytest_cache/
