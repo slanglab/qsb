@@ -23,7 +23,7 @@
 \usepackage{bm}
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
-
+\newcommand{\speedup}[0]{1000X~}
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
 
 \usepackage{url}
@@ -63,7 +63,7 @@
 \maketitle
 
 \begin{abstract}
-Extractive sentence compression seeks to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional length, lexical and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings. Our method constructs compressions in linear time by growing a forest in a dependency parse, achieving a \ahcomment{100X} speed up over traditional ILP-based methods. Our technique also better reconstructs known-good shortenings under constraints.
+Extractive sentence compression seeks to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional length, lexical and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings. Our method constructs compressions in linear time by growing a forest in a dependency parse, achieving a \speedup speed up over traditional ILP-based methods. Our technique also better reconstructs known-good shortenings under constraints.
 \end{abstract}
 
 \section{Introduction}\label{s:intro}
@@ -141,7 +141,7 @@ We compare additive compression to a supervised ILP baseline in terms of latency
 In order to evaluate different approaches to constrained compression, we require a dataset of sentences, constraints and known-good shortenings, which respect the constraints. This means we need tuples $(S, Q, b, C_g)$, where $C_g$ is a known-good compression of $S$ which respects $Q$ and $b$ (\S\ref{s:intro}).
 
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
-as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we set $b$ equal to  the character length of $C_g$, and we sample some query $Q$ from the tokens in $C_g$. We sample $Q$ to mimic the observed distribution of query token lengths \cite{Jansen2000RealLR} and observed distribution of query part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{See appendix for detailed discussion of preprocessing and query sampling.} Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR.'' By sampling queries and defining budgets in this manner, we create a dataset of \ahcomment{X} tuples of the form $(S,Q,b,C_g)$.
+as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we set $b$ equal to  the character length of $C_g$, and we sample some query $Q$ from the tokens in $C_g$. We sample $Q$ to mimic the observed distribution of query token lengths \cite{Jansen2000RealLR} and observed distribution of query part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{See appendix for detailed discussion of preprocessing and query sampling.} Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR.'' By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {\ahcomment{TODO}} test tuples, each of the form $(S,Q,b,C_g)$.
 
 \subsection{Implementation: additive compression}\label{s:transition}
 
@@ -154,7 +154,7 @@ We then use a collection of such oracle paths to train a model of oracle inclusi
 
 \textbf{Overall features} represent the relationship between $v_i$ and the overall compression $C_i$. Overall features include information such as the position of $v_i$ in the sentence, relative to the right-most and left-most vertex in $C_i$, or the fraction of the character budget used so far during addition. Such  features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to add tokens to the right or left of $C_i$.
 
-\textbf{Interaction features} are formed by crossing all local features with the dependency type of the edge $(u,v_i)$.
+\textbf{Interaction features} are formed by crossing all local and global features with the dependency type of the edge $(u,v_i)$. Such features are only used in cases where $u \in C_i$.
 
 The appendix contains additional details regarding model tuning and implementation.
 
@@ -172,27 +172,23 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \subsection{Latency evaluation}\label{s:costs}
 
-Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by compressing 10,000 sentences sampled with replacement from the test set, and observing the wall clock speed. We repeat this experiment with our additive compression approach. Our method is \ahcomment{TODO} faster (Table \ref{t:results}). The appendix contains additional computational details.
+Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by compressing 10,000 sentences sampled with replacement from the test set, and observing the wall clock speed. We repeat this experiment with our additive compression approach. Our method is \speedup faster (Table \ref{t:results}). The appendix contains additional computational details.
 
 
 \begin{table}[]
-\begin{tabular}{lrrl}
+\begin{tabular}{lccc}
 \centering
-Approach & F1 & SLOR &  Latency {, \small sec. / sentence}  \\ \hline
-%ILP &  {\small 0.854}   &  {\small 0.776 }  & {\small $\mu=$ .115} ({\small $ \sigma=.074$}) \\
-%Additive &  {\small \textbf{0.871}}  & {\small \textbf{0.800} }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
-%Rand.  &  {\small 0.690}  & { X }& {\small $\mu=$ 300} ({\small $ \sigma=X$}) \\
-ILP&{\small 0.000 }&{\small 0.000 }&{\small 0.111 }( {\small 0.065 })\\
-Rand.&{\small 0.489 }&{\small nan }&{\small 0.001 }( {\small 0.001 })\\
-Additive&{\small 0.873 }&{\small nan }&{\small 0.010 }( {\small 0.004 })\\
-\end{tabular}
-\caption{Test F1 scores, SLOR scores and average latency for three compression methods, for the constrained compression task. The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Additive compression which accepts or rejects randomly at the marginal training-time acceptance rate (Rand.) achieves a lower-bound F1 = 0.490.}
+Approach & F1 & SLOR &  seconds / sentence  \\ \hline
+ILP&{\small 0.000}&{\small 0.000}&{\small 0.105} ({\small 0.053})\\
+Rand.&{\small 0.493}&{\small 0.093}&{\small 0.001} ({\small 0.001})\\
+\textbf{Additive}&\textbf{\small 0.845}&\textbf{\small 1.153}&\textbf{\small 0.008} (\textbf{\small 0.003})\\\end{tabular}
+\caption{Test F1 scores, SLOR scores and average latency for three compression methods, for the constrained compression task. The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Additive compression which accepts or rejects randomly (Rand.) at the marginal training-time acceptance rate achieves F1 = 0.490, a lower-bound for the task. \ahcomment{why only show sigma for some of these?}}
 \label{t:results}
 \end{table}
 
-\section{Conclusion and future work}
+\section{Conclusion}
 
-This work introduces a new additive method for extractive sentence compression under lexical and length constraints. Our approach is much faster than ILP-based techniques, and better reconstructs known-good sentence shortenings under constraints. 
+We introduce a new additive method for sentence compression under lexical and length constraints. Our approach is much \speedup faster than ILP-based techniques, and better reconstructs known-good constrained compressions. Our low-latency method can be used in interactive search systems, which require rapid, query-oriented compressions.
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
