@@ -6,7 +6,7 @@ import numpy as np
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
 
-from klm.query import LM, get_unigram_probs, slor
+#from klm.query import LM, get_unigram_probs, slor
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
@@ -31,9 +31,9 @@ if __name__ == "__main__":
 
     marginal = get_marginal(args.training_paths)
 
-    lm = LM()
+    #lm = LM()
 
-    unigram_log_probs_ = get_unigram_probs()
+    #unigram_log_probs_ = get_unigram_probs()
 
     totalNonTrees = 0
     for pno, paths in enumerate(open(args.validation_paths, "r")):
@@ -51,7 +51,7 @@ if __name__ == "__main__":
                                  decider=decider)
         compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted] 
         ### check if the sentence has any non trees?
-        slors.append(slor(" ".join(compression), lm, unigram_log_probs_))
+        #slors.append(slor(" ".join(compression), lm, unigram_log_probs_))
         if has_forest(predicted, sentence):
             totalNonTrees += 1
 

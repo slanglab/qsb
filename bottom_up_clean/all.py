@@ -1,9 +1,9 @@
 import json
 import string
-from code.treeops import bfs
 import numpy as np
 import copy
 import random
+from queue import Queue
 from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
@@ -13,7 +13,47 @@ from sklearn.feature_extraction import FeatureHasher
 PUNCT = [_ for _ in string.punctuation]
 
 
-def get_marginal(fn = "training.paths"):
+def bfs(g, hop_s):
+    '''
+    breadth first search
+    Args:
+        g: a graph
+        hop_s: integer starting vertex, our case a root (i.e. 0)
+    Returns:
+        - color list of found nodes, c
+        - list of nodes and predecessor, pi (predecessor == parent if tree)
+        - list of depths, d
+    '''
+    q = Queue()
+
+    deps = "basicDependencies"
+
+    # ancestors
+    pi = {i["dependent"]: None for i in g[deps]}
+    # dependents
+    d = {i["dependent"]: -1 for i in g[deps]}
+    # colors
+    c = {i["dependent"]: "W" for i in g[deps]}
+
+    c[hop_s] = "G"
+    d[hop_s] = 0
+
+    q.put(hop_s)
+
+    while not q.empty():
+        u = q.get()
+        for v in [i["dependent"] for i in g[deps] if i["governor"] == u]:
+            if c[v] == "W":
+                c[v] == "G"
+                d[v] = d[u] + 1
+                pi[v] = u
+                q.put(v)
+        c[u] = "B"
+
+    return d, pi, c
+
+
+def get_marginal(fn="training.paths"):
     all_decisions = []
     with open(fn, "r") as inf:
         for ln in inf:
