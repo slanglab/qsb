@@ -106,6 +106,8 @@ if __name__ == "__main__":
 
     fn = "preproc/validation.jsonl"
 
+    ## assess convergence
+
     for i in range(1,6):
 
         config = {"algorithm": "vanilla-ilp", "weights": "snapshots/{}".format(i)}
