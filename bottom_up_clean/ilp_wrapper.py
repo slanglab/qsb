@@ -8,7 +8,8 @@ import pickle
 from tqdm import tqdm
 from sklearn.metrics import f1_score
 from ilp2013.algorithms import FA2013Compressor
-from ilp2013.algorithms imoprt FA2013CompressorStandard
+from ilp2013.algorithms import FA2013CompressorStandard
+from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 
 from klm.query import LM
 from klm.query import get_unigram_probs
@@ -20,7 +21,13 @@ UNIGRAMS = get_unigram_probs()
 LANGUAGE_MODEL = LM()
 
 
+def strip_tags(tokens):
+    return [_ for _ in tokens if "SOS" not in _["word"] and "EOS"
+            not in _["word"] and "OOV" not in _["word"]]
+
+
 def get_model(config):
+    print(config)
     print(config["algorithm"])
 
     if config['algorithm'][0:11] == "vanilla-ilp":
@@ -39,7 +46,8 @@ def get_model(config):
 def do_sentence(_, no_compression, config):
     sentence = json.loads(_)
     sentence["tokens"] = strip_tags(sentence["tokens"])
-    orig_ix = sentence["original_ix"]
+    
+    orig_ix = [_["index"] for _ in sentence["tokens"]] 
     y_true = [_ in sentence["compression_indexes"] for
               _ in orig_ix]
     out = model.predict(sentence)
@@ -56,11 +64,6 @@ def do_sentence(_, no_compression, config):
             pickle.dump(sentence, of)
     else:
         f1 = f1_score(y_true=y_true, y_pred=y_pred)
-        if args.verbose:
-            print("***")
-            print(" ".join([o["word"] for o in sentence["tokens"]]))
-            print(" ".join([o["word"] for ino, o in enumerate(sentence["tokens"])
-                            if y_pred[ino]]))
     assert f1 <= 1 and f1 >= 0
     compression = [o["word"] for ono, o in enumerate(sentence['tokens'])
                    if y_pred[ono]]
@@ -80,11 +83,11 @@ def do_sentence(_, no_compression, config):
 
 if __name__ == "__main__":
 
-    model = get_model("ilp")
-
     fn = "preproc/validation.jsonl"
 
     config = {"algorithm": "ilp", "weights": "snapshots/1"}
+
+    model = get_model(config)
 
     with open(fn, "r") as inf:
         no_compression = 0
