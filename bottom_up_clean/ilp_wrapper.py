@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-do_jsonl', type=str, default="validation.jsonl")
-    parser.add_argument('-assess_convergence', dest='random', action='store_true', default=False)
+    parser.add_argument('-assess_convergence', dest='assess_convergence', action='store_true', default=False)
 
     args = parser.parse_args()
 
