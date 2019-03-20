@@ -503,6 +503,11 @@ def get_global_feats(sentence, feats, vertex, current_compression):
 
     assert isinstance(governor, int)
 
+    # history based feature
+    for _ in sentence["tokens"]:
+        if _["index"] in current_compression:
+            featsg["has_already" + _["pos"]] = 1
+
     # reason about how to pick the clause w/ compression
     try:
         if feats[depf].lower() == "root":
