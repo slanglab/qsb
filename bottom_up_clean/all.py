@@ -85,7 +85,7 @@ def get_features_of_dep(dep, sentence, depths):
 
     # Structural
     out["childrenCount_gov"] = count_children(sentence, dep["governor"])
-    out["childrenCount_child"] = count_children(sentence, dep["governor"])
+    out["childrenCount_child"] = count_children(sentence, dep["dependent"])
     out["depth_governor"] = depths[dep["dependent"]]
 
     # Semantic
@@ -104,6 +104,14 @@ def get_features_of_dep(dep, sentence, depths):
     out["dependentGloss"] = dep["dependentGloss"]
 
     # Here are some other features
+
+    def get_children_deps(sentence, vertex):
+        '''returns: count of children of vertex in the parse'''
+        return [i["dep"] for i in sentence["basicDependencies"] if i["governor"] == vertex]
+
+    for c in get_children_deps(sentence, dep["dependent"]):
+        out[c + "_is_child"] = c
+
     out["depth_dependent"] = depths[dep["dependent"]]
     out["position_dependent"] = float(dep["dependent"]/len(sentence["tokens"]))
     out["is_punct_dependent"] = dep["dependentGloss"] in PUNCT
@@ -498,7 +506,7 @@ def get_global_feats(sentence, feats, vertex, current_compression):
     # reason about how to pick the clause w/ compression
     try:
         if feats[depf].lower() == "root":
-            has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp"] for _ in sentence["basicDependencies"]]
+            has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
             featsg["is_root_and_mark_or_xcomp"] = any(has_mark_or_xcomp)
     except KeyError:
         pass
