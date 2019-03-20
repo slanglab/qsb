@@ -243,6 +243,8 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
     depths = get_depths(sentence)
 
+    decided = []
+
     lt = len_current_compression(current_compression, sentence)
 
     while len(frontier) > 0 and lt < sentence["r"]:
@@ -266,8 +268,10 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                     current_compression.add(vertex)
                     for i in get_dependents_and_governors(vertex, sentence, current_compression):
                         if i not in current_compression and i is not None:
-                            frontier.add(i)
+                            if i not in decided:
+                                frontier.add(i)
         frontier.remove(vertex)
+        decided.append(vertex)
 
         lt = len_current_compression(current_compression, sentence)
 
