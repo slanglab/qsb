@@ -149,17 +149,21 @@ def oracle_path(sentence, pi = pick_l2r_connected):
 
     F = init_frontier(sentence, sentence["q"])
 
+    decided = []
+
     path = []
     while len(F) > 0:
         v = pi(frontier=F, current_compression=T, sentence=sentence)
         if v in sentence["compression_indexes"]:
             for i in get_dependents_and_governors(v, sentence, T):
-                F.add(i)
+                if i not in decided:
+                    F.add(i)
             path.append((copy.deepcopy(T), v, 1))
             T.add(v)
         else:
             path.append((copy.deepcopy(T), v, 0))
         F.remove(v)
+        decided.append(v)
 
     assert T == set(sentence["compression_indexes"])
 
