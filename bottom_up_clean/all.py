@@ -185,7 +185,7 @@ def train_clf(training_paths="training.paths", validation_paths="validation.path
 
     clf = LogisticRegression(random_state=0,
                              solver='lbfgs',
-                             C=.05,
+                             C=10,
                              multi_class='ovr').fit(X_train, y_train)
 
     print(clf.score(X_val, y_val))
@@ -391,7 +391,7 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
-    out = {k + "child": v for k,v in out.items()}
+    #out = {k + "child": v for k,v in out.items()}
 
     out["type"] = "CHILD"
 
