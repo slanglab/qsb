@@ -112,6 +112,9 @@ def get_features_of_dep(dep, sentence, depths):
     out["last2_gov"] = dep["governorGloss"][-2:]
     out["comes_first"] = dep["governor"] < dep["dependent"]
     out["governor_in_q"] = dep["governor"] in sentence["q"]
+    out["gov_is_upper"] = dep["governorGloss"][0].isupper()
+    out["dep_is_upper"] = dep["dependentGloss"][0].isupper()
+    out["both_upper"] = out["gov_is_upper"] and out["dep_is_upper"] 
 
     # 0 means governor is root, usually if of the governing verb. Note flip of gov/dep in numerator
     if dep["governor"] == 0:
@@ -388,6 +391,8 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
+    out = {k + "child": v for k,v in out.items()}
+
     out["type"] = "CHILD"
 
     kys = list(out.keys())
@@ -411,14 +416,15 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
 
     out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
-    out["type"] = "GOVERNOR"
-
     features = list(out.keys())
 
     for feat in features:
         out[feat + governor["dep"]] = out[feat]
+    out = {k + "g":v for k, v in out.items()}
 
-    return {k + "g":v for k, v in out.items()}
+    out["type"] = "GOVERNOR"
+
+    return out
 
 
 def in_compression(vertex, current_compression):
