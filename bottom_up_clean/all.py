@@ -311,6 +311,8 @@ def featurize_disconnected_proposal(sentence, vertex, depths, current_compressio
     else:
         feats["is_missing"] = 0
 
+    feats["type"] = "DISCONNECTED"
+
     return feats
 
 def proposed_parent(governor, current_compression):
@@ -478,15 +480,14 @@ def get_global_feats(sentence, feats, vertex, current_compression):
     featsg["global_children_count"] = count_children(sentence, governor)
 
     assert isinstance(governor, int)
-    if proposed_child(current_compression, sentence, vertex) or proposed_parent(governor=governor, current_compression=current_compression):
-        featsg["disconnected"] = 0
-    else:
-        featsg["disconnected"] = 1
 
+    ### do interaction features
     for f in featsg:
         feats[f] = featsg[f]
         try:
-            feats[f + feats[depf]] = featsg[f]
+            feats[f + feats[depf]] = featsg[f] # dep + globalfeat
+            feats[f + feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
+            feats[f + feats["type"] + feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
     return feats
