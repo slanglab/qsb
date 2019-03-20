@@ -7,10 +7,6 @@ import numpy as np
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
 
-if socket.gethostname() == "hobbes":
-    from klm.query import LM, get_unigram_probs, slor
-    lm = LM()
-    unigram_log_probs_ = get_unigram_probs()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
@@ -21,6 +17,12 @@ args = parser.parse_args()
 
 
 if __name__ == "__main__":
+
+    if socket.gethostname() == "hobbes":
+        from klm.query import LM, get_unigram_probs, slor
+        lm = LM()
+        unigram_log_probs_ = get_unigram_probs()
+
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
                                                  validation_paths=args.validation_paths)
 

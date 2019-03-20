@@ -97,7 +97,10 @@ def run_fn(config, fn, early_stop=None):
     with open(fn, "r") as inf:
         no_compression = 0
         for vno, sent_ in enumerate(inf):
-            do_sentence(sent_, no_compression, config, model, vno)
+            try:
+                do_sentence(sent_, no_compression, config, model, vno)
+            except:
+                print("Error")
             if early_stop is not None and  vno > early_stop: 
                 break
     return config
@@ -134,5 +137,5 @@ if __name__ == "__main__":
 
     model = get_model(config)
 
-    run_fn(config, args.do_jsonl, early_stop=1000)
+    run_fn(config, args.do_jsonl, early_stop=10000)
     print(get_F1_from_config(config))

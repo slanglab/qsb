@@ -200,6 +200,7 @@ def get_tok(index, jdoc):
     for _ in jdoc["tokens"]:
         if _["index"] == index:
             return _
+    print(index,jdoc["tokens"])
     assert "unknown" == "token" 
 
 
