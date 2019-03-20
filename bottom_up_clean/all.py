@@ -110,7 +110,7 @@ def get_features_of_dep(dep, sentence, depths):
         return [i["dep"] for i in sentence["basicDependencies"] if i["governor"] == vertex]
 
     for c in get_children_deps(sentence, dep["dependent"]):
-        out[c + "_is_child"] = c
+        out[c + "_is_child"] = 1
 
     out["depth_dependent"] = depths[dep["dependent"]]
     out["position_dependent"] = float(dep["dependent"]/len(sentence["tokens"]))
