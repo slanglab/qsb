@@ -102,13 +102,15 @@ def run_fn(config, fn, early_stop=None):
                 break
     return config
 
-if __name__ == "__main__":
+
+def assess_convergence():
+    '''assess if the ILP has converged'''
 
     fn = "preproc/validation.jsonl"
 
     ## assess convergence
 
-    for i in range(1,6):
+    for i in range(1, 6):
 
         config = {"algorithm": "vanilla-ilp", "weights": "snapshots/{}".format(i)}
 
@@ -116,3 +118,21 @@ if __name__ == "__main__":
 
         print("snapshot {}".format(i))
         print(get_F1_from_config(config))
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-do_jsonl', type=str, default="validation.jsonl")
+    parser.add_argument('-assess_convergence', dest='random', action='store_true', default=False)
+
+    args = parser.parse_args()
+
+    if args.assess_convergence:
+        assess_convergence()
+
+    config = {"algorithm": "ilp", "weights": "snapshots/5"}
+
+    model = get_model(config)
+
+    run_fn(config, args.do_jsonl, early_stop=1000)
+    print(get_F1_from_config(config))

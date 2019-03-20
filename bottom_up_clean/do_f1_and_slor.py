@@ -6,7 +6,7 @@ import numpy as np
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
 
-#from klm.query import LM, get_unigram_probs, slor
+from klm.query import LM, get_unigram_probs, slor
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
@@ -49,18 +49,17 @@ if __name__ == "__main__":
                                  vectorizer=vectorizer,
                                  marginal=marginal,
                                  decider=decider)
-        compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted] 
+        compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted]
+
         ### check if the sentence has any non trees?
-        #slors.append(slor(" ".join(compression), lm, unigram_log_probs_))
+        slors.append(slor(" ".join(compression), lm, unigram_log_probs_))
         if has_forest(predicted, sentence):
             totalNonTrees += 1
-
         tot += get_f1(predicted, sentence)
+
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
+
     with open("bottom_up_clean/results.csv", "a") as of:
         writer = csv.writer(of)
         out = [tot/totalVal, np.mean(slors), np.std(slors), decider.__name__]
         writer.writerow(out)
-    print("F1={}".format(tot/(totalVal)))
-    print("Pct. forest={}".format(totalNonTrees / totalVal)) 
-    #print("slor mean/std={},{}".format(np.mean(slors), np.std(slors)))
