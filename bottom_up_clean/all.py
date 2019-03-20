@@ -495,6 +495,17 @@ def get_global_feats(sentence, feats, vertex, current_compression):
 
     assert isinstance(governor, int)
 
+    # reason about how to pick the clause w/ compression
+    try:
+        if feats[depf].lower() == "root":
+            has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp"] for _ in sentence["basicDependencies"]]
+            featsg["is_root_and_mark_or_xcomp"] = any(has_mark_or_xcomp)
+    except KeyError:
+        pass
+    except IndexError:
+        pass
+
+
     ### do interaction features
     for f in featsg:
         feats[f] = featsg[f]
