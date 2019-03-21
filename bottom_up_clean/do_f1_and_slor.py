@@ -4,6 +4,7 @@ import pickle
 import argparse
 import socket
 import numpy as np
+from tqdm import tqdm
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
 
@@ -35,10 +36,11 @@ if __name__ == "__main__":
     tot = 0
     slors = []
 
+    print("[*] getting marginal")
     marginal = get_marginal(args.training_paths)
 
     totalNonTrees = 0
-    for pno, paths in enumerate(open(args.validation_paths, "r")):
+    for pno, paths in enumerate(tqdm(open(args.validation_paths, "r"))):
         paths = json.loads(paths)
         sentence = paths["sentence"]
         if args.random is True:

@@ -59,7 +59,7 @@ def get_marginal(fn="training.paths"):
         for ln in inf:
             ln = json.loads(ln)
             for p in ln["paths"]:
-                decision = p[-1]
+                current_compression, vertex, decision, decideds = p
                 all_decisions.append(decision)
 
     return np.mean(all_decisions)
