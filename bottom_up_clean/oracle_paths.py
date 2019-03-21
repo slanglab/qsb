@@ -19,7 +19,6 @@ def make_paths(fn):
                 try:
                     #s["q"] = list(get_q(s))
                     pp = oracle_path(sentence=s, pi=pick_l2r_connected)
-                    pp = [(list(p[0]), p[1], p[2]) for p in pp] 
                     of.write(json.dumps({"paths":pp, "sentence":s}) + "\n")
                     successes += 1
                 except AssertionError:

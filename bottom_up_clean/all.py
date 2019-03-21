@@ -166,10 +166,10 @@ def oracle_path(sentence, pi=pick_l2r_connected):
             for i in get_dependents_and_governors(v, sentence, T):
                 if i not in decided:
                     F.add(i)
-            path.append((copy.deepcopy(T), v, 1, decided))
+            path.append((list(copy.deepcopy(T)), v, 1, decided))
             T.add(v)
         else:
-            path.append((copy.deepcopy(T), v, 0, decided))
+            path.append((list(copy.deepcopy(T)), v, 0, decided))
         F.remove(v)
         decided.append(v)
 
