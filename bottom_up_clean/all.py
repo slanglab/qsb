@@ -229,7 +229,8 @@ def make_decision_lr(**kwargs):
     feats = get_global_feats(vertex=kwargs["vertex"],
                              sentence=kwargs["sentence"],
                              feats=feats,
-                             current_compression=kwargs["current_compression"])
+                             current_compression=kwargs["current_compression"],
+                             decideds=kwargs["decideds"])
 
     X = kwargs["vectorizer"].transform([feats])
     y = kwargs["clf"].predict(X)[0]
@@ -251,7 +252,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
     depths = get_depths(sentence)
 
-    decided = []
+    decideds = []
 
     lt = len_current_compression(current_compression, sentence)
 
@@ -268,7 +269,8 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                                 current_compression=current_compression,
                                 vectorizer=vectorizer,
                                 marginal=marginal,
-                                clf=clf)
+                                clf=clf,
+                                decideds=decideds)
 
             if y == 1:
                 wouldbe = len_current_compression(current_compression | {vertex}, sentence)
@@ -276,10 +278,10 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                     current_compression.add(vertex)
                     for i in get_dependents_and_governors(vertex, sentence, current_compression):
                         if i not in current_compression and i is not None:
-                            if i not in decided:
+                            if i not in decideds:
                                 frontier.add(i)
         frontier.remove(vertex)
-        decided.append(vertex)
+        decideds.append(vertex)
 
         lt = len_current_compression(current_compression, sentence)
 
@@ -379,7 +381,7 @@ def get_labels_and_features(list_of_paths):
                 feats = get_local_feats(vertex, sentence, depths, current_compression)
 
                 # global features
-                feats = get_global_feats(sentence, feats, vertex, current_compression)
+                feats = get_global_feats(sentence, feats, vertex, current_compression, decideds)
 
                 labels.append(decision)
                 features.append(feats)
@@ -472,7 +474,7 @@ def get_depf(feats):
         depf = "discon"
     return depf
 
-def get_global_feats(sentence, feats, vertex, current_compression):
+def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     '''return global features of the edits'''
 
     featsg = {}
