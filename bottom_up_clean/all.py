@@ -151,7 +151,7 @@ def pick_l2r_connected(frontier, current_compression, sentence):
     return options[0]
 
 
-def oracle_path(sentence, pi = pick_l2r_connected):
+def oracle_path(sentence, pi=pick_l2r_connected):
     '''produce all oracle paths, according to policy pi'''
     T = {i for i in sentence["q"]}
 
@@ -166,10 +166,10 @@ def oracle_path(sentence, pi = pick_l2r_connected):
             for i in get_dependents_and_governors(v, sentence, T):
                 if i not in decided:
                     F.add(i)
-            path.append((copy.deepcopy(T), v, 1))
+            path.append((copy.deepcopy(T), v, 1, decided))
             T.add(v)
         else:
-            path.append((copy.deepcopy(T), v, 0))
+            path.append((copy.deepcopy(T), v, 0, decided))
         F.remove(v)
         decided.append(v)
 
@@ -374,7 +374,7 @@ def get_labels_and_features(list_of_paths):
         sentence = paths["sentence"]
         depths = get_depths(sentence)
         for path in paths["paths"]:
-            current_compression, vertex, decision = path
+            current_compression, vertex, decision, decideds = path
             if vertex != 0:
                 feats = get_local_feats(vertex, sentence, depths, current_compression)
 
