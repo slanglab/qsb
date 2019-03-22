@@ -109,8 +109,17 @@ def get_features_of_dep(dep, sentence, depths):
         '''returns: count of children of vertex in the parse'''
         return [i["dep"] for i in sentence["basicDependencies"] if i["governor"] == vertex]
 
+    def get_children_pos(sentence, vertex):
+        '''returns: count of children of vertex in the parse'''
+        dependents = [i["dependent"] for i in sentence["basicDependencies"] if i["governor"] == vertex]
+        toks = [get_token_from_sentence(sentence, i) for i in dependents]
+        return [o["pos"] for o in toks]
+
     for c in get_children_deps(sentence, dep["dependent"]):
         out[c + "_is_child"] = 1
+
+    for c in get_children_pos(sentence, dep["dependent"]):
+        out[c + "_pos_is_child"] = 1
 
     out["depth_dependent"] = depths[dep["dependent"]]
     out["position_dependent"] = float(dep["dependent"]/len(sentence["tokens"]))
