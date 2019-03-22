@@ -512,6 +512,12 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     featsg["global_gov_govDep"] = governor_dep["dep"]
     featsg["global_children_count"] = count_children(sentence, governor)
 
+    lsentence = " ".join([_["word"] for _ in sentence["tokens"]])
+    featsg["cr_goal"] = sentence["r"]/len(lsentence)
+
+    qwords = " ".join([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]])
+    featsg["q_as_frac_of_cr"] = len(qwords)/sentence["r"]
+
     assert isinstance(governor, int)
 
     # history based feature
