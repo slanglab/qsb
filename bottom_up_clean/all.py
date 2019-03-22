@@ -27,10 +27,14 @@ def get_marginal(fn="training.paths"):
     return np.mean(all_decisions)
 
 
-def get_features_of_dep(dep, sentence, depths):
+def get_features_of_dep(dep, sentence, depths, vocab):
     '''
     Dep is some dependent in basicDependencies
     '''
+    def to_edge(d):
+        return (d["governor"], d["dependent"])
+
+    return f(to_edge(dep), sentence, vocab)
 
     depentent_token = get_token_from_sentence(sentence=sentence, vertex=dep["dependent"])
 
@@ -295,7 +299,7 @@ def n_verbs_in_s(sentence):
     return sum(1 for i in sentence["tokens"] if i["pos"][0].lower() == "v")
 
 
-def featurize_disconnected_proposal(sentence, vertex, depths, current_compression, governor):
+def featurize_disconnected_proposal(sentence, vertex, depths, current_compression, governor, vocab):
     # information about the how the proposed disconnected is governed
 
     feats = {}
@@ -326,23 +330,28 @@ def proposed_child(current_compression, sentence, vertex):
 def get_local_feats(vertex, sentence, depths, current_compression, vocab):
     '''get the features that are local to the vertex to be added'''
     governor = get_governor(vertex, sentence)
+
     if proposed_parent(governor, current_compression):
         #assert vertex not in current_compression /// this does not apply w/ full frontier
         feats = featurize_child_proposal(sentence,
                                          dependent_vertex=vertex,
                                          governor_vertex=governor,
-                                         depths=depths)
+                                         depths=depths,
+                                         vocab=vocab)
+
     elif proposed_child(current_compression, sentence, vertex):
         feats = featurize_governor_proposal(sentence=sentence,
                                             dependent_vertex=vertex,
-                                            depths=depths)
+                                            depths=depths,
+                                            vocab=vocab)
 
     else:
         feats = featurize_disconnected_proposal(sentence=sentence,
                                                 vertex=vertex,
                                                 depths=depths,
                                                 current_compression=current_compression,
-                                                governor=governor)
+                                                governor=governor,
+                                                vocab=vocab)
     return feats
 
 
@@ -395,12 +404,12 @@ def get_token_from_sentence(sentence, vertex):
     return [_ for _ in sentence["tokens"] if _["index"] == vertex][0]
 
 
-def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
+def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths, vocab):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex
              and _["dependent"] == dependent_vertex][0]
 
-    out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
+    out = get_features_of_dep(dep=child, sentence=sentence, depths=depths, vocab=vocab)
 
     #out = {k + "child": v for k,v in out.items()}
 
@@ -421,11 +430,11 @@ def count_children(sentence, vertex):
     return sum(1 for i in sentence["basicDependencies"] if i["governor"] == vertex)
 
 
-def featurize_governor_proposal(sentence, dependent_vertex, depths):
+def featurize_governor_proposal(sentence, dependent_vertex, depths, vocab):
     '''get the features of the proposed governor'''
     governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
 
-    out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
+    out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths, vocab=vocab)
 
     features = list(out.keys())
 
