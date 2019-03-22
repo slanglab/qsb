@@ -507,8 +507,14 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     # history based feature
     for _ in sentence["tokens"]:
-        if _["index"] in current_compression:
+        ix = _["index"]
+        if ix in current_compression:
+            try:
+                gov_dep = [_["dep"] for _ in sentence["basicDependencies"] if _["governor"] == ix][0]
+            except IndexError:
+                gov_dep = "none"
             featsg["has_already" + _["pos"]] = 1
+            featsg["has_already_d" + gov_dep] = 1
 
     # reason about how to pick the clause w/ compression
     try:
