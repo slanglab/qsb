@@ -2,17 +2,15 @@
 This file holds helper methods for the structured perceptron
 '''
 from __future__ import division
-from bottom_up_clean.all import bfs
+from bottom_up_clean.utils import bfs
 from unidecode import unidecode
 import gzip
 import string
 import _pickle as pickle
-#import cPickle as pickle
 import numpy as np
 import json
 import random
 from code.log import logger
-from code.printers import pretty_print_conl
 from scipy.sparse import csr_matrix
 from itertools import product
 from scipy.sparse import hstack

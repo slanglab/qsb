@@ -3,54 +3,16 @@ import string
 import numpy as np
 import copy
 import random
-from queue import Queue
+
+from bottom_up_clean.utils import bfs
 from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction import FeatureHasher
+from ilp2013.fillipova_altun_supporting_code import f
 
 PUNCT = [_ for _ in string.punctuation]
-
-
-def bfs(g, hop_s):
-    '''
-    breadth first search
-    Args:
-        g: a graph
-        hop_s: integer starting vertex, our case a root (i.e. 0)
-    Returns:
-        - color list of found nodes, c
-        - list of nodes and predecessor, pi (predecessor == parent if tree)
-        - list of depths, d
-    '''
-    q = Queue()
-
-    deps = "basicDependencies"
-
-    # ancestors
-    pi = {i["dependent"]: None for i in g[deps]}
-    # dependents
-    d = {i["dependent"]: -1 for i in g[deps]}
-    # colors
-    c = {i["dependent"]: "W" for i in g[deps]}
-
-    c[hop_s] = "G"
-    d[hop_s] = 0
-
-    q.put(hop_s)
-
-    while not q.empty():
-        u = q.get()
-        for v in [i["dependent"] for i in g[deps] if i["governor"] == u]:
-            if c[v] == "W":
-                c[v] == "G"
-                d[v] = d[u] + 1
-                pi[v] = u
-                q.put(v)
-        c[u] = "B"
-
-    return d, pi, c
 
 
 def get_marginal(fn="training.paths"):
@@ -187,18 +149,23 @@ def oracle_path(sentence, pi=pick_l2r_connected):
     return path
 
 
-def train_clf(training_paths="training.paths", validation_paths="validation.paths", vectorizer=DictVectorizer(sparse=True)):
+def train_clf(training_paths="training.paths",
+              validation_paths="validation.paths",
+              vectorizer=DictVectorizer(sparse=True),
+              feature_config=None,
+              vocab = None):
     '''Train a classifier on the oracle path, and check on validation paths'''
+
     training_paths = [_ for _ in open(training_paths)]
     validation_paths = [_ for _ in open(validation_paths)]
 
-    train_features, train_labels = get_labels_and_features(training_paths)
+    train_features, train_labels = get_labels_and_features(training_paths, feature_config, vocab)
 
     X_train = vectorizer.fit_transform(train_features)
 
     y_train = np.asarray(train_labels)
 
-    val_features, val_labels = get_labels_and_features(validation_paths)
+    val_features, val_labels = get_labels_and_features(validation_paths, feature_config, vocab)
 
     X_val = vectorizer.transform(val_features)
 
@@ -232,14 +199,16 @@ def make_decision_lr(**kwargs):
     feats = get_local_feats(vertex=kwargs["vertex"],
                             sentence=kwargs["sentence"],
                             depths=kwargs["depths"],
-                            current_compression=kwargs["current_compression"])
+                            current_compression=kwargs["current_compression"],
+                            vocab=kwargs["vocab"])
 
     # note: adds to feats dict
     feats = get_global_feats(vertex=kwargs["vertex"],
                              sentence=kwargs["sentence"],
                              feats=feats,
                              current_compression=kwargs["current_compression"],
-                             decideds=kwargs["decideds"])
+                             decideds=kwargs["decideds"],
+                             vocab=kwargs["vocab"])
 
     X = kwargs["vectorizer"].transform([feats])
     y = kwargs["clf"].predict(X)[0]
@@ -250,7 +219,7 @@ def make_decision_random(**kwargs):
     draw = random.uniform(0, 1)
     return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
 
-def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
+def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None, vocab=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
     
@@ -273,13 +242,14 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
         if vertex != 0: # bug here?
             y = decider(vertex=vertex,
-                                sentence=sentence,
-                                depths=depths,
-                                current_compression=current_compression,
-                                vectorizer=vectorizer,
-                                marginal=marginal,
-                                clf=clf,
-                                decideds=decideds)
+                        sentence=sentence,
+                        depths=depths,
+                        current_compression=current_compression,
+                        vectorizer=vectorizer,
+                        marginal=marginal,
+                        clf=clf,
+                        decideds=decideds,
+                        vocab=vocab)
 
             if y == 1:
                 wouldbe = len_current_compression(current_compression | {vertex}, sentence)
@@ -353,7 +323,7 @@ def proposed_child(current_compression, sentence, vertex):
     dependents = get_children(sentence, vertex)
     return any(d["dependent"] in current_compression for d in dependents)
 
-def get_local_feats(vertex, sentence, depths, current_compression):
+def get_local_feats(vertex, sentence, depths, current_compression, vocab):
     '''get the features that are local to the vertex to be added'''
     governor = get_governor(vertex, sentence)
     if proposed_parent(governor, current_compression):
@@ -376,7 +346,21 @@ def get_local_feats(vertex, sentence, depths, current_compression):
     return feats
 
 
-def get_labels_and_features(list_of_paths):
+def get_fa_feats(vertex, sentence, depths, current_compression, vocabs):
+    '''get the features that are local to the vertex to be added'''
+    governor = get_governor(vertex, sentence)
+
+    def to_edge(d):
+        return (d["governor"], d["dependent"])
+
+    d = [i for i in sentence["enhancedDependencies"] 
+         if i["dependent"] == vertex and i["governor"] == governor][0]
+
+    dep = f(e=to_edge(d), jdoc=sentence, vocabs=vocabs)
+
+
+
+def get_labels_and_features(list_of_paths, feature_config, vocab):
     '''get the labels and the features from the list of paths'''
     labels = []
     features = []
@@ -387,10 +371,10 @@ def get_labels_and_features(list_of_paths):
         for path in paths["paths"]:
             current_compression, vertex, decision, decideds = path
             if vertex != 0:
-                feats = get_local_feats(vertex, sentence, depths, current_compression)
+                feats = get_local_feats(vertex, sentence, depths, current_compression, vocab)
 
                 # global features
-                feats = get_global_feats(sentence, feats, vertex, current_compression, decideds)
+                feats = get_global_feats(sentence, feats, vertex, current_compression, decideds, vocab)
 
                 labels.append(decision)
                 features.append(feats)
@@ -483,7 +467,7 @@ def get_depf(feats):
         depf = "discon"
     return depf
 
-def get_global_feats(sentence, feats, vertex, current_compression, decideds):
+def get_global_feats(sentence, feats, vertex, current_compression, decideds, vocab):
     '''return global features of the edits'''
 
     featsg = {}

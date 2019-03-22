@@ -4,6 +4,8 @@ import pickle
 import argparse
 import socket
 import numpy as np
+
+from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
 from tqdm import tqdm
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
@@ -12,12 +14,17 @@ from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connec
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
 parser.add_argument('-training_paths', type=str, default="training.paths")
+parser.add_argument('-feature_config', type=str, default="bottom_up_clean/feature_config.json")
 parser.add_argument('-random', dest='random', action='store_true', default=False)
 
 args = parser.parse_args()
 
-
 if __name__ == "__main__":
+
+    with open(args.feature_config, "r") as inf:
+        feature_config = json.load(inf)
+
+    vocab = get_all_vocabs()
 
     if socket.gethostname() == "hobbes":
         from klm.query import LM, get_unigram_probs, slor
@@ -25,7 +32,9 @@ if __name__ == "__main__":
         unigram_log_probs_ = get_unigram_probs()
 
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
-                                                 validation_paths=args.validation_paths)
+                                                 validation_paths=args.validation_paths,
+                                                 feature_config=feature_config,
+                                                 vocab=vocab)
 
     with open("bottom_up_clean/clf.p", "wb") as of:
         pickle.dump(clf, of)
@@ -52,7 +61,8 @@ if __name__ == "__main__":
                                  clf=clf,
                                  vectorizer=vectorizer,
                                  marginal=marginal,
-                                 decider=decider)
+                                 decider=decider,
+                                 vocab=vocab)
         compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted]
 
         ### check if the sentence has any non trees?

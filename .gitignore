@@ -18,7 +18,6 @@ latex/qsr.synctex.gz
 cache/*
 .cache/*
 *pyc
-*pdf
 *bbl
 *blg
 *out
