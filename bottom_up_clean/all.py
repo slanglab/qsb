@@ -440,7 +440,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     featsg["left_add"] = vertex < min(current_compression)
 
-    depf = get_depf(feats)
+    
 
     governor = get_governor(vertex, sentence)
 
@@ -471,6 +471,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
             featsg["has_already_d" + gov_dep] = 1
 
     # reason about how to pick the clause w/ compression
+    depf = get_depf(feats)
     try:
         if feats[depf].lower() == "root":
             has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
@@ -480,10 +481,12 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     except IndexError:
         pass
 
-
-    ### do interaction features
     for f in featsg:
         feats[f] = featsg[f]
+
+    ### do interaction features
+    depf = get_depf(feats)
+    for f in featsg:
         try:
             feats[f + feats[depf]] = featsg[f] # dep + globalfeat
             feats[f + feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
