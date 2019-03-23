@@ -448,13 +448,13 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     # history based feature
     for tok in sentence["tokens"]:
         ix = tok["index"]
+        chidren_deps = [_["dep"] for _ in sentence["basicDependencies"] if _["governor"] == ix]
+        gov_deps = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == ix]
         if ix in current_compression:
             featsg["has_already" + tok["pos"]] = 1
-            chidren_deps = [_["dep"] for _ in sentence["basicDependencies"] if _["governor"] == ix]
             for c in chidren_deps:
                 featsg["has_already_d" + c] = 1
-            gov_deps = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == ix]
-            for c in chidren_deps:
+            for c in gov_deps:
                 featsg["has_already_d_dep" + c] = 1
         else:
             featsg["rejected_already" + tok["pos"]] = 1
