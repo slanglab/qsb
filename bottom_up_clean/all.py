@@ -274,15 +274,6 @@ def featurize_disconnected_proposal(sentence, vertex, depths,
 
     ## Note: see deadcode/improves_discon_perf.py  Cut some feats that increase F1 a bit b/c hard to justify
 
-    feats["gov_is_root"] = governor == 0
-
-    feats["is_next_tok"] = vertex == max(current_compression) + 1
-
-    if (vertex + 1 in current_compression and vertex - 1 in current_compression):
-        feats["is_missing"] = 1
-    else:
-        feats["is_missing"] = 0
-
     feats["type"] = "DISCONNECTED"
 
     return feats
@@ -368,8 +359,9 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
 
     kys = list(out.keys())
 
-    for feat in kys:
-        out[feat + child["dep"]] = out[feat]
+    # 1/2 point F1 here #perf
+    #for feat in kys:
+    #    out[feat + child["dep"]] = out[feat]
 
     # exclude the literal dependent and governor from the output
     assert "dependent" not in out
@@ -390,8 +382,10 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
 
     features = list(out.keys())
 
-    for feat in features:
-        out[feat + governor["dep"]] = out[feat]
+    # perf: -.5 F1
+    #for feat in features:
+    #    out[feat + governor["dep"]] = out[feat]
+
     out = {k + "g":v for k, v in out.items()}
 
     out["type"] = "GOVERNOR"
