@@ -332,9 +332,9 @@ def get_labels_and_features(list_of_paths, feature_config):
     return features, labels
 
 
-def get_governor(vertex, sentence):
+def get_governor(vertex, sentence, dep="basicDependencies"):
     '''return the governor of a vertex'''
-    for dep in sentence["basicDependencies"]:
+    for dep in sentence["enhancedDependencies"]:
         if dep['dependent'] == vertex:
             return dep['governor']
     assert vertex == 0
@@ -348,7 +348,7 @@ def get_token_from_sentence(sentence, vertex):
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
-    child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex
+    child = [_ for _ in sentence["enhancedDependencies"] if _["governor"] == governor_vertex
              and _["dependent"] == dependent_vertex][0]
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
@@ -376,7 +376,7 @@ def count_children(sentence, vertex):
 
 def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
-    governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
+    governor = [de for de in sentence['enhancedDependencies'] if de["dependent"] == dependent_vertex][0]
 
     out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
@@ -432,7 +432,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     # these two help. it is showing the method is able to reason about what is left in the compression
     featsg["over_r"] = lt + len_tok > sentence["r"]
-    featsg["remaining"] = (lt + len_tok)/sentence["r"]
+
 
     featsg['middle'] = vertex > min(current_compression) and vertex < max(current_compression)
 
@@ -450,12 +450,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     featsg["global_gov_govGloss"] = governor_dep["governorGloss"]
     featsg["global_gov_govDep"] = governor_dep["dep"]
     featsg["global_children_count"] = count_children(sentence, governor)
-
-    lsentence = " ".join([_["word"] for _ in sentence["tokens"]])
-    featsg["cr_goal"] = sentence["r"]/len(lsentence)
-
-    qwords = " ".join([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]])
-    featsg["q_as_frac_of_cr"] = len(qwords)/sentence["r"]
 
     assert isinstance(governor, int)
 
@@ -493,6 +487,14 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
             feats[f + feats["type"] + feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
+
+    lsentence = " ".join([_["word"] for _ in sentence["tokens"]])
+    feats["cr_goal"] = sentence["r"]/len(lsentence)
+
+    qwords = " ".join([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]])
+    feats["q_as_frac_of_cr"] = len(qwords)/sentence["r"]
+    feats["remaining"] = (lt + len_tok)/sentence["r"]
+
     return feats
 
 def get_children(sentence, vertex):
