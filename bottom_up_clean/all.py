@@ -44,8 +44,6 @@ def get_features_of_dep(dep, sentence, depths):
 
     sibs = get_siblings(e=(h, n), jdoc=sentence)
 
-    # similar https://arxiv.org/pdf/1510.08418.pdf
-
     out = defaultdict()
 
     ### These are the F and A (2013) features
@@ -433,23 +431,17 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     # these two help. it is showing the method is able to reason about what is left in the compression
     featsg["over_r"] = lt + len_tok > sentence["r"]
 
-
     featsg['middle'] = vertex > min(current_compression) and vertex < max(current_compression)
 
     featsg["right_add"] = vertex > max(current_compression)
 
     featsg["left_add"] = vertex < min(current_compression)
 
-    
-
     governor = get_governor(vertex, sentence)
 
-    governor_dep = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor][0]
+    governor_dep = [_ for _ in sentence["enhancedDependencies"] if _["governor"] == governor][0]
 
-    featsg["global_gov_depGloss"] = governor_dep["dependentGloss"]
-    featsg["global_gov_govGloss"] = governor_dep["governorGloss"]
     featsg["global_gov_govDep"] = governor_dep["dep"]
-    featsg["global_children_count"] = count_children(sentence, governor)
 
     assert isinstance(governor, int)
 
@@ -478,6 +470,8 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     for f in featsg:
         feats[f] = featsg[f]
 
+    feats["position"] = round(vertex/len(sentence["tokens"]), 1)
+
     ### do interaction features
     depf = get_depf(feats)
     for f in featsg:
@@ -488,6 +482,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
         except KeyError:
             pass
 
+    # some global features that don't really make sense as interaction feats
     lsentence = " ".join([_["word"] for _ in sentence["tokens"]])
     feats["cr_goal"] = sentence["r"]/len(lsentence)
 
