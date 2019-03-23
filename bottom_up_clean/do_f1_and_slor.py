@@ -24,8 +24,6 @@ if __name__ == "__main__":
     with open(args.feature_config, "r") as inf:
         feature_config = json.load(inf)
 
-    vocab = get_all_vocabs()
-
     if socket.gethostname() == "hobbes":
         from klm.query import LM, get_unigram_probs, slor
         lm = LM()
@@ -33,8 +31,7 @@ if __name__ == "__main__":
 
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
                                                  validation_paths=args.validation_paths,
-                                                 feature_config=feature_config,
-                                                 vocab=vocab)
+                                                 feature_config=feature_config)
 
     with open("bottom_up_clean/clf.p", "wb") as of:
         pickle.dump(clf, of)
@@ -61,8 +58,7 @@ if __name__ == "__main__":
                                  clf=clf,
                                  vectorizer=vectorizer,
                                  marginal=marginal,
-                                 decider=decider,
-                                 vocab=vocab)
+                                 decider=decider)
         compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted]
 
         ### check if the sentence has any non trees?

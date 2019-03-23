@@ -10,7 +10,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction import FeatureHasher
-from ilp2013.fillipova_altun_supporting_code import f
 
 PUNCT = [_ for _ in string.punctuation]
 
@@ -27,14 +26,10 @@ def get_marginal(fn="training.paths"):
     return np.mean(all_decisions)
 
 
-def get_features_of_dep(dep, sentence, depths, vocab):
+def get_features_of_dep(dep, sentence, depths):
     '''
     Dep is some dependent in basicDependencies
     '''
-    def to_edge(d):
-        return (d["governor"], d["dependent"])
-
-    return f(to_edge(dep), sentence, vocab)
 
     depentent_token = get_token_from_sentence(sentence=sentence, vertex=dep["dependent"])
 
@@ -156,20 +151,19 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 def train_clf(training_paths="training.paths",
               validation_paths="validation.paths",
               vectorizer=DictVectorizer(sparse=True),
-              feature_config=None,
-              vocab = None):
+              feature_config=None):
     '''Train a classifier on the oracle path, and check on validation paths'''
 
     training_paths = [_ for _ in open(training_paths)]
     validation_paths = [_ for _ in open(validation_paths)]
 
-    train_features, train_labels = get_labels_and_features(training_paths, feature_config, vocab)
+    train_features, train_labels = get_labels_and_features(training_paths, feature_config)
 
     X_train = vectorizer.fit_transform(train_features)
 
     y_train = np.asarray(train_labels)
 
-    val_features, val_labels = get_labels_and_features(validation_paths, feature_config, vocab)
+    val_features, val_labels = get_labels_and_features(validation_paths, feature_config)
 
     X_val = vectorizer.transform(val_features)
 
@@ -203,16 +197,14 @@ def make_decision_lr(**kwargs):
     feats = get_local_feats(vertex=kwargs["vertex"],
                             sentence=kwargs["sentence"],
                             depths=kwargs["depths"],
-                            current_compression=kwargs["current_compression"],
-                            vocab=kwargs["vocab"])
+                            current_compression=kwargs["current_compression"])
 
     # note: adds to feats dict
     feats = get_global_feats(vertex=kwargs["vertex"],
                              sentence=kwargs["sentence"],
                              feats=feats,
                              current_compression=kwargs["current_compression"],
-                             decideds=kwargs["decideds"],
-                             vocab=kwargs["vocab"])
+                             decideds=kwargs["decideds"])
 
     X = kwargs["vectorizer"].transform([feats])
     y = kwargs["clf"].predict(X)[0]
@@ -223,7 +215,7 @@ def make_decision_random(**kwargs):
     draw = random.uniform(0, 1)
     return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
 
-def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None, vocab=None):
+def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
     
@@ -252,8 +244,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                         vectorizer=vectorizer,
                         marginal=marginal,
                         clf=clf,
-                        decideds=decideds,
-                        vocab=vocab)
+                        decideds=decideds)
 
             if y == 1:
                 wouldbe = len_current_compression(current_compression | {vertex}, sentence)
@@ -299,7 +290,8 @@ def n_verbs_in_s(sentence):
     return sum(1 for i in sentence["tokens"] if i["pos"][0].lower() == "v")
 
 
-def featurize_disconnected_proposal(sentence, vertex, depths, current_compression, governor, vocab):
+def featurize_disconnected_proposal(sentence, vertex, depths,
+                                    current_compression, governor):
     # information about the how the proposed disconnected is governed
 
     feats = {}
@@ -327,7 +319,7 @@ def proposed_child(current_compression, sentence, vertex):
     dependents = get_children(sentence, vertex)
     return any(d["dependent"] in current_compression for d in dependents)
 
-def get_local_feats(vertex, sentence, depths, current_compression, vocab):
+def get_local_feats(vertex, sentence, depths, current_compression):
     '''get the features that are local to the vertex to be added'''
     governor = get_governor(vertex, sentence)
 
@@ -336,40 +328,23 @@ def get_local_feats(vertex, sentence, depths, current_compression, vocab):
         feats = featurize_child_proposal(sentence,
                                          dependent_vertex=vertex,
                                          governor_vertex=governor,
-                                         depths=depths,
-                                         vocab=vocab)
+                                         depths=depths)
 
     elif proposed_child(current_compression, sentence, vertex):
         feats = featurize_governor_proposal(sentence=sentence,
                                             dependent_vertex=vertex,
-                                            depths=depths,
-                                            vocab=vocab)
+                                            depths=depths)
 
     else:
         feats = featurize_disconnected_proposal(sentence=sentence,
                                                 vertex=vertex,
                                                 depths=depths,
                                                 current_compression=current_compression,
-                                                governor=governor,
-                                                vocab=vocab)
+                                                governor=governor)
     return feats
 
 
-def get_fa_feats(vertex, sentence, depths, current_compression, vocabs):
-    '''get the features that are local to the vertex to be added'''
-    governor = get_governor(vertex, sentence)
-
-    def to_edge(d):
-        return (d["governor"], d["dependent"])
-
-    d = [i for i in sentence["enhancedDependencies"] 
-         if i["dependent"] == vertex and i["governor"] == governor][0]
-
-    dep = f(e=to_edge(d), jdoc=sentence, vocabs=vocabs)
-
-
-
-def get_labels_and_features(list_of_paths, feature_config, vocab):
+def get_labels_and_features(list_of_paths, feature_config):
     '''get the labels and the features from the list of paths'''
     labels = []
     features = []
@@ -380,10 +355,10 @@ def get_labels_and_features(list_of_paths, feature_config, vocab):
         for path in paths["paths"]:
             current_compression, vertex, decision, decideds = path
             if vertex != 0:
-                feats = get_local_feats(vertex, sentence, depths, current_compression, vocab)
+                feats = get_local_feats(vertex, sentence, depths, current_compression)
 
                 # global features
-                feats = get_global_feats(sentence, feats, vertex, current_compression, decideds, vocab)
+                feats = get_global_feats(sentence, feats, vertex, current_compression, decideds)
 
                 labels.append(decision)
                 features.append(feats)
@@ -404,12 +379,12 @@ def get_token_from_sentence(sentence, vertex):
     return [_ for _ in sentence["tokens"] if _["index"] == vertex][0]
 
 
-def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths, vocab):
+def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     child = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor_vertex
              and _["dependent"] == dependent_vertex][0]
 
-    out = get_features_of_dep(dep=child, sentence=sentence, depths=depths, vocab=vocab)
+    out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
     #out = {k + "child": v for k,v in out.items()}
 
@@ -425,16 +400,17 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
     assert "governor" not in out
     return out
 
+
 def count_children(sentence, vertex):
     '''returns: count of children of vertex in the parse'''
     return sum(1 for i in sentence["basicDependencies"] if i["governor"] == vertex)
 
 
-def featurize_governor_proposal(sentence, dependent_vertex, depths, vocab):
+def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
     governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
 
-    out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths, vocab=vocab)
+    out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
     features = list(out.keys())
 
@@ -476,7 +452,7 @@ def get_depf(feats):
         depf = "discon"
     return depf
 
-def get_global_feats(sentence, feats, vertex, current_compression, decideds, vocab):
+def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     '''return global features of the edits'''
 
     featsg = {}
