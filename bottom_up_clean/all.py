@@ -458,6 +458,10 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
                 featsg["has_already_d_dep" + c] = 1
         else:
             featsg["rejected_already" + tok["pos"]] = 1
+            #for c in chidren_deps:
+            #    featsg["rejected_already_d" + c] = 1
+            #for c in gov_deps:
+            #    featsg["rejected_already_d_dep" + c] = 1
 
     # reason about how to pick the clause w/ compression
     depf = get_depf(feats)
