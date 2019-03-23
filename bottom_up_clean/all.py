@@ -4,6 +4,7 @@ import numpy as np
 import copy
 import random
 
+from ilp2013.fillipova_altun_supporting_code import get_siblings
 from bottom_up_clean.utils import bfs
 from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
@@ -29,9 +30,19 @@ def get_marginal(fn="training.paths"):
 def get_features_of_dep(dep, sentence, depths):
     '''
     Dep is some dependent in basicDependencies
+
+    references to h and n come from F & A 2013 table 1
     '''
 
     depentent_token = get_token_from_sentence(sentence=sentence, vertex=dep["dependent"])
+    h,n = dep["governor"], dep["dependent"]
+
+    try:
+        governor_token = get_token_from_sentence(sentence=sentence, vertex=dep["governor"])
+    except:
+        governor_token = {"lemma": "is_root", "word": "", "index": 0, "ner": "O", "pos": "root"}
+
+    sibs = get_siblings(e=(h, n), jdoc=sentence)
 
     # similar https://arxiv.org/pdf/1510.08418.pdf
 
@@ -41,30 +52,33 @@ def get_features_of_dep(dep, sentence, depths):
 
     # syntactic
     out["dep"] = dep["dep"]
-    out["ner_dependent"] = depentent_token["ner"]
-    out["pos_dependent"] = depentent_token["pos"]
+    for s in sibs:
+        out["dep_sib" + s] = 1
+    out["pos_h"] = governor_token["pos"]
+    out["pos_n"] = depentent_token["pos"]
 
     # Structural
-    out["childrenCount_gov"] = count_children(sentence, dep["governor"])
-    out["childrenCount_child"] = count_children(sentence, dep["dependent"])
-    out["depth_governor"] = depths[dep["dependent"]]
+    out["childrenCount_h"] = count_children(sentence, dep["governor"])
+    out["childrenCount_e"] = count_children(sentence, dep["dependent"])
+    out["depth_h"] = depths[dep["dependent"]]
+    out["char_len_h"] = len(governor_token["word"])
+    out["no_words_in_h"] = governor_token["index"]
 
     # Semantic
-    def try_to_get(vx, field):
-        try:
-            governor_token = get_token_from_sentence(sentence=sentence,
-                                                     vertex=vx)
-            return governor_token[field]
-        except IndexError: # root
-            return "O"
-    out["ner_gov"] = try_to_get(dep["governor"], "ner")
-    out["pos_gov"] = try_to_get(dep["governor"], "pos")
-    out["is_neg"] = dep["dep"] == "neg"
+    out["ner_h"] = governor_token["ner"]
+    out["ner_n"] = depentent_token["ner"]
+    out["is_neg_n"] = dep["dep"] == "neg"
 
     # Lexical
-    out["dependentGloss"] = dep["dependentGloss"]
+    out['lemma_n'] = depentent_token["lemma"]
+    lemma_h = governor_token["lemma"]
+    out["lemma_h_label_e"] = lemma_h + dep["dep"]
+    for s in sibs:
+        out["sib:" + s + lemma_h] = 1
+
 
     # Here are some other features
+    out["dependentGloss"] = dep["dependentGloss"]
 
     def get_children_deps(sentence, vertex):
         '''returns: count of children of vertex in the parse'''

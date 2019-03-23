@@ -360,7 +360,7 @@ def get_siblings(e, jdoc):
     sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != e]
     #sibs = list(filter(lambda x:x["governor"] == h and x["dependent"] != e,
     #            jdoc["enhancedDependencies"]))
-    return [_['dependent'] for _ in sibs]
+    return [_['dependentGloss'] for _ in sibs]
 
 
 def get_edge(h, n, jdoc):
@@ -432,9 +432,8 @@ def char_length(index, jdoc):
     return len(get_tok(index, jdoc)["word"])
 
 
-# for e* to h, label(e*) TODO wait what? what does this mean?
 def no_words_in(index, jdoc):
-    '''TODO: I don't understand this feature in fillipova'''
+    '''as far as I can tell this is the token index'''
     return get_tok(index, jdoc)["index"] # TODO
 
 
