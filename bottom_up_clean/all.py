@@ -259,8 +259,6 @@ def preproc(sentence):
     sentence["vx2gov"] = vx2gov
 
 
-
-
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
@@ -374,18 +372,11 @@ def get_labels_and_features(list_of_paths, feature_config):
     return features, labels
 
 
-def get_governor(vertex, sentence, dep="basicDependencies"):
+def get_governor(vertex, sentence):
     '''
     return the governor of a vertex
-    
-    #TODO: in enhanced, a dep may have multiple governors
-
     '''
-    for dep in sentence["basicDependencies"]:
-        if dep['dependent'] == vertex:
-            return dep['governor']
-    assert vertex == 0
-    return None
+    return sentence["vx2gov"][vertex]['governor']
 
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
