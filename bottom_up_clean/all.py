@@ -445,23 +445,32 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     assert isinstance(governor, int)
 
+    ix2children = defaultdict(list)
+    ix2parent = defaultdict(list)
+    for i in sentence["basicDependencies"]:
+        ix2children[i["governor"]].append(i["dep"])
+        ix2parent[i["dependent"]].append(i["dep"])
+
+    ix2pos = {}
+    for s in sentence["tokens"]:
+        ix2pos[s["index"]] = s["pos"]
+
     # history based feature
     for tok in sentence["tokens"]:
-        ix = tok["index"]
-        chidren_deps = [_["dep"] for _ in sentence["basicDependencies"] if _["governor"] == ix]
-        gov_deps = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == ix]
-        if ix in current_compression:
-            featsg["has_already" + tok["pos"]] = 1
-            for c in chidren_deps:
-                featsg["has_already_d" + c] = 1
-            for c in gov_deps:
-                featsg["has_already_d_dep" + c] = 1
-        else:
-            featsg["rejected_already" + tok["pos"]] = 1
-            #for c in chidren_deps:
-            #    featsg["rejected_already_d" + c] = 1
-            #for c in gov_deps:
-            #    featsg["rejected_already_d_dep" + c] = 1
+        if tok["index"] not in current_compression:
+            chidren_deps = ix2children[tok["index"]]
+            gov_deps = ix2parent[tok["index"]]
+            featsg["rejected_already" + ix2pos[tok["index"]]] = 1
+
+    # history based feature
+    for ix in current_compression:
+        chidren_deps = ix2children[ix]
+        gov_deps = ix2parent[ix]
+        featsg["has_already" + ix2pos[ix]] = 1
+        for c in chidren_deps:
+            featsg["has_already_d" + c] = 1
+        for c in gov_deps:
+            featsg["has_already_d_dep" + c] = 1
 
     # reason about how to pick the clause w/ compression
     depf = get_depf(feats)
