@@ -257,7 +257,7 @@ def preproc(sentence):
         vx2gov[dep["dependent"]] = dep
     sentence["vx2children"] = vx2children
     sentence["vx2gov"] = vx2gov
-
+    sentence["depths"] = get_depths(sentence)
 
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
@@ -268,13 +268,14 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     current_compression = {i for i in sentence["q"]}
     frontier = init_frontier(sentence, sentence["q"])
 
-    depths = get_depths(sentence)
+
 
     decideds = []
 
     lt = len_current_compression(current_compression, sentence)
 
     preproc(sentence)
+    depths = sentence["depths"]
 
     while len(frontier) > 0 and lt < sentence["r"]:
 
@@ -358,7 +359,7 @@ def get_labels_and_features(list_of_paths, feature_config):
         paths = json.loads(paths)
         sentence = paths["sentence"]
         preproc(sentence) # todo move to oracle_path
-        depths = get_depths(sentence)
+        depths = sentence["depths"]
         for path in paths["paths"]:
             current_compression, vertex, decision, decideds = path
             if vertex != 0:
@@ -466,7 +467,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     governor = get_governor(vertex, sentence)
 
-    governor_dep = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor][0]
+    governor_dep = sentence["vx2children"][governor][0]
 
     featsg["global_gov_govDep"] = governor_dep["dep"]
 
@@ -505,7 +506,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
         pass
 
     ### do interaction features
-    depf = get_depf(feats)
     for f in featsg:
         feats[f] = featsg[f]
         try:
