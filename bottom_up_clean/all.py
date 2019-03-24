@@ -217,6 +217,26 @@ def preproc(sentence):
         ix2tok[i["index"]] = i
     sentence["ix2tok"] = ix2tok
 
+    gov_dep_lookup = {}
+    for s in sentence["enhancedDependencies"]:
+        gov_dep_lookup[(s["governor"], s["dependent"])] = s
+    sentence["gov_dep_lookup"] = gov_dep_lookup
+
+    ix2pos = {}
+    for s in sentence["tokens"]:
+        ix2pos[s["index"]] = s["pos"]
+
+    sentence["ix2pos"] = ix2pos
+
+    ''' a sentence may have multiple governors in enhanced deps'''
+    dep2gov = {}
+    for dep in sentence["enhancedDependencies"]:
+        dep2gov[dep['dependent']] = dep['governor']
+    dep2gov[0] = None
+    sentence["dep2gov"] = dep2gov
+    
+
+
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
@@ -271,18 +291,6 @@ def current_compression_has_verb(sentence, current_compression):
     current_pos = {_["pos"][0].lower() for _ in sentence["tokens"] if _["index"] in current_compression}
     return any(i == "v" for i in current_pos)
 
-'''
-suspected dead
-
-def gov_is_verb(vertex, sentence):
-    # returns boolean: is the governor a verb?
-    gov = get_governor(vertex, sentence)
-    if gov is not None and gov is not 0:
-        pos = [_['pos'][0].lower() == "v" for _ in sentence["tokens"] if _["index"] == gov][0]
-        return pos
-    else:
-        return False
-'''
 
 def get_f1(predicted, jdoc):
     '''get the f1 score for the predicted vertexs vs. the gold'''
@@ -291,13 +299,6 @@ def get_f1(predicted, jdoc):
     y_pred = [_ in predicted for _ in original_ixs]
     return f1_score(y_true=y_true, y_pred=y_pred)
 
-
-'''
-suspected dead
-
-def n_verbs_in_s(sentence):
-    return sum(1 for i in sentence["tokens"] if i["pos"][0].lower() == "v")
-'''
 
 def featurize_disconnected_proposal(sentence, vertex, depths,
                                     current_compression, governor):
@@ -367,7 +368,12 @@ def get_labels_and_features(list_of_paths, feature_config):
 
 
 def get_governor(vertex, sentence, dep="basicDependencies"):
-    '''return the governor of a vertex'''
+    '''
+    return the governor of a vertex
+    
+    #TODO: in enhanced, a dep may have multiple governors
+
+    '''
     for dep in sentence["enhancedDependencies"]:
         if dep['dependent'] == vertex:
             return dep['governor']
@@ -382,8 +388,8 @@ def get_token_from_sentence(sentence, vertex):
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
-    child = [_ for _ in sentence["enhancedDependencies"] if _["governor"] == governor_vertex
-             and _["dependent"] == dependent_vertex][0]
+    
+    child = sentence["gov_dep_lookup"][(governor_vertex, dependent_vertex)]
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
@@ -473,9 +479,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     assert isinstance(governor, int)
 
-    ix2pos = {}
-    for s in sentence["tokens"]:
-        ix2pos[s["index"]] = s["pos"]
+    ix2pos = sentence["ix2pos"]
 
     @lru_cache(maxsize=32)
     def get_feats_included(ix):
