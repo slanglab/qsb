@@ -115,8 +115,6 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
     F = init_frontier(sentence, sentence["q"])
 
-    preproc(sentence)
-
     decided = []
 
     path = []
