@@ -102,6 +102,8 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
     F = init_frontier(sentence, sentence["q"])
 
+    # move here -> preproc(sentence)
+
     decided = []
 
     path = []
@@ -190,6 +192,26 @@ def make_decision_random(**kwargs):
     draw = random.uniform(0, 1)
     return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
 
+def preproc(sentence):
+    def get_mark(sentence):
+        has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
+        return any(has_mark_or_xcomp)
+
+    sentence["is_root_and_mark_or_xcomp"] = get_mark(sentence)
+    sentence["lsentence"] = len(" ".join([_["word"] for _ in sentence["tokens"]]))
+    sentence["lqwords"] = len(" ".join([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]]))
+    sentence["cr_goal"] = sentence["r"]/sentence["lsentence"]
+    sentence["q_as_frac_of_cr"] = sentence["lqwords"]/sentence["r"]
+
+    ix2children = defaultdict(list)
+    ix2parent = defaultdict(list)
+    for i in sentence["basicDependencies"]:
+        ix2children[i["governor"]].append(i["dep"])
+        ix2parent[i["dependent"]].append(i["dep"])
+
+    sentence["ix2parent"] = ix2parent
+    sentence["ix2children"] = ix2children
+
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
@@ -204,6 +226,8 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     decideds = []
 
     lt = len_current_compression(current_compression, sentence)
+
+    preproc(sentence)
 
     while len(frontier) > 0 and lt < sentence["r"]:
 
@@ -322,6 +346,7 @@ def get_labels_and_features(list_of_paths, feature_config):
     for paths in list_of_paths:
         paths = json.loads(paths)
         sentence = paths["sentence"]
+        preproc(sentence) # todo move to oracle_path
         depths = get_depths(sentence)
         for path in paths["paths"]:
             current_compression, vertex, decision, decideds = path
@@ -420,6 +445,9 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     featsg = {}
 
+    ix2parent = sentence["ix2parent"]
+    ix2children = sentence["ix2children"]
+
     lt = len_current_compression(current_compression, sentence)
     len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
 
@@ -440,12 +468,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     assert isinstance(governor, int)
 
-    ix2children = defaultdict(list)
-    ix2parent = defaultdict(list)
-    for i in sentence["basicDependencies"]:
-        ix2children[i["governor"]].append(i["dep"])
-        ix2parent[i["dependent"]].append(i["dep"])
-
     ix2pos = {}
     for s in sentence["tokens"]:
         ix2pos[s["index"]] = s["pos"]
@@ -462,7 +484,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
             out.append("has_already_d_dep" + c)
         return out
 
-
     # history based feature
     for tok in sentence["tokens"]:
         if tok["index"] not in current_compression:
@@ -477,11 +498,8 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     depf = get_depf(feats)
     try:
         if feats[depf].lower() == "root":
-            has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
-            featsg["is_root_and_mark_or_xcomp"] = any(has_mark_or_xcomp)
+            featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
     except KeyError:
-        pass
-    except IndexError:
         pass
 
     for f in featsg:
@@ -500,11 +518,8 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
             pass
 
     # some global features that don't really make sense as interaction feats
-    lsentence = " ".join([_["word"] for _ in sentence["tokens"]])
-    feats["cr_goal"] = sentence["r"]/len(lsentence)
-
-    qwords = " ".join([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]])
-    feats["q_as_frac_of_cr"] = len(qwords)/sentence["r"]
+    feats["cr_goal"] = sentence["cr_goal"]
+    feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
     feats["remaining"] = (lt + len_tok)/sentence["r"]
 
     return feats
