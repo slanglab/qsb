@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 S = []
 
-weights = "snapshots/0"
+weights = "snapshots/1"
 clf = "bottom_up_clean/clf.p"
 vectorizer = "bottom_up_clean/vectorizer.p"
 
