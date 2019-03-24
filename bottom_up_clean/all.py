@@ -48,11 +48,11 @@ def get_features_of_dep(dep, sentence, depths):
     references to h and n come from F & A 2013 table 1
     '''
 
-    depentent_token = get_token_from_sentence(sentence=sentence, vertex=dep["dependent"])
+    depentent_token = sentence["ix2tok"][dep["dependent"]]
     h,n = dep["governor"], dep["dependent"]
 
     try:
-        governor_token = get_token_from_sentence(sentence=sentence, vertex=dep["governor"])
+        governor_token = sentence["ix2tok"][dep["governor"]]
     except:
         governor_token = {"lemma": "is_root", "word": "", "index": 0, "ner": "O", "pos": "root"}
 
@@ -184,12 +184,14 @@ def init_frontier(sentence, Q):
 
 
 def make_decision_lr(**kwargs):
+
     feats = get_local_feats(vertex=kwargs["vertex"],
                             sentence=kwargs["sentence"],
                             depths=kwargs["depths"],
                             current_compression=kwargs["current_compression"])
 
     # note: adds to feats dict
+
     feats = get_global_feats(vertex=kwargs["vertex"],
                              sentence=kwargs["sentence"],
                              feats=feats,
@@ -398,11 +400,6 @@ def get_governor(vertex, sentence, dep="basicDependencies"):
     return None
 
 
-def get_token_from_sentence(sentence, vertex):
-    '''Get token from a sentence. Assume token is in the sentence'''
-    return sentence["ix2tok"][vertex]
-
-
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     
@@ -425,12 +422,6 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
     governor = [de for de in sentence['enhancedDependencies'] if de["dependent"] == dependent_vertex][0]
 
     out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
-
-    features = list(out.keys())
-
-    # perf: -.5 F1
-    #for feat in features:
-    #    out[feat + governor["dep"]] = out[feat]
 
     out = {k + "g":v for k, v in out.items()}
 
@@ -471,13 +462,19 @@ def get_depf(feats):
 def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     '''return global features of the edits'''
 
+    lt = len_current_compression(current_compression, sentence)
+    len_tok = len(sentence["ix2tok"][vertex]["word"])
+
+    # some global features that don't really make sense as interaction feats
+    feats["position"] = round(vertex/len(sentence["tokens"]), 1)
+    feats["cr_goal"] = sentence["cr_goal"]
+    feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
+    feats["remaining"] = (lt + len_tok)/sentence["r"]
+
     featsg = {}
 
     ix2parent = sentence["ix2parent"]
     ix2children = sentence["ix2children"]
-
-    lt = len_current_compression(current_compression, sentence)
-    len_tok = len(get_token_from_sentence(sentence, vertex)["word"])
 
     # these two help. it is showing the method is able to reason about what is left in the compression
     featsg["over_r"] = lt + len_tok > sentence["r"]
@@ -528,25 +525,16 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     except KeyError:
         pass
 
-    for f in featsg:
-        feats[f] = featsg[f]
-
-    feats["position"] = round(vertex/len(sentence["tokens"]), 1)
-
     ### do interaction features
     depf = get_depf(feats)
     for f in featsg:
+        feats[f] = featsg[f]
         try:
             feats[f + feats[depf]] = featsg[f] # dep + globalfeat
             feats[f + feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
             feats[f + feats["type"] + feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
-
-    # some global features that don't really make sense as interaction feats
-    feats["cr_goal"] = sentence["cr_goal"]
-    feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
-    feats["remaining"] = (lt + len_tok)/sentence["r"]
 
     return feats
 
