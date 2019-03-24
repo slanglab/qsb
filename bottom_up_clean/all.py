@@ -4,6 +4,7 @@ import numpy as np
 import copy
 import random
 
+from functools import lru_cache
 from ilp2013.fillipova_altun_supporting_code import get_siblings
 from bottom_up_clean.utils import bfs
 from collections import defaultdict
@@ -449,22 +450,28 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     for s in sentence["tokens"]:
         ix2pos[s["index"]] = s["pos"]
 
+    @lru_cache(maxsize=32)
+    def get_feats_included(ix):
+        chidren_deps = ix2children[ix]
+        gov_deps = ix2parent[ix]
+        out = []
+        out.append("has_already" + ix2pos[ix])
+        for c in chidren_deps:
+            out.append("has_already_d" + c)
+        for c in gov_deps:
+            out.append("has_already_d_dep" + c)
+        return out
+
+
     # history based feature
     for tok in sentence["tokens"]:
         if tok["index"] not in current_compression:
-            chidren_deps = ix2children[tok["index"]]
-            gov_deps = ix2parent[tok["index"]]
             featsg["rejected_already" + ix2pos[tok["index"]]] = 1
 
     # history based feature
     for ix in current_compression:
-        chidren_deps = ix2children[ix]
-        gov_deps = ix2parent[ix]
-        featsg["has_already" + ix2pos[ix]] = 1
-        for c in chidren_deps:
-            featsg["has_already_d" + c] = 1
-        for c in gov_deps:
-            featsg["has_already_d_dep" + c] = 1
+        for f in get_feats_included(ix):
+            featsg[f] = 1
 
     # reason about how to pick the clause w/ compression
     depf = get_depf(feats)
