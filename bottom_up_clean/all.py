@@ -5,7 +5,7 @@ import copy
 import random
 
 from functools import lru_cache
-from ilp2013.fillipova_altun_supporting_code import get_siblings
+
 from bottom_up_clean.utils import bfs
 from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
@@ -15,6 +15,19 @@ from sklearn.feature_extraction import FeatureHasher
 
 PUNCT = [_ for _ in string.punctuation]
 
+def get_siblings(e, jdoc):
+    '''
+    This gets the other children of h (that are not n). See below
+
+    inputs:
+        e(int,int):an edge from head, h, to node n
+        jdoc(dict): a sentence from CoreNLP
+    returns
+        - other children of h that are not e
+    '''
+    h, n = e
+    sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != e]
+    return [_['dependentGloss'] for _ in sibs]
 
 def get_marginal(fn="training.paths"):
     all_decisions = []

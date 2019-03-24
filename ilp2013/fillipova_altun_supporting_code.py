@@ -360,7 +360,7 @@ def get_siblings(e, jdoc):
     sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != e]
     #sibs = list(filter(lambda x:x["governor"] == h and x["dependent"] != e,
     #            jdoc["enhancedDependencies"]))
-    return [_['dependentGloss'] for _ in sibs]
+    return [_['dependent'] for _ in sibs]
 
 
 def get_edge(h, n, jdoc):
