@@ -247,7 +247,11 @@ def preproc(sentence):
         dep2gov[dep['dependent']] = dep['governor']
     dep2gov[0] = None
     sentence["dep2gov"] = dep2gov
-    
+
+    vx2children = defaultdict(list)
+    for dep in sentence['basicDependencies']:
+        vx2children[dep["governor"]].append(dep)
+    sentence["vx2children"] = vx2children
 
 
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
@@ -548,7 +552,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
 def get_children(sentence, vertex):
     ''''return the dependents of a vertex in basicDependencies'''
-    return [dep for dep in sentence['basicDependencies'] if dep["governor"] == vertex]
+    return sentence["vx2children"][vertex]
 
 def get_dependents_and_governors(vertex, sentence, tree):
     '''add a vertexes children to a queue, sort by prob'''
