@@ -241,16 +241,18 @@ def current_compression_has_verb(sentence, current_compression):
     current_pos = {_["pos"][0].lower() for _ in sentence["tokens"] if _["index"] in current_compression}
     return any(i == "v" for i in current_pos)
 
+'''
+suspected dead
 
 def gov_is_verb(vertex, sentence):
-    '''returns boolean: is the governor a verb?'''
+    # returns boolean: is the governor a verb?
     gov = get_governor(vertex, sentence)
     if gov is not None and gov is not 0:
         pos = [_['pos'][0].lower() == "v" for _ in sentence["tokens"] if _["index"] == gov][0]
         return pos
     else:
         return False
-
+'''
 
 def get_f1(predicted, jdoc):
     '''get the f1 score for the predicted vertexs vs. the gold'''
@@ -260,9 +262,12 @@ def get_f1(predicted, jdoc):
     return f1_score(y_true=y_true, y_pred=y_pred)
 
 
+'''
+suspected dead
+
 def n_verbs_in_s(sentence):
     return sum(1 for i in sentence["tokens"] if i["pos"][0].lower() == "v")
-
+'''
 
 def featurize_disconnected_proposal(sentence, vertex, depths,
                                     current_compression, governor):
@@ -351,19 +356,8 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
-    #out = {k + "child": v for k,v in out.items()}
-
     out["type"] = "CHILD"
 
-    kys = list(out.keys())
-
-    # 1/2 point F1 here #perf
-    #for feat in kys:
-    #    out[feat + child["dep"]] = out[feat]
-
-    # exclude the literal dependent and governor from the output
-    assert "dependent" not in out
-    assert "governor" not in out
     return out
 
 
