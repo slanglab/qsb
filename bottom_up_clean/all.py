@@ -251,9 +251,14 @@ def preproc(sentence):
     sentence["dep2gov"] = dep2gov
 
     vx2children = defaultdict(list)
+    vx2gov = defaultdict()
     for dep in sentence['basicDependencies']:
         vx2children[dep["governor"]].append(dep)
+        vx2gov[dep["dependent"]] = dep
     sentence["vx2children"] = vx2children
+    sentence["vx2gov"] = vx2gov
+
+
 
 
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
@@ -533,7 +538,7 @@ def get_dependents_and_governors(vertex, sentence, tree):
     for child in get_children(sentence, vertex):
         if child["dependent"] not in tree:
             out.append(child["dependent"])
-    governor = [dep for dep in sentence['basicDependencies'] if dep["dependent"] == vertex][0]
+    governor = sentence["vx2gov"][vertex]
     if governor["governor"] not in tree:
         out.append(governor["governor"])
     return out
