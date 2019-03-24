@@ -26,7 +26,7 @@ def get_siblings(e, jdoc):
         - other children of h that are not e
     '''
     h, n = e
-    sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != e]
+    sibs = [i for i in jdoc["basicDependencies"] if i["governor"] == h and i["dependent"] != e]
     return [_['dependentGloss'] for _ in sibs]
 
 def get_marginal(fn="training.paths"):
@@ -233,7 +233,7 @@ def preproc(sentence):
     sentence["ix2tok"] = ix2tok
 
     gov_dep_lookup = {}
-    for s in sentence["enhancedDependencies"]:
+    for s in sentence["basicDependencies"]:
         gov_dep_lookup[(s["governor"], s["dependent"])] = s
     sentence["gov_dep_lookup"] = gov_dep_lookup
 
@@ -245,7 +245,7 @@ def preproc(sentence):
 
     ''' a sentence may have multiple governors in enhanced deps'''
     dep2gov = {}
-    for dep in sentence["enhancedDependencies"]:
+    for dep in sentence["basicDependencies"]:
         dep2gov[dep['dependent']] = dep['governor']
     dep2gov[0] = None
     sentence["dep2gov"] = dep2gov
@@ -381,7 +381,7 @@ def get_governor(vertex, sentence, dep="basicDependencies"):
     #TODO: in enhanced, a dep may have multiple governors
 
     '''
-    for dep in sentence["enhancedDependencies"]:
+    for dep in sentence["basicDependencies"]:
         if dep['dependent'] == vertex:
             return dep['governor']
     assert vertex == 0
@@ -407,7 +407,7 @@ def count_children(sentence, vertex):
 
 def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
-    governor = [de for de in sentence['enhancedDependencies'] if de["dependent"] == dependent_vertex][0]
+    governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
 
     out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
@@ -475,7 +475,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     governor = get_governor(vertex, sentence)
 
-    governor_dep = [_ for _ in sentence["enhancedDependencies"] if _["governor"] == governor][0]
+    governor_dep = [_ for _ in sentence["basicDependencies"] if _["governor"] == governor][0]
 
     featsg["global_gov_govDep"] = governor_dep["dep"]
 

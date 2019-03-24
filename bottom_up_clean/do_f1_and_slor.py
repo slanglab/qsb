@@ -29,7 +29,7 @@ if __name__ == "__main__":
         lm = LM()
         unigram_log_probs_ = get_unigram_probs()
 
-    '''
+
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
                                                  validation_paths=args.validation_paths,
                                                  feature_config=feature_config)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     with open("bottom_up_clean/vectorizer.p", "wb") as of:
         pickle.dump(vectorizer, of)
-    '''
+
 
     with open("bottom_up_clean/clf.p", "rb") as of:
         clf = pickle.load(of)
@@ -77,6 +77,7 @@ if __name__ == "__main__":
         if has_forest(predicted, sentence):
             totalNonTrees += 1
         tot += get_f1(predicted, sentence)
+
 
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
 
