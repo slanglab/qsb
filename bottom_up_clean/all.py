@@ -212,6 +212,11 @@ def preproc(sentence):
     sentence["ix2parent"] = ix2parent
     sentence["ix2children"] = ix2children
 
+    ix2tok = {}
+    for i in sentence["tokens"]:
+        ix2tok[i["index"]] = i
+    sentence["ix2tok"] = ix2tok
+
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
@@ -372,7 +377,7 @@ def get_governor(vertex, sentence, dep="basicDependencies"):
 
 def get_token_from_sentence(sentence, vertex):
     '''Get token from a sentence. Assume token is in the sentence'''
-    return [_ for _ in sentence["tokens"] if _["index"] == vertex][0]
+    return sentence["ix2tok"][vertex]
 
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
