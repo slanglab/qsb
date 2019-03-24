@@ -318,19 +318,6 @@ def get_f1(predicted, jdoc):
     y_pred = [_ in predicted for _ in original_ixs]
     return f1_score(y_true=y_true, y_pred=y_pred)
 
-
-def featurize_disconnected_proposal(sentence, vertex, depths,
-                                    current_compression, governor):
-    # information about the how the proposed disconnected is governed
-
-    feats = {}
-
-    ## Note: see deadcode/improves_discon_perf.py  Cut some feats that increase F1 a bit b/c hard to justify
-
-    feats["type"] = "DISCONNECTED"
-
-    return feats
-
 def proposed_parent(governor, current_compression):
     '''is the governor in the compression'''
     return governor in current_compression
@@ -356,11 +343,7 @@ def get_local_feats(vertex, sentence, depths, current_compression):
                                             depths=depths)
 
     else:
-        feats = featurize_disconnected_proposal(sentence=sentence,
-                                                vertex=vertex,
-                                                depths=depths,
-                                                current_compression=current_compression,
-                                                governor=governor)
+        feats = {"type":"DISCONNECTED"}
     return feats
 
 
