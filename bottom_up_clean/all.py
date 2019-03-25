@@ -436,7 +436,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     '''return global features of the edits'''
 
     lt = len_current_compression(current_compression, sentence)
-    len_tok = len(sentence["ix2tok"][vertex]["word"])
+    len_tok = sentence["ix2tok"][vertex]["len"]
 
     # some global features that don't really make sense as interaction feats
     feats["position"] = round(vertex/len(sentence["tokens"]), 1)
@@ -469,13 +469,11 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     #TODO move to global
     @lru_cache(maxsize=32)
     def get_feats_included(ix):
-        chidren_deps = ix2children[ix]
-        gov_deps = ix2parent[ix]
         out = []
         out.append(("has_already" , ix2pos[ix]))
-        for c in chidren_deps:
+        for c in ix2children[ix]:
             out.append(("has_already_d" , c))
-        for c in gov_deps:
+        for c in ix2parent[ix]:
             out.append(("has_already_d_dep" , c))
         return out
 
@@ -503,7 +501,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
         feats[f, feats[depf]] = featsg[f] # dep + globalfeat
         feats[f, feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
         feats[f, feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
-
 
     return feats
 
