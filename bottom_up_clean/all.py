@@ -70,8 +70,8 @@ def get_features_of_dep(dep, sentence, depths):
     out["pos_n"] = depentent_token["pos"]
 
     # Structural
-    out["childrenCount_h"] = count_children(sentence, dep["governor"])
-    out["childrenCount_e"] = count_children(sentence, dep["dependent"])
+    out["childrenCount_h"] = sentence["childrencount"][dep["governor"]]
+    out["childrenCount_e"] = sentence["childrencount"][dep["dependent"]]
     out["depth_h"] = depths[dep["dependent"]]
     out["char_len_h"] = len(governor_token["word"])
     out["no_words_in_h"] = governor_token["index"]
@@ -259,6 +259,11 @@ def preproc(sentence):
     sentence["vx2gov"] = vx2gov
     sentence["depths"] = get_depths(sentence)
 
+    childrencount = defaultdict(int)
+    for i in sentence["basicDependencies"]:
+        childrencount[i["governor"]] += 1
+    sentence["childrencount"] = childrencount
+
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
@@ -331,7 +336,7 @@ def proposed_child(current_compression, sentence, vertex):
 
 def get_local_feats(vertex, sentence, depths, current_compression):
     '''get the features that are local to the vertex to be added'''
-    governor = get_governor(vertex, sentence)
+    governor = sentence["vx2gov"][vertex]['governor']
 
     if proposed_parent(governor, current_compression):
         #assert vertex not in current_compression /// this does not apply w/ full frontier
@@ -372,13 +377,6 @@ def get_labels_and_features(list_of_paths, feature_config):
     return features, labels
 
 
-def get_governor(vertex, sentence):
-    '''
-    return the governor of a vertex
-    '''
-    return sentence["vx2gov"][vertex]['governor']
-
-
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     
@@ -389,11 +387,6 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
     out["type"] = "CHILD"
 
     return out
-
-
-def count_children(sentence, vertex):
-    '''returns: count of children of vertex in the parse'''
-    return sum(1 for i in sentence["basicDependencies"] if i["governor"] == vertex)
 
 
 def featurize_governor_proposal(sentence, dependent_vertex, depths):
@@ -464,7 +457,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     featsg["left_add"] = vertex < min(current_compression)
 
-    governor = get_governor(vertex, sentence)
+    governor = sentence["vx2gov"][vertex]['governor']
 
     governor_dep = sentence["vx2children"][governor][0]
 

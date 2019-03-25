@@ -6,10 +6,14 @@ import pickle
 import argparse
 import timeit
 import csv
+import socket
 
 from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random
-from ilp2013.fillipova_altun import run_model
-from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+
+if socket.gethostname() == "hobbes":
+    from ilp2013.fillipova_altun import run_model
+    from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+    vocabs = get_all_vocabs()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-path_to_set_to_evaluate', type=str, default="validation.paths")
@@ -22,8 +26,6 @@ weights = "snapshots/1"
 clf = "bottom_up_clean/clf.p"
 vectorizer = "bottom_up_clean/vectorizer.p"
 
-with open(weights, "rb") as of:
-    weights = pickle.load(of)
 
 with open(clf, "rb") as of:
     clf = pickle.load(of)
@@ -33,8 +35,6 @@ with open(vectorizer, "rb") as of:
 
 
 
-
-vocabs = get_all_vocabs()
 
 with open(args.path_to_set_to_evaluate, "r") as inf:
     for ln in inf:
@@ -85,6 +85,8 @@ if __name__ == '__main__':
         writer.writerow(["mu", "sigma", "method"])
         mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "make_decision_lr"]) 
+        with open(weights, "rb") as of:
+            weights = pickle.load(of)
         mean,var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
  
