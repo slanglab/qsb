@@ -297,7 +297,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                 if wouldbe <= sentence["r"]:
                     current_compression.add(vertex)
                     for i in get_dependents_and_governors(vertex, sentence, current_compression):
-                        if i not in current_compression and i is not None:
+                        if i not in current_compression:
                             if i not in decideds:
                                 frontier.add(i)
         frontier.remove(vertex)
@@ -326,7 +326,7 @@ def proposed_parent(governor, current_compression):
     return governor in current_compression
 
 def proposed_child(current_compression, sentence, vertex):
-    dependents = get_children(sentence, vertex)
+    dependents = sentence["vx2children"][vertex]
     return any(d["dependent"] in current_compression for d in dependents)
 
 def get_local_feats(vertex, sentence, depths, current_compression):
@@ -516,16 +516,13 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     return feats
 
-def get_children(sentence, vertex):
-    ''''return the dependents of a vertex in basicDependencies'''
-    return sentence["vx2children"][vertex]
 
 def get_dependents_and_governors(vertex, sentence, tree):
     '''add a vertexes children to a queue, sort by prob'''
     assert vertex != 0
 
     out = []
-    for child in get_children(sentence, vertex):
+    for child in sentence["vx2children"][vertex]:
         if child["dependent"] not in tree:
             out.append(child["dependent"])
     governor = sentence["vx2gov"][vertex]
