@@ -500,14 +500,14 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     for f in featsg:
         feats[f] = featsg[f]
 
-    #### THIS KILLS F1 BUT NO SLOWDOWN. ISSUE IS vectorizer. If values are string it is a 1hot encoding
+    #### No slowdown if values are strings. Issue is vectorizer. If values are string it is a 1hot encoding
 
     for f in featsg:
         depf_s = "".join(feats[depf])
         f_str =  "".join(f)
         feats["dep_fg"] = f_str +  depf_s# dep + globalfeat
         feats["dep_type"] = f_str + feats["type"] # type (parent/gov/child) + globalfeat
-        # seems to hurt a tiny bit => feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
+        feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
 
     return feats
 

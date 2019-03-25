@@ -1,0 +1,48 @@
+    /*
+    try:
+        dep = [de for de in sentence['basicDependencies'] if de["governor"] == vertex][0]
+        feats1 = get_features_of_dep(dep, sentence, depths)
+        for f in feats1:
+            feats["dg" + f] = feats1[f]
+    except IndexError:# leaf vx
+        pass
+
+    feats["discon_suffix"] = feats["governorGloss"][-2:]
+    feats["gov_is_root"] = governor == 0
+    verby = gov_of_proposed_is_verb_and_current_compression_no_verb(sentence,
+                                                                    vertex,
+                                                                    current_compression)
+    feats["proposed_governed_by_verb"] = verby
+    feats["is_next_tok"] = vertex == max(current_compression) + 1
+
+    # if depg is case and is disconnected
+    # you need to reason about if the add the pp
+    # if there is a lot budget left, you should add the pp. This feat
+    # helps reason about this
+    if feats["dep"] == "case":
+        lt = len_current_compression(current_compression, sentence)
+        len_tok = len([_["word"] for _ in sentence["tokens"] if _["index"] == vertex][0])
+        feats["remaining_case_discon"] = (lt + len_tok)/sentence["r"]
+        grandparent_dep = [_["dep"] for _ in sentence["basicDependencies"] if _["dependent"] == governor]
+        if len(grandparent_dep) > 0:
+            feats["case_enhanced_deps"] = feats["dependentGloss"] + ":" + grandparent_dep[0]
+
+        if vertex - 1 in current_compression:
+            feats["prev_pos_case"] = [_["pos"] for _ in sentence["tokens"] if _["index"] == vertex - 1][0]
+
+    if (vertex + 1 in current_compression and vertex - 1 in current_compression):
+        feats["is_missing"] = 1
+    else:
+        feats["is_missing"] = 0
+
+    if verby:
+        if n_verbs_in_s(sentence) == 1:
+            feats["only_verb"] = True
+        else:
+            feats["only_verb"] = False
+        feats["verby_dep"] = feats["dep"]
+        if governor != 0:
+            gov = get_token_from_sentence(sentence=sentence, vertex=governor)
+            feats["gov_discon"] = gov["word"]
+            feats["pos_discon"] = gov["pos"]
+    */
