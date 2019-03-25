@@ -279,7 +279,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
     preproc(sentence)
 
-    decideds = []
+    decideds = set()
 
     lt = len_current_compression(current_compression, sentence)
 
@@ -307,11 +307,10 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                     current_compression.add(vertex)
                     lt = wouldbe
                     for i in get_dependents_and_governors(vertex, sentence, current_compression):
-                        if i not in current_compression:
-                            if i not in decideds:
-                                frontier.add(i)
+                        if i not in decideds:
+                            frontier.add(i)
         frontier.remove(vertex)
-        decideds.append(vertex)
+        decideds.add(vertex)
 
     return current_compression
 
@@ -516,7 +515,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
 def get_dependents_and_governors(vertex, sentence, tree):
     '''add a vertexes children to a queue, sort by prob'''
-    assert vertex != 0
 
     out = []
     for child in sentence["vx2children"][vertex]:
