@@ -140,7 +140,7 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
 def train_clf(training_paths="training.paths",
               validation_paths="validation.paths",
-              vectorizer=DictVectorizer(sparse=True),
+              vectorizer=DictVectorizer(sparse=True, sort=False),
               feature_config=None):
     '''Train a classifier on the oracle path, and check on validation paths'''
 
@@ -402,7 +402,7 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
 
     out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
 
-    out = {k + "g":v for k, v in out.items()}
+    out = {(k, "g"):v for k, v in out.items()}
 
     out["type"] = "GOVERNOR"
 
@@ -479,17 +479,17 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
         chidren_deps = ix2children[ix]
         gov_deps = ix2parent[ix]
         out = []
-        out.append("has_already" + ix2pos[ix])
+        out.append(("has_already" , ix2pos[ix]))
         for c in chidren_deps:
-            out.append("has_already_d" + c)
+            out.append(("has_already_d" , c))
         for c in gov_deps:
-            out.append("has_already_d_dep" + c)
+            out.append(("has_already_d_dep" , c))
         return out
 
     # history based feature
     for tok in sentence["tokens"]:
         if tok["index"] not in current_compression:
-            featsg["rejected_already" + ix2pos[tok["index"]]] = 1
+            featsg["rejected_already", ix2pos[tok["index"]]] = 1
 
     # history based feature
     for ix in current_compression:
@@ -508,9 +508,9 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     for f in featsg:
         feats[f] = featsg[f]
         try:
-            feats[f + feats[depf]] = featsg[f] # dep + globalfeat
-            feats[f + feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
-            feats[f + feats["type"] + feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
+            feats[f , feats[depf]] = featsg[f] # dep + globalfeat
+            feats[f , feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
+            feats[f , feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
 
