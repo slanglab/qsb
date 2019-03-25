@@ -199,7 +199,7 @@ def make_decision_lr(**kwargs):
                              current_compression=kwargs["current_compression"],
                              decideds=kwargs["decideds"])
 
-    X = kwargs["vectorizer"].transform([feats])
+    X = kwargs["vectorizer"].transform(feats)
     y = kwargs["clf"].predict(X)[0]
     return y
 
