@@ -256,6 +256,7 @@ def preproc(sentence):
     for dep in sentence['basicDependencies']:
         vx2children[dep["governor"]].append(dep)
         vx2gov[dep["dependent"]] = dep
+    vx2gov[0] = "ROOT"
     sentence["vx2children"] = vx2children
     sentence["vx2gov"] = vx2gov
     sentence["depths"] = get_depths(sentence)
@@ -352,7 +353,7 @@ def get_local_feats(vertex, sentence, depths, current_compression):
                                             depths=depths)
 
     else:
-        feats = {"type":"DISCONNECTED"}
+        feats = {"type":"DISCONNECTED", "dep_discon": sentence["vx2gov"][vertex]["dep"]}
     return feats
 
 
@@ -420,17 +421,17 @@ def get_connected(sentence, frontier, current_compression):
             out.add(dependent)
     return {i for i in out if i in frontier}
 
+
 def get_depf(feats):
-    try:
-        if "depg" in feats:
-            depf = "depg"
-        elif "depd" in feats:
-            depf = "depd"
-        else:
-            depf = "dep"
-    except KeyError:
-        depf = "discon"
-    return depf
+    if ('dep', 'g') in feats:
+        return ('dep', 'g')
+    elif "dep_discon" in feats:
+        return "dep_discon"
+    elif "dep" in feats:
+        return "dep"
+    else:
+        assert "bad" == "thng"
+
 
 def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     '''return global features of the edits'''
@@ -492,11 +493,9 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     # reason about how to pick the clause w/ compression
     depf = get_depf(feats)
-    try:
-        if feats[depf].lower() == "root":
-            featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
-    except KeyError:
-        pass
+    if feats[depf].lower() == "root":
+        featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
+
 
     for f in featsg:
         feats[f] = featsg[f]
@@ -504,15 +503,11 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     #### THIS KILLS F1 BUT NO SLOWDOWN. ISSUE IS vectorizer. If values are string it is a 1hot encoding
 
     for f in featsg:
-        try:
-            depf_s = "".join(feats[depf])
-            f_str =  "".join(f)
-            feats["dep_fg"] = f_str +  depf_s# dep + globalfeat
-            feats["dep_type"] = f_str + feats["type"] # type (parent/gov/child) + globalfeat
-            # seems to hurt a tiny bit => feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
-        except KeyError:
-            pass
-
+        depf_s = "".join(feats[depf])
+        f_str =  "".join(f)
+        feats["dep_fg"] = f_str +  depf_s# dep + globalfeat
+        feats["dep_type"] = f_str + feats["type"] # type (parent/gov/child) + globalfeat
+        # seems to hurt a tiny bit => feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
 
     return feats
 
