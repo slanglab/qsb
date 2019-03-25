@@ -106,6 +106,8 @@ def pick_l2r_connected(frontier, current_compression, sentence):
         options = list(unconnected)
 
     options.sort()
+    out = options[0]
+    assert out != 0
     return options[0]
 
 
@@ -180,6 +182,7 @@ def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
     out = {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
     #out.add(0)
+    assert 0 not in out
     return out
 
 
@@ -291,24 +294,21 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                                    current_compression=current_compression,
                                    sentence=sentence)
 
-        if vertex != 0: # bug here?
-            y = decider(vertex=vertex,
-                        sentence=sentence,
-                        depths=depths,
-                        current_compression=current_compression,
-                        vectorizer=vectorizer,
-                        marginal=marginal,
-                        clf=clf,
-                        decideds=decideds)
+        y = decider(vertex=vertex,
+                    sentence=sentence,
+                    depths=depths,
+                    current_compression=current_compression,
+                    vectorizer=vectorizer,
+                    marginal=marginal,
+                    clf=clf,
+                    decideds=decideds)
 
-            if y == 1:
-                wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
-                if wouldbe <= sentence["r"]:
-                    current_compression.add(vertex)
-                    lt = wouldbe
-                    for i in get_dependents_and_governors(vertex, sentence, current_compression):
-                        if i not in decideds:
-                            frontier.add(i)
+        if y == 1:
+            wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
+            if wouldbe <= sentence["r"]:
+                current_compression.add(vertex)
+                lt = wouldbe
+
         frontier.remove(vertex)
         decideds.add(vertex)
 
