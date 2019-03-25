@@ -122,8 +122,11 @@ def oracle_path(sentence, pi=pick_l2r_connected):
     while len(F) > 0:
         v = pi(frontier=F, current_compression=T, sentence=sentence)
         if v in sentence["compression_indexes"]:
+            suspected dead code
+            # suspected dead code
             for i in get_dependents_and_governors(v, sentence, T):
                 if i not in decided:
+                    assert i in F 
                     F.add(i)
             path.append((list(copy.deepcopy(T)), v, 1, decided))
             T.add(v)
@@ -178,8 +181,6 @@ def get_depths(sentence):
 def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
     out = {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
-    #out.add(0)
-    assert 0 not in out
     return out
 
 
@@ -191,7 +192,6 @@ def make_decision_lr(**kwargs):
                             current_compression=kwargs["current_compression"])
 
     # note: adds to feats dict
-
 
     feats = get_global_feats(vertex=kwargs["vertex"],
                              sentence=kwargs["sentence"],
@@ -268,6 +268,18 @@ def preproc(sentence):
         childrencount[i["governor"]] += 1
     sentence["childrencount"] = childrencount
 
+    def get_feats_included(ix):
+        out = []
+        out.append(("has_already", ix2pos[ix]))
+        for c in ix2children[ix]:
+            out.append(("has_already_d", c))
+        for c in ix2parent[ix]:
+            out.append(("has_already_d_dep", c))
+        return out
+    
+    sentence["feats_included"] = {t["index"]: get_feats_included(t["index"]) for t in sentence["tokens"]}
+
+
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
     Run additive compression, but use a model not oracle to make an addition decision
@@ -312,12 +324,6 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     return current_compression
 
 
-def current_compression_has_verb(sentence, current_compression):
-    '''returns boolean: does the current compression have a verb?'''
-    current_pos = {_["pos"][0].lower() for _ in sentence["tokens"] if _["index"] in current_compression}
-    return any(i == "v" for i in current_pos)
-
-
 def get_f1(predicted, jdoc):
     '''get the f1 score for the predicted vertexs vs. the gold'''
     original_ixs = [_["index"] for _ in jdoc["tokens"]]
@@ -325,26 +331,19 @@ def get_f1(predicted, jdoc):
     y_pred = [_ in predicted for _ in original_ixs]
     return f1_score(y_true=y_true, y_pred=y_pred)
 
-def proposed_parent(governor, current_compression):
-    '''is the governor in the compression'''
-    return governor in current_compression
-
-def proposed_child(current_compression, sentence, vertex):
-    dependents = sentence["vx2children"][vertex]
-    return any(d["dependent"] in current_compression for d in dependents)
 
 def get_local_feats(vertex, sentence, depths, current_compression):
     '''get the features that are local to the vertex to be added'''
     governor = sentence["vx2gov"][vertex]['governor']
 
-    if proposed_parent(governor, current_compression):
+    if governor in current_compression:
         #assert vertex not in current_compression /// this does not apply w/ full frontier
         feats = featurize_child_proposal(sentence,
                                          dependent_vertex=vertex,
                                          governor_vertex=governor,
                                          depths=depths)
 
-    elif proposed_child(current_compression, sentence, vertex):
+    elif any(d["dependent"] in current_compression for d in sentence["vx2children"][vertex]):
         feats = featurize_governor_proposal(sentence=sentence,
                                             dependent_vertex=vertex,
                                             depths=depths)
@@ -401,11 +400,6 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
     return out
 
 
-def in_compression(vertex, current_compression):
-    '''returns bool: is vertex in current compression?'''
-    return vertex in current_compression
-
-
 def get_connected2(sentence, frontier, current_compression):
     '''get vertexes in frontier that are conntected to current_compression'''
 
@@ -446,8 +440,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     featsg = {}
 
-    ix2parent = sentence["ix2parent"]
-    ix2children = sentence["ix2children"]
+    feats_included = sentence["feats_included"]
 
     # these two help. it is showing the method is able to reason about what is left in the compression
     featsg["over_r"] = lt + len_tok + 1 > sentence["r"]
@@ -460,22 +453,9 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     governor = sentence["vx2gov"][vertex]['governor']
 
-    governor_dep = sentence["vx2children"][governor][0]
-
-    featsg["global_gov_govDep"] = governor_dep["dep"]
+    featsg["global_gov_govDep"] = sentence["vx2children"][governor][0]["dep"]
 
     ix2pos = sentence["ix2pos"]
-
-    #TODO move to global
-    @lru_cache(maxsize=32)
-    def get_feats_included(ix):
-        out = []
-        out.append(("has_already" , ix2pos[ix]))
-        for c in ix2children[ix]:
-            out.append(("has_already_d" , c))
-        for c in ix2parent[ix]:
-            out.append(("has_already_d_dep" , c))
-        return out
 
     # history based feature
     for tok in sentence["tokens"]:
@@ -484,7 +464,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     # history based feature
     for ix in current_compression:
-        for f in get_feats_included(ix):
+        for f in feats_included[ix]:
             featsg[f] = 1
 
     # reason about how to pick the clause w/ compression
