@@ -26,8 +26,7 @@ def get_siblings(e, jdoc):
         - other children of h that are not e
     '''
     h, n = e
-    sibs = [i for i in jdoc["basicDependencies"] if i["governor"] == h and i["dependent"] != e]
-    return [_['dependentGloss'] for _ in sibs]
+    return [i["dependentGloss"] for i in jdoc["basicDependencies"] if i["governor"] == h and i["dependent"] != e]
 
 def get_marginal(fn="training.paths"):
     all_decisions = []
@@ -97,8 +96,7 @@ def len_current_compression(current_compression, sentence):
 
 
 def pick_l2r_connected(frontier, current_compression, sentence):
-    connected = get_connected(sentence, frontier, current_compression)
-
+    connected = get_connected2(sentence, frontier, current_compression)
     if len(connected) > 0:
         options = list(connected)
     else:
@@ -107,7 +105,6 @@ def pick_l2r_connected(frontier, current_compression, sentence):
 
     options.sort()
     out = options[0]
-    assert out != 0
     return options[0]
 
 
@@ -409,17 +406,19 @@ def in_compression(vertex, current_compression):
     return vertex in current_compression
 
 
-def get_connected(sentence, frontier, current_compression):
+def get_connected2(sentence, frontier, current_compression):
     '''get vertexes in frontier that are conntected to current_compression'''
+
     out = set()
-    for dep in sentence["basicDependencies"]:
-        dependent = dep["dependent"]
-        governor = dep["governor"]
-        if in_compression(dependent, current_compression) and not in_compression(governor, current_compression) and dep['governor'] != 0:
-            out.add(governor)
-        if in_compression(governor, current_compression) and not in_compression(dependent, current_compression):
-            out.add(dependent)
-    return {i for i in out if i in frontier}
+    for ix in current_compression:
+        if sentence["dep2gov"][ix] not in current_compression:
+            if sentence["dep2gov"][ix] in frontier:
+                out.add(sentence["dep2gov"][ix])
+        for i in sentence["vx2children"][ix]:
+            if i["dependent"] not in current_compression:
+                if i["dependent"] in frontier:
+                    out.add(i["dependent"])
+    return out
 
 
 def get_depf(feats):
