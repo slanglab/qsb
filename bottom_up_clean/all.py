@@ -450,7 +450,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     ix2children = sentence["ix2children"]
 
     # these two help. it is showing the method is able to reason about what is left in the compression
-    featsg["over_r"] = lt + len_tok > sentence["r"]
+    featsg["over_r"] = lt + len_tok + 1 > sentence["r"]
 
     featsg['middle'] = vertex > min(current_compression) and vertex < max(current_compression)
 
@@ -464,10 +464,9 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
 
     featsg["global_gov_govDep"] = governor_dep["dep"]
 
-    assert isinstance(governor, int)
-
     ix2pos = sentence["ix2pos"]
 
+    #TODO move to global
     @lru_cache(maxsize=32)
     def get_feats_included(ix):
         chidren_deps = ix2children[ix]
@@ -495,19 +494,16 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     if feats[depf].lower() == "root":
         featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
 
-
     for f in featsg:
         feats[f] = featsg[f]
 
     #### No slowdown if values are strings. Issue is vectorizer. If values are string it is a 1hot encoding
 
     for f in featsg:
-        try:
-            feats[f , feats[depf]] = featsg[f] # dep + globalfeat
-            feats[f , feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
-            feats[f , feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
-        except KeyError:
-            pass
+        feats[f, feats[depf]] = featsg[f] # dep + globalfeat
+        feats[f, feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
+        feats[f, feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
+
 
     return feats
 
