@@ -509,7 +509,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
             f_str =  "".join(f)
             feats["dep_fg"] = f_str +  depf_s# dep + globalfeat
             feats["dep_type"] = f_str + feats["type"] # type (parent/gov/child) + globalfeat
-            feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
+            # seems to hurt a tiny bit => feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
 
