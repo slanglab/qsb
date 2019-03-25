@@ -505,8 +505,49 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     These features give 3 points F1 and make the code 10X slower. If you turn them off
     we are 1000x faster than ILP
 
-    ### do interaction features
+    Where is the slowdown?
+        - vectorizer?
+        - dot product?
+        - the following 5 loc?
+
+    # turned on
+    len(vectorizer.get_feature_names())
+    207700
+
+    # turned off
+    len(vectorizer.get_feature_names())
+    195564
+
+    These seem to suggest that the issue is in transform, right? 20k sparse features == 10x slowdown?
+    
+    ### Is the slowdown in the feature function? If you uncomment the real feature function and comment in a 
+    fake one (below) it is 1000x faster, suggesting the feature function is not the issue
+
+    tmp = {}
+    for f in featsg:
+        try:
+            tmp[f , feats[depf]] = featsg[f] # dep + globalfeat
+            tmp[f , feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
+            tmp[f , feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
+        except KeyError:
+            pass
+
     '''
+
+    #### THIS KILLS F1 BUT NO SLOWDOWN. ISSUE IS vectorizer
+
+    #for f in featsg:
+    #    try:
+    #        depf_s = "".join(feats[depf])
+    #        f_str =  "".join(f)
+    #        feats["dep_fg"] = f_str +  depf_s# dep + globalfeat
+    #        feats["dep_type"] = f_str + feats["type"] # type (parent/gov/child) + globalfeat
+    #        feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
+    #    except KeyError:
+    #        pass
+
+    '''
+    ### do interaction features. this gets good F1 but 10x slower
     for f in featsg:
         try:
             feats[f , feats[depf]] = featsg[f] # dep + globalfeat
@@ -514,7 +555,16 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
             feats[f , feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
+    '''
 
+    ## this gets 1 point worse F1 and is 1000X faster
+    for f in featsg:
+        try:
+            feats[f , feats[depf]] = 1 # dep + globalfeat
+            feats[f , feats["type"]] = 1 # type (parent/gov/child) + globalfeat
+            feats[f , feats["type"] , feats[depf]] = 1 # type (parent/gov/child) + dep + global feat
+        except KeyError:
+            pass
 
     return feats
 
