@@ -192,6 +192,7 @@ def make_decision_lr(**kwargs):
 
     # note: adds to feats dict
 
+
     feats = get_global_feats(vertex=kwargs["vertex"],
                              sentence=kwargs["sentence"],
                              feats=feats,
@@ -497,15 +498,23 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     except KeyError:
         pass
 
-    ### do interaction features
     for f in featsg:
         feats[f] = featsg[f]
+
+    ''' 
+    These features give 3 points F1 and make the code 10X slower. If you turn them off
+    we are 1000x faster than ILP
+
+    ### do interaction features
+    '''
+    for f in featsg:
         try:
             feats[f , feats[depf]] = featsg[f] # dep + globalfeat
             feats[f , feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
             feats[f , feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
         except KeyError:
             pass
+
 
     return feats
 
