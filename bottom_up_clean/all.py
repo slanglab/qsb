@@ -268,6 +268,8 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     current_compression = {i for i in sentence["q"]}
     frontier = init_frontier(sentence, sentence["q"])
 
+    preproc(sentence)
+
     decideds = []
 
     lt = len_current_compression(current_compression, sentence)
@@ -355,6 +357,7 @@ def get_labels_and_features(list_of_paths, feature_config):
     for paths in list_of_paths:
         paths = json.loads(paths)
         sentence = paths["sentence"]
+        preproc(sentence)
         depths = sentence["depths"]
         for path in paths["paths"]:
             current_compression, vertex, decision, decideds = path
