@@ -115,6 +115,8 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
     F = init_frontier(sentence, sentence["q"])
 
+    preproc(sentence)
+
     decided = []
 
     path = []
@@ -232,7 +234,7 @@ def preproc(sentence):
 
     gov_dep_lookup = {}
     for s in sentence["basicDependencies"]:
-        gov_dep_lookup[(s["governor"], s["dependent"])] = s
+        gov_dep_lookup["{},{}".format(s["governor"], s["dependent"])] = s
     sentence["gov_dep_lookup"] = gov_dep_lookup
 
     ix2pos = {}
@@ -266,13 +268,10 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     current_compression = {i for i in sentence["q"]}
     frontier = init_frontier(sentence, sentence["q"])
 
-
-
     decideds = []
 
     lt = len_current_compression(current_compression, sentence)
 
-    preproc(sentence)
     depths = sentence["depths"]
 
     while len(frontier) > 0 and lt < sentence["r"]:
@@ -356,7 +355,6 @@ def get_labels_and_features(list_of_paths, feature_config):
     for paths in list_of_paths:
         paths = json.loads(paths)
         sentence = paths["sentence"]
-        preproc(sentence) # todo move to oracle_path
         depths = sentence["depths"]
         for path in paths["paths"]:
             current_compression, vertex, decision, decideds = path
@@ -381,7 +379,7 @@ def get_governor(vertex, sentence):
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     
-    child = sentence["gov_dep_lookup"][(governor_vertex, dependent_vertex)]
+    child = sentence["gov_dep_lookup"]["{},{}".format(governor_vertex, dependent_vertex)]
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
