@@ -208,6 +208,16 @@ def make_decision_random(**kwargs):
     return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
 
 def preproc(sentence):
+
+    def get_feats_included(ix):
+        out = []
+        out.append(("has_already", ix2pos[ix]))
+        for c in ix2children[ix]:
+            out.append(("has_already_d", c))
+        for c in ix2parent[ix]:
+            out.append(("has_already_d_dep", c))
+        return out
+
     def get_mark(sentence):
         has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
         return any(has_mark_or_xcomp)
@@ -220,63 +230,43 @@ def preproc(sentence):
 
     ix2children = defaultdict(list)
     ix2parent = defaultdict(list)
-    for i in sentence["basicDependencies"]:
-        ix2children[i["governor"]].append(i["dep"])
-        ix2parent[i["dependent"]].append(i["dep"])
-
-    sentence["ix2parent"] = ix2parent
-    sentence["ix2children"] = ix2children
-    for tno, t in enumerate(sentence["tokens"]):
-        sentence["tokens"][tno]["len"] = len(t["word"])
-
-    ix2tok = {}
-    for i in sentence["tokens"]:
-        ix2tok[i["index"]] = i
-    sentence["ix2tok"] = ix2tok
-
     gov_dep_lookup = {}
-    for s in sentence["basicDependencies"]:
-        gov_dep_lookup["{},{}".format(s["governor"], s["dependent"])] = s
-    sentence["gov_dep_lookup"] = gov_dep_lookup
-
-    ix2pos = {}
-    for s in sentence["tokens"]:
-        ix2pos[s["index"]] = s["pos"]
-
-    sentence["ix2pos"] = ix2pos
-
-    ''' a sentence may have multiple governors in enhanced deps'''
     dep2gov = {}
-    for dep in sentence["basicDependencies"]:
-        dep2gov[dep['dependent']] = dep['governor']
-    dep2gov[0] = None
-    sentence["dep2gov"] = dep2gov
-
     vx2children = defaultdict(list)
     vx2gov = defaultdict()
-    for dep in sentence['basicDependencies']:
-        vx2children[dep["governor"]].append(dep)
-        vx2gov[dep["dependent"]] = dep
-    vx2gov[0] = "ROOT"
+    childrencount = defaultdict(int)
+    ix2tok = {}
+    ix2pos = {}
+
+    for i in sentence["basicDependencies"]:
+        dep2gov[i['dependent']] = i['governor']
+        ix2children[i["governor"]].append(i["dep"])
+        ix2parent[i["dependent"]].append(i["dep"])
+        gov_dep_lookup["{},{}".format(i["governor"], i["dependent"])] = i
+        vx2children[i["governor"]].append(i)
+        vx2gov[i["dependent"]] = i
+        childrencount[i["governor"]] += 1
+
+    ix2feats_included = {}
+    for tno, t in enumerate(sentence["tokens"]):
+        sentence["tokens"][tno]["len"] = len(t["word"])
+        ix2tok[t["index"]] = t
+        ix2pos[t["index"]] = t["pos"]
+        ix2feats_included[t["index"]] = get_feats_included(t["index"])
+
+    sentence["ix2tok"] = ix2tok
+    sentence["gov_dep_lookup"] = gov_dep_lookup
+    sentence["ix2pos"] = ix2pos
+    sentence["ix2parent"] = ix2parent
+    sentence["ix2children"] = ix2children
     sentence["vx2children"] = vx2children
     sentence["vx2gov"] = vx2gov
     sentence["depths"] = get_depths(sentence)
-
-    childrencount = defaultdict(int)
-    for i in sentence["basicDependencies"]:
-        childrencount[i["governor"]] += 1
     sentence["childrencount"] = childrencount
-
-    def get_feats_included(ix):
-        out = []
-        out.append(("has_already", ix2pos[ix]))
-        for c in ix2children[ix]:
-            out.append(("has_already_d", c))
-        for c in ix2parent[ix]:
-            out.append(("has_already_d_dep", c))
-        return out
-    
-    sentence["feats_included"] = {t["index"]: get_feats_included(t["index"]) for t in sentence["tokens"]}
+    sentence["dep2gov"] = dep2gov
+    dep2gov[0] = None
+    vx2gov[0] = "ROOT"
+    sentence["feats_included"] = ix2feats_included
 
 
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
