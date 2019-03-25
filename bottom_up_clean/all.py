@@ -93,7 +93,7 @@ def get_features_of_dep(dep, sentence, depths):
 
 def len_current_compression(current_compression, sentence):
     '''get the character length of the current compression'''
-    return sum(len(o['word']) for o in sentence["tokens"] if o["index"] in current_compression)
+    return sum(o["len"] for o in sentence["tokens"] if o["index"] in current_compression) + len(current_compression) - 1
 
 
 def pick_l2r_connected(frontier, current_compression, sentence):
@@ -227,6 +227,8 @@ def preproc(sentence):
 
     sentence["ix2parent"] = ix2parent
     sentence["ix2children"] = ix2children
+    for tno, t in enumerate(sentence["tokens"]):
+        sentence["tokens"][tno]["len"] = len(t["word"])
 
     ix2tok = {}
     for i in sentence["tokens"]:
@@ -300,17 +302,16 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                         decideds=decideds)
 
             if y == 1:
-                wouldbe = len_current_compression(current_compression | {vertex}, sentence)
+                wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
                 if wouldbe <= sentence["r"]:
                     current_compression.add(vertex)
+                    lt = wouldbe
                     for i in get_dependents_and_governors(vertex, sentence, current_compression):
                         if i not in current_compression:
                             if i not in decideds:
                                 frontier.add(i)
         frontier.remove(vertex)
         decideds.append(vertex)
-
-        lt = len_current_compression(current_compression, sentence)
 
     return current_compression
 
