@@ -277,7 +277,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     
     The model is provided w/ the decider variable. It is either logistic regression or random based on marginal
     '''
-    current_compression = {i for i in sentence["q"]}
+    current_compression = set(sentence["q"])
     frontier = init_frontier(sentence, sentence["q"])
 
     preproc(sentence)
