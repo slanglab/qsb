@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     # this is to train the ILP from F & A
     with open("preproc/training.ilp", "wb") as of:
-        dt = [filippova_tree_transform(json.loads(i)) for i in dt[0:-validation_size]] 
+        dt = [filippova_tree_transform(json.loads(i)) for i in dt]
         pickle.dump(dt, of)
 
     def get_toks(jdoc):
