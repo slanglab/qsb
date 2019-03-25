@@ -179,7 +179,7 @@ def get_depths(sentence):
 def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
     out = {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
-    out.add(0)
+    #out.add(0)
     return out
 
 
