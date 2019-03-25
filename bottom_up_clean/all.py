@@ -503,11 +503,12 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     #### No slowdown if values are strings. Issue is vectorizer. If values are string it is a 1hot encoding
 
     for f in featsg:
-        depf_s = "".join(feats[depf])
-        f_str =  "".join(f)
-        feats["dep_fg"] = f_str +  depf_s# dep + globalfeat
-        feats["dep_type"] = f_str + feats["type"] # type (parent/gov/child) + globalfeat
-        feats["dep_gf_type"] = f_str + feats["type"] + depf_s # type (parent/gov/child) + dep + global feat
+        try:
+            feats[f , feats[depf]] = featsg[f] # dep + globalfeat
+            feats[f , feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
+            feats[f , feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
+        except KeyError:
+            pass
 
     return feats
 
