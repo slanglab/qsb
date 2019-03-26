@@ -13,7 +13,6 @@ from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction import FeatureHasher
 
-PUNCT = [_ for _ in string.punctuation]
 
 def get_siblings(e, jdoc):
     '''
@@ -26,18 +25,6 @@ def get_siblings(e, jdoc):
         - other children of h that are not e
     '''
     return [i["dependentGloss"] for i in jdoc["vx2children"][e[0]] if i["dependent"] != e[1]]
-
-
-def get_marginal(fn="training.paths"):
-    all_decisions = []
-    with open(fn, "r") as inf:
-        for ln in inf:
-            ln = json.loads(ln)
-            for p in ln["paths"]:
-                current_compression, vertex, decision, decideds = p
-                all_decisions.append(decision)
-
-    return np.mean(all_decisions)
 
 
 def get_features_of_dep(dep, sentence, depths):
@@ -57,7 +44,7 @@ def get_features_of_dep(dep, sentence, depths):
 
     sibs = get_siblings(e=(dep["governor"], dep["dependent"]), jdoc=sentence)
 
-    out = defaultdict()
+    out = dict()
 
     ### These are the F and A (2013) features
 
@@ -86,7 +73,7 @@ def get_features_of_dep(dep, sentence, depths):
     for s in sibs:
         out["s:", s, governor_token["lemma"]] = 1
 
-    return dict(out)
+    return out
 
 
 def len_current_compression(current_compression, sentence):
@@ -99,11 +86,9 @@ def pick_l2r_connected(frontier, current_compression, sentence):
     if len(connected) > 0:
         options = list(connected)
     else:
-        unconnected = [o for o in frontier if o not in connected]
-        options = list(unconnected)
+        options = list(frontier)
 
     options.sort()
-    out = options[0]
     return options[0]
 
 
@@ -179,8 +164,7 @@ def get_depths(sentence):
 
 def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
-    out = {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
-    return out
+    return {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
 
 
 def make_decision_lr(**kwargs):
@@ -280,8 +264,6 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
     preproc(sentence)
 
-    decideds = set()
-
     lt = len_current_compression(current_compression, sentence)
 
     depths = sentence["depths"]
@@ -308,7 +290,6 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                 lt = wouldbe
 
         frontier.remove(vertex)
-        decideds.add(vertex)
 
     return current_compression
 
@@ -391,14 +372,14 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
 def get_connected2(sentence, frontier, current_compression):
     '''get vertexes in frontier that are conntected to current_compression'''
 
-    out = set()
+    out = []
     for ix in current_compression:
         if sentence["dep2gov"][ix] not in current_compression:
             if sentence["dep2gov"][ix] in frontier:
-                out.add(sentence["dep2gov"][ix])
+                out.append(sentence["dep2gov"][ix])
         for i in sentence["vx2children"][ix]:
             if i["dependent"] in frontier:
-                out.add(i["dependent"])
+                out.append(i["dependent"])
     return out
 
 
@@ -425,50 +406,43 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
     feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
     feats["remaining"] = (lt + len_tok)/sentence["r"]
 
-    featsg = {}
+    depf = get_depf(feats)
 
-    feats_included = sentence["feats_included"]
+    def add_feat(name, val):
+        '''also does interactions'''
+        feats[name] = val
+        feats[name, feats[depf]] = val # dep + globalfeat
+        feats[name, feats["type"]] = val # type (parent/gov/child) + globalfeat
+        feats[name, feats["type"], feats[depf]] = val # type (parent/gov/child) + dep + global feat
 
     # these two help. it is showing the method is able to reason about what is left in the compression
-    featsg["over_r"] = lt + len_tok + 1 > sentence["r"]
+    add_feat("over_r", lt + len_tok + 1 > sentence["r"])
 
-    featsg['middle'] = vertex > min(current_compression) and vertex < max(current_compression)
+    add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression))
 
-    featsg["right_add"] = vertex > max(current_compression)
+    add_feat("right_add", vertex > max(current_compression))
 
-    featsg["left_add"] = vertex < min(current_compression)
+    add_feat("left_add", vertex < min(current_compression))
 
     governor = sentence["vx2gov"][vertex]['governor']
 
-    featsg["global_gov_govDep"] = sentence["vx2children"][governor][0]["dep"]
-
-    ix2pos = sentence["ix2pos"]
+    add_feat("global_gov_govDep", sentence["vx2children"][governor][0]["dep"])
 
     # history based feature
     for tok in frontier:
-        featsg["rejected_already", ix2pos[tok]] = 1
+        add_feat(("rejected_already", sentence["ix2pos"][tok]), 1)
 
     # history based feature
     for ix in current_compression:
-        for f in feats_included[ix]:
-            featsg[f] = 1
+        for f in sentence["feats_included"][ix]:
+            add_feat(f, 1)
 
-    # reason about how to pick the clause w/ compression
-    depf = get_depf(feats)
-    featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
-
-    for f in featsg:
-        feats[f] = featsg[f]
-
-    #### No slowdown if values are strings. Issue is vectorizer. If values are string it is a 1hot encoding
-
-    for f in featsg:
-        feats[f, feats[depf]] = featsg[f] # dep + globalfeat
-        feats[f, feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
-        feats[f, feats["type"], feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
+    add_feat("is_root_and_mark_or_xcomp", "is_root_and_mark_or_xcomp")
 
     return feats
 
+
+### Other utils
 
 def has_forest(predicted, sentence):
     ''' is the prediction a forest or a tree?'''
@@ -477,3 +451,15 @@ def has_forest(predicted, sentence):
         if gov not in predicted | {0}:
             return True
     return False
+
+
+def get_marginal(fn="training.paths"):
+    all_decisions = []
+    with open(fn, "r") as inf:
+        for ln in inf:
+            ln = json.loads(ln)
+            for p in ln["paths"]:
+                current_compression, vertex, decision, decideds = p
+                all_decisions.append(decision)
+
+    return np.mean(all_decisions)
