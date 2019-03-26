@@ -20,13 +20,12 @@ def get_siblings(e, jdoc):
     This gets the other children of h (that are not n). See below
 
     inputs:
-        e(int,int):an edge from head, h, to node n
+        e(int,int):an edge from head, h, to node n. e[ix] is head 2 tail
         jdoc(dict): a sentence from CoreNLP
     returns
         - other children of h that are not e
     '''
-    h, n = e
-    return [i["dependentGloss"] for i in jdoc["vx2children"][h] if i["dependent"] != n]
+    return [i["dependentGloss"] for i in jdoc["vx2children"][e[0]] if i["dependent"] != e[1]]
 
 
 def get_marginal(fn="training.paths"):
