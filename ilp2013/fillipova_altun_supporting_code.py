@@ -357,7 +357,7 @@ def get_siblings(e, jdoc):
         - other children of h that are not e
     '''
     h, n = e
-    sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != e]
+    sibs = [i for i in jdoc["enhancedDependencies"] if i["governor"] == h and i["dependent"] != n]
     #sibs = list(filter(lambda x:x["governor"] == h and x["dependent"] != e,
     #            jdoc["enhancedDependencies"]))
     return [_['dependent'] for _ in sibs]
