@@ -293,7 +293,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                     vectorizer=vectorizer,
                     marginal=marginal,
                     clf=clf,
-                    decideds=decideds)
+                    frontier=frontier)
 
         if y == 1:
             wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
@@ -377,8 +377,6 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
                               sentence=sentence,
                               depths=depths)
 
-    out = {(k, "g"):v for k, v in out.items()}
-
     out["type"] = "GOVERNOR"
 
     return out
@@ -393,9 +391,8 @@ def get_connected2(sentence, frontier, current_compression):
             if sentence["dep2gov"][ix] in frontier:
                 out.add(sentence["dep2gov"][ix])
         for i in sentence["vx2children"][ix]:
-            if i["dependent"] not in current_compression:
-                if i["dependent"] in frontier:
-                    out.add(i["dependent"])
+            if i["dependent"] in frontier:
+                out.add(i["dependent"])
     return out
 
 
@@ -452,8 +449,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
 
     # reason about how to pick the clause w/ compression
     depf = get_depf(feats)
-    if feats[depf].lower() == "root":
-        featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
+    featsg["is_root_and_mark_or_xcomp"] = sentence["is_root_and_mark_or_xcomp"]
 
     for f in featsg:
         feats[f] = featsg[f]
