@@ -223,6 +223,7 @@ def preproc(sentence):
     childrencount = defaultdict(int)
     ix2tok = {}
     ix2pos = {}
+    neighbors = {}
     gov2deps = defaultdict(set)
 
     for i in sentence["basicDependencies"]:
@@ -234,6 +235,7 @@ def preproc(sentence):
         vx2children[i["governor"]].append(i)
         vx2gov[i["dependent"]] = i
         childrencount[i["governor"]] += 1
+  
     sentence["gov2deps"] = gov2deps
 
     ix2feats_included = {}
@@ -242,6 +244,10 @@ def preproc(sentence):
         ix2tok[t["index"]] = t
         ix2pos[t["index"]] = t["pos"]
         ix2feats_included[t["index"]] = get_feats_included(t["index"])
+        b = gov2deps[t["index"]]
+        b.add(dep2gov[t["index"]])
+        neighbors[t["index"]] = b
+    sentence["neighbors"] = neighbors
 
     sentence["ix2tok"] = ix2tok
     sentence["gov_dep_lookup"] = gov_dep_lookup
@@ -378,8 +384,7 @@ def get_connected2(sentence, frontier, current_compression):
 
     out = set()
     for ix in current_compression:
-        out.add(sentence["dep2gov"][ix])
-        out |= sentence["gov2deps"][ix]
+        out |= sentence["neighbors"][ix]
     out &= frontier
     out -= current_compression
     return out
