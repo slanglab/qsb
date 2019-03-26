@@ -119,6 +119,11 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
     path = []
     lt = len_current_compression(T, sentence)
+
+    # does it matter if you add this second AND lt < sentence["r"]?
+    # it makes the oracle path slightly more like the runtime path and my intuition is
+    # that will be a good thing
+
     while len(F) > 0 and lt < sentence["r"]:
         v = pi(frontier=F, current_compression=T, sentence=sentence)
         if v in sentence["compression_indexes"]:
