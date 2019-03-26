@@ -118,7 +118,8 @@ def oracle_path(sentence, pi=pick_l2r_connected):
     decided = []
 
     path = []
-    while len(F) > 0:
+    lt = len_current_compression(T, sentence)
+    while len(F) > 0 and lt < sentence["r"]:
         v = pi(frontier=F, current_compression=T, sentence=sentence)
         if v in sentence["compression_indexes"]:
             path.append((list(copy.deepcopy(T)), v, 1, list(F)))
@@ -127,7 +128,7 @@ def oracle_path(sentence, pi=pick_l2r_connected):
             path.append((list(copy.deepcopy(T)), v, 0, list(F)))
         F.remove(v)
         decided.append(v)
-
+        lt = len_current_compression(T, sentence)
     assert T == set(sentence["compression_indexes"])
 
     return path
