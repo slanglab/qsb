@@ -83,13 +83,13 @@ def len_current_compression(current_compression, sentence):
 
 def pick_l2r_connected(frontier, current_compression, sentence):
     connected = get_connected2(sentence, frontier, current_compression)
+    
+    # min index gets the first element, in L to R order
     if len(connected) > 0:
-        options = connected
+        return min(connected)
     else:
-        options = list(frontier)
+        return min(frontier)
 
-    options.sort()
-    return options[0]
 
 
 def oracle_path(sentence, pi=pick_l2r_connected):
@@ -221,15 +221,18 @@ def preproc(sentence):
     childrencount = defaultdict(int)
     ix2tok = {}
     ix2pos = {}
+    gov2deps = defaultdict(set)
 
     for i in sentence["basicDependencies"]:
         dep2gov[i['dependent']] = i['governor']
+        gov2deps[i["governor"]].add(i["dependent"])
         ix2children[i["governor"]].append(i["dep"])
         ix2parent[i["dependent"]].append(i["dep"])
         gov_dep_lookup["{},{}".format(i["governor"], i["dependent"])] = i
         vx2children[i["governor"]].append(i)
         vx2gov[i["dependent"]] = i
         childrencount[i["governor"]] += 1
+    sentence["gov2deps"] = gov2deps
 
     ix2feats_included = {}
     for tno, t in enumerate(sentence["tokens"]):
@@ -308,19 +311,18 @@ def get_local_feats(vertex, sentence, depths, current_compression):
 
     if governor in current_compression:
         #assert vertex not in current_compression /// this does not apply w/ full frontier
-        feats = featurize_child_proposal(sentence,
+        return featurize_child_proposal(sentence,
                                          dependent_vertex=vertex,
                                          governor_vertex=governor,
                                          depths=depths)
 
-    elif any(d["dependent"] in current_compression for d in sentence["vx2children"][vertex]):
-        feats = featurize_governor_proposal(sentence=sentence,
+    elif len(sentence["gov2deps"][vertex] & current_compression) > 0:
+        return featurize_governor_proposal(sentence=sentence,
                                             dependent_vertex=vertex,
                                             depths=depths)
 
     else:
-        feats = {"type":"DISCONNECTED", "dep_discon": sentence["vx2gov"][vertex]["dep"]}
-    return feats
+        return {"type":"DISCONNECTED", "dep_discon": sentence["vx2gov"][vertex]["dep"]}
 
 
 def get_labels_and_features(list_of_paths, feature_config):
@@ -335,10 +337,10 @@ def get_labels_and_features(list_of_paths, feature_config):
         for path in paths["paths"]:
             current_compression, vertex, decision, frontier = path
             if vertex != 0:
-                feats = get_local_feats(vertex, sentence, depths, current_compression)
+                feats = get_local_feats(vertex, sentence, depths, set(current_compression))
 
                 # global features
-                feats = get_global_feats(sentence, feats, vertex, current_compression, frontier)
+                feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier)
 
                 labels.append(decision)
                 features.append(feats)
@@ -372,14 +374,12 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
 def get_connected2(sentence, frontier, current_compression):
     '''get vertexes in frontier that are conntected to current_compression'''
 
-    out = []
+    out = set()
     for ix in current_compression:
-        if sentence["dep2gov"][ix] not in current_compression:
-            if sentence["dep2gov"][ix] in frontier:
-                out.append(sentence["dep2gov"][ix])
-        for i in sentence["vx2children"][ix]:
-            if i["dependent"] in frontier:
-                out.append(i["dependent"])
+        out.add(sentence["dep2gov"][ix])
+        out |= sentence["gov2deps"][ix]
+    out &= frontier
+    out -= current_compression
     return out
 
 
