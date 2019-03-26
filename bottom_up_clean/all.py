@@ -84,7 +84,7 @@ def len_current_compression(current_compression, sentence):
 def pick_l2r_connected(frontier, current_compression, sentence):
     connected = get_connected2(sentence, frontier, current_compression)
     if len(connected) > 0:
-        options = list(connected)
+        options = connected
     else:
         options = list(frontier)
 
@@ -100,7 +100,7 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
     preproc(sentence)
 
-    decided = []
+    #suspected dead decided = []
 
     path = []
     lt = len_current_compression(T, sentence)
@@ -117,7 +117,7 @@ def oracle_path(sentence, pi=pick_l2r_connected):
         else:
             path.append((list(copy.deepcopy(T)), v, 0, list(F)))
         F.remove(v)
-        decided.append(v)
+        #suspected dead decided.append(v)
         lt = len_current_compression(T, sentence)
     assert T == set(sentence["compression_indexes"])
 
@@ -420,17 +420,17 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
 
     add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression))
 
-    add_feat("right_add", vertex > max(current_compression))
+    add_feat("r_add", vertex > max(current_compression))
 
-    add_feat("left_add", vertex < min(current_compression))
+    add_feat("l_add", vertex < min(current_compression))
 
     governor = sentence["vx2gov"][vertex]['governor']
 
-    add_feat("global_gov_govDep", sentence["vx2children"][governor][0]["dep"])
+    add_feat("ggovDep", sentence["vx2children"][governor][0]["dep"])
 
     # history based feature
     for tok in frontier:
-        add_feat(("rejected_already", sentence["ix2pos"][tok]), 1)
+        add_feat(("out_", sentence["ix2pos"][tok]), 1)
 
     # history based feature
     for ix in current_compression:
