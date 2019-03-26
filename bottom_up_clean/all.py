@@ -4,14 +4,11 @@ import numpy as np
 import copy
 import random
 
-from functools import lru_cache
-
 from bottom_up_clean.utils import bfs
 from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.feature_extraction import FeatureHasher
 
 NULLSET = set()
 
@@ -94,70 +91,6 @@ def pick_l2r_connected(frontier, current_compression, sentence):
 
 
 
-def oracle_path(sentence, pi=pick_l2r_connected):
-    '''produce all oracle paths, according to policy pi'''
-    T = {i for i in sentence["q"]}
-
-    F = init_frontier(sentence, sentence["q"])
-
-    preproc(sentence)
-
-    #suspected dead decided = []
-
-    path = []
-    lt = len_current_compression(T, sentence)
-
-    # does it matter if you add this second AND lt < sentence["r"]?
-    # it makes the oracle path slightly more like the runtime path and my intuition is
-    # that will be a good thing
-
-    while len(F) > 0 and lt < sentence["r"]:
-        v = pi(frontier=F, current_compression=T, sentence=sentence)
-        if v in sentence["compression_indexes"]:
-            path.append((list(copy.deepcopy(T)), v, 1, list(F)))
-            T.add(v)
-        else:
-            path.append((list(copy.deepcopy(T)), v, 0, list(F)))
-        F.remove(v)
-        #suspected dead decided.append(v)
-        lt = len_current_compression(T, sentence)
-    assert T == set(sentence["compression_indexes"])
-
-    return path
-
-
-def train_clf(training_paths="training.paths",
-              validation_paths="validation.paths",
-              vectorizer=DictVectorizer(sparse=True, sort=False),
-              feature_config=None):
-    '''Train a classifier on the oracle path, and check on validation paths'''
-
-    training_paths = [_ for _ in open(training_paths)]
-    validation_paths = [_ for _ in open(validation_paths)]
-
-    train_features, train_labels = get_labels_and_features(training_paths, feature_config)
-
-    X_train = vectorizer.fit_transform(train_features)
-
-    y_train = np.asarray(train_labels)
-
-    val_features, val_labels = get_labels_and_features(validation_paths, feature_config)
-
-    X_val = vectorizer.transform(val_features)
-
-    y_val = np.asarray(val_labels)
-
-    clf = LogisticRegression(random_state=0,
-                             solver='lbfgs',
-                             C=10,
-                             multi_class='ovr').fit(X_train, y_train)
-
-    print(clf.score(X_val, y_val))
-    print(clf.score(X_train, y_train))
-
-    return clf, vectorizer, clf.predict_proba(X_val)
-
-
 def get_depths(sentence):
     '''just a wrapper for bfs that only returns the depths lookup'''
     depths, heads_ignored_var, c_ignored_var = bfs(g=sentence, hop_s=0)
@@ -188,10 +121,6 @@ def make_decision_lr(**kwargs):
     y = kwargs["clf"].predict(X)[0]
     return y
 
-
-def make_decision_random(**kwargs):
-    draw = random.uniform(0, 1)
-    return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
 
 def preproc(sentence):
 
@@ -231,7 +160,7 @@ def preproc(sentence):
         gov2deps[i["governor"]].add(i["dependent"])
         ix2children[i["governor"]].append(i["dep"])
         ix2parent[i["dependent"]].append(i["dep"])
-        gov_dep_lookup["{},{}".format(i["governor"], i["dependent"])] = i
+        gov_dep_lookup[i["governor"], i["dependent"]] = i
         vx2children[i["governor"]].append(i)
         vx2gov[i["dependent"]] = i
         childrencount[i["governor"]] += 1
@@ -305,14 +234,6 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     return current_compression
 
 
-def get_f1(predicted, jdoc):
-    '''get the f1 score for the predicted vertexs vs. the gold'''
-    original_ixs = [_["index"] for _ in jdoc["tokens"]]
-    y_true = [_ in jdoc['compression_indexes'] for _ in original_ixs]
-    y_pred = [_ in predicted for _ in original_ixs]
-    return f1_score(y_true=y_true, y_pred=y_pred)
-
-
 def get_local_feats(vertex, sentence, depths, current_compression):
     '''get the features that are local to the vertex to be added'''
     governor = sentence["vx2gov"][vertex]['governor']
@@ -333,32 +254,10 @@ def get_local_feats(vertex, sentence, depths, current_compression):
         return {"type":"DISCONNECTED", "dep_discon": sentence["vx2gov"][vertex]["dep"]}
 
 
-def get_labels_and_features(list_of_paths, feature_config):
-    '''get the labels and the features from the list of paths'''
-    labels = []
-    features = []
-    for paths in list_of_paths:
-        paths = json.loads(paths)
-        sentence = paths["sentence"]
-        preproc(sentence)
-        depths = sentence["depths"]
-        for path in paths["paths"]:
-            current_compression, vertex, decision, frontier = path
-            if vertex != 0:
-                feats = get_local_feats(vertex, sentence, depths, set(current_compression))
-
-                # global features
-                feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier)
-
-                labels.append(decision)
-                features.append(feats)
-    return features, labels
-
-
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
     '''return features for a vertex that is a dependent of a vertex in the tree'''
     
-    child = sentence["gov_dep_lookup"]["{},{}".format(governor_vertex, dependent_vertex)]
+    child = sentence["gov_dep_lookup"][governor_vertex, dependent_vertex]
 
     out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
 
@@ -449,7 +348,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
     return feats
 
 
-### Other utils
+### Other utils. Speed does not matter below here
 
 def has_forest(predicted, sentence):
     ''' is the prediction a forest or a tree?'''
@@ -470,3 +369,102 @@ def get_marginal(fn="training.paths"):
                 all_decisions.append(decision)
 
     return np.mean(all_decisions)
+
+
+def get_labels_and_features(list_of_paths, feature_config):
+    '''get the labels and the features from the list of paths'''
+    labels = []
+    features = []
+    for paths in list_of_paths:
+        paths = json.loads(paths)
+        sentence = paths["sentence"]
+        preproc(sentence)
+        depths = sentence["depths"]
+        for path in paths["paths"]:
+            current_compression, vertex, decision, frontier = path
+            if vertex != 0:
+                feats = get_local_feats(vertex, sentence, depths, set(current_compression))
+
+                # global features
+                feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier)
+
+                labels.append(decision)
+                features.append(feats)
+    return features, labels
+
+
+def oracle_path(sentence, pi=pick_l2r_connected):
+    '''produce all oracle paths, according to policy pi'''
+    T = {i for i in sentence["q"]}
+
+    F = init_frontier(sentence, sentence["q"])
+
+    preproc(sentence)
+
+    #suspected dead decided = []
+
+    path = []
+    lt = len_current_compression(T, sentence)
+
+    # does it matter if you add this second AND lt < sentence["r"]?
+    # it makes the oracle path slightly more like the runtime path and my intuition is
+    # that will be a good thing
+
+    while len(F) > 0 and lt < sentence["r"]:
+        v = pi(frontier=F, current_compression=T, sentence=sentence)
+        if v in sentence["compression_indexes"]:
+            path.append((list(copy.deepcopy(T)), v, 1, list(F)))
+            T.add(v)
+        else:
+            path.append((list(copy.deepcopy(T)), v, 0, list(F)))
+        F.remove(v)
+        #suspected dead decided.append(v)
+        lt = len_current_compression(T, sentence)
+    assert T == set(sentence["compression_indexes"])
+
+    return path
+
+
+def train_clf(training_paths="training.paths",
+              validation_paths="validation.paths",
+              vectorizer=DictVectorizer(sparse=True, sort=False),
+              feature_config=None):
+    '''Train a classifier on the oracle path, and check on validation paths'''
+
+    training_paths = [_ for _ in open(training_paths)]
+    validation_paths = [_ for _ in open(validation_paths)]
+
+    train_features, train_labels = get_labels_and_features(training_paths, feature_config)
+
+    X_train = vectorizer.fit_transform(train_features)
+
+    y_train = np.asarray(train_labels)
+
+    val_features, val_labels = get_labels_and_features(validation_paths, feature_config)
+
+    X_val = vectorizer.transform(val_features)
+
+    y_val = np.asarray(val_labels)
+
+    clf = LogisticRegression(random_state=0,
+                             solver='lbfgs',
+                             C=10,
+                             multi_class='ovr').fit(X_train, y_train)
+
+    print(clf.score(X_val, y_val))
+    print(clf.score(X_train, y_train))
+
+    return clf, vectorizer, clf.predict_proba(X_val)
+
+
+def get_f1(predicted, jdoc):
+    '''get the f1 score for the predicted vertexs vs. the gold'''
+    original_ixs = [_["index"] for _ in jdoc["tokens"]]
+    y_true = [_ in jdoc['compression_indexes'] for _ in original_ixs]
+    y_pred = [_ in predicted for _ in original_ixs]
+    return f1_score(y_true=y_true, y_pred=y_pred)
+
+
+def make_decision_random(**kwargs):
+    draw = random.uniform(0, 1)
+    return int(draw < kwargs["marginal"]) # ~approx 28% acceptance rate
