@@ -48,7 +48,6 @@ def get_features_of_dep(dep, sentence, depths):
     '''
 
     depentent_token = sentence["ix2tok"][dep["dependent"]]
-    h,n = dep["governor"], dep["dependent"]
 
     try:
         governor_token = sentence["ix2tok"][dep["governor"]]
@@ -56,7 +55,7 @@ def get_features_of_dep(dep, sentence, depths):
         governor_token = {"lemma": "is_root", "word": "", "len": 0, 
                           "index": 0, "ner": "O", "pos": "root"}
 
-    sibs = get_siblings(e=(h, n), jdoc=sentence)
+    sibs = get_siblings(e=(dep["governor"], dep["dependent"]), jdoc=sentence)
 
     out = defaultdict()
 
@@ -65,7 +64,7 @@ def get_features_of_dep(dep, sentence, depths):
     # syntactic
     out["dep"] = dep["dep"]
     for s in sibs:
-        out["dep_sib" + s] = 1
+        out[("ds", s)] = 1
     out["pos_h"] = governor_token["pos"]
     out["pos_n"] = depentent_token["pos"]
 
@@ -83,10 +82,9 @@ def get_features_of_dep(dep, sentence, depths):
 
     # Lexical
     out['lemma_n'] = depentent_token["lemma"]
-    lemma_h = governor_token["lemma"]
-    out["lemma_h_label_e"] = lemma_h + dep["dep"]
+    out["lemma_h_label_e"] = governor_token["lemma"] + dep["dep"]
     for s in sibs:
-        out["sib:" + s + lemma_h] = 1
+        out["s:", s, governor_token["lemma"]] = 1
 
     return dict(out)
 
@@ -123,15 +121,10 @@ def oracle_path(sentence, pi=pick_l2r_connected):
     while len(F) > 0:
         v = pi(frontier=F, current_compression=T, sentence=sentence)
         if v in sentence["compression_indexes"]:
-            # suspected dead code. AH 3/25
-            #for i in get_dependents_and_governors(v, sentence, T):
-            #    if i not in decided:
-            #        assert i in F 
-            #        F.add(i)
-            path.append((list(copy.deepcopy(T)), v, 1, decided))
+            path.append((list(copy.deepcopy(T)), v, 1, list(F)))
             T.add(v)
         else:
-            path.append((list(copy.deepcopy(T)), v, 0, decided))
+            path.append((list(copy.deepcopy(T)), v, 0, list(F)))
         F.remove(v)
         decided.append(v)
 
@@ -197,7 +190,7 @@ def make_decision_lr(**kwargs):
                              sentence=kwargs["sentence"],
                              feats=feats,
                              current_compression=kwargs["current_compression"],
-                             decideds=kwargs["decideds"])
+                             frontier=kwargs["frontier"])
 
     X = kwargs["vectorizer"].transform(feats)
     y = kwargs["clf"].predict(X)[0]
@@ -353,12 +346,12 @@ def get_labels_and_features(list_of_paths, feature_config):
         preproc(sentence)
         depths = sentence["depths"]
         for path in paths["paths"]:
-            current_compression, vertex, decision, decideds = path
+            current_compression, vertex, decision, frontier = path
             if vertex != 0:
                 feats = get_local_feats(vertex, sentence, depths, current_compression)
 
                 # global features
-                feats = get_global_feats(sentence, feats, vertex, current_compression, decideds)
+                feats = get_global_feats(sentence, feats, vertex, current_compression, frontier)
 
                 labels.append(decision)
                 features.append(feats)
@@ -417,7 +410,7 @@ def get_depf(feats):
         assert "bad" == "thng"
 
 
-def get_global_feats(sentence, feats, vertex, current_compression, decideds):
+def get_global_feats(sentence, feats, vertex, current_compression, frontier):
     '''return global features of the edits'''
 
     lt = len_current_compression(current_compression, sentence)
@@ -449,9 +442,8 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     ix2pos = sentence["ix2pos"]
 
     # history based feature
-    for tok in sentence["tokens"]:
-        if tok["index"] not in current_compression:
-            featsg["rejected_already", ix2pos[tok["index"]]] = 1
+    for tok in frontier:
+        featsg["rejected_already", ix2pos[tok]] = 1
 
     # history based feature
     for ix in current_compression:
@@ -471,22 +463,10 @@ def get_global_feats(sentence, feats, vertex, current_compression, decideds):
     for f in featsg:
         feats[f, feats[depf]] = featsg[f] # dep + globalfeat
         feats[f, feats["type"]] = featsg[f] # type (parent/gov/child) + globalfeat
-        feats[f, feats["type"] , feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
+        feats[f, feats["type"], feats[depf]] = featsg[f] # type (parent/gov/child) + dep + global feat
 
     return feats
 
-
-def get_dependents_and_governors(vertex, sentence, tree):
-    '''add a vertexes children to a queue, sort by prob'''
-
-    out = []
-    for child in sentence["vx2children"][vertex]:
-        if child["dependent"] not in tree:
-            out.append(child["dependent"])
-    governor = sentence["vx2gov"][vertex]
-    if governor["governor"] not in tree:
-        out.append(governor["governor"])
-    return out
 
 def has_forest(predicted, sentence):
     ''' is the prediction a forest or a tree?'''
