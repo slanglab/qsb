@@ -26,7 +26,8 @@ def get_siblings(e, jdoc):
         - other children of h that are not e
     '''
     h, n = e
-    return [i["dependentGloss"] for i in jdoc["basicDependencies"] if i["governor"] == h and i["dependent"] != e]
+    return [i["dependentGloss"] for i in jdoc["vx2children"][h] if i["dependent"] != n]
+
 
 def get_marginal(fn="training.paths"):
     all_decisions = []
@@ -53,7 +54,8 @@ def get_features_of_dep(dep, sentence, depths):
     try:
         governor_token = sentence["ix2tok"][dep["governor"]]
     except:
-        governor_token = {"lemma": "is_root", "word": "", "index": 0, "ner": "O", "pos": "root"}
+        governor_token = {"lemma": "is_root", "word": "", "len": 0, 
+                          "index": 0, "ner": "O", "pos": "root"}
 
     sibs = get_siblings(e=(h, n), jdoc=sentence)
 
@@ -72,7 +74,7 @@ def get_features_of_dep(dep, sentence, depths):
     out["childrenCount_h"] = sentence["childrencount"][dep["governor"]]
     out["childrenCount_e"] = sentence["childrencount"][dep["dependent"]]
     out["depth_h"] = depths[dep["dependent"]]
-    out["char_len_h"] = len(governor_token["word"])
+    out["char_len_h"] = governor_token["len"]
     out["no_words_in_h"] = governor_token["index"]
 
     # Semantic
@@ -378,9 +380,10 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
 
 def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
-    governor = [de for de in sentence['basicDependencies'] if de["dependent"] == dependent_vertex][0]
 
-    out = get_features_of_dep(dep=governor, sentence=sentence, depths=depths)
+    out = get_features_of_dep(dep=sentence["vx2gov"][dependent_vertex],
+                              sentence=sentence,
+                              depths=depths)
 
     out = {(k, "g"):v for k, v in out.items()}
 
