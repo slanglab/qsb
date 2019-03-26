@@ -13,6 +13,9 @@ from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction import FeatureHasher
 
+NULLSET = set()
+
+BLANK = {"lemma": "is_root", "word": "", "len": 0,  "index": 0, "ner": "O", "pos": "root"}
 
 def get_siblings(e, jdoc):
     '''
@@ -24,7 +27,7 @@ def get_siblings(e, jdoc):
     returns
         - other children of h that are not e
     '''
-    return [i["dependentGloss"] for i in jdoc["vx2children"][e[0]] if i["dependent"] != e[1]]
+    return {i["dependentGloss"] for i in jdoc["vx2children"][e[0]] if i["dependent"] != e[1]}
 
 
 def get_features_of_dep(dep, sentence, depths):
@@ -39,8 +42,7 @@ def get_features_of_dep(dep, sentence, depths):
     try:
         governor_token = sentence["ix2tok"][dep["governor"]]
     except:
-        governor_token = {"lemma": "is_root", "word": "", "len": 0, 
-                          "index": 0, "ner": "O", "pos": "root"}
+        governor_token = BLANK
 
     sibs = get_siblings(e=(dep["governor"], dep["dependent"]), jdoc=sentence)
 
@@ -271,7 +273,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
     depths = sentence["depths"]
 
-    while len(frontier) > 0 and lt < sentence["r"]:
+    while frontier != NULLSET and lt < sentence["r"]:
 
         vertex = frontier_selector(frontier=frontier,
                                    current_compression=current_compression,
