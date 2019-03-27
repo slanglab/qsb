@@ -44,7 +44,7 @@
 \DeclareMathOperator*{\argmaxA}{arg\,max} % Jan Hlavacek
 
 % Extractive sentence compression under lexical and length constraints
-\title{Additive Compression with Lexical and Length Constraints}
+\title{Linear Compression under Lexical and Length Constraints}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -63,7 +63,7 @@
 \maketitle
 
 \begin{abstract}
-Extractive sentence compression seeks to reduce the length of a sentence, while retaining the most ``important'' information from the source. But query-focused applications such as document search engines or exploratory search interfaces place additional length, lexical and latency constraints on compression systems. This study introduces a new transition-based technique, developed for such settings. Our method constructs compressions in linear time by growing a forest in a dependency parse, achieving a \speedup speed up over traditional ILP-based methods. Our technique also better reconstructs known-good shortenings under constraints.
+Search applications often display shortened sentences which must contain a user's query term, must fit within the space constraints of a user interface and must be generated quickly, to avoid lags in a UI. This study introduces a new transition-based sentence compression technique, developed for such settings. Our method constructs compressions in linear time by growing a forest in a dependency parse, achieving a \speedup speed up over baseline ILP techniques. This speedup does not sacrifice compression quality: our method also better reconstructs known-good shortenings under constraints.
 \end{abstract}
 
 \section{Introduction}\label{s:intro}
@@ -163,6 +163,10 @@ We then use a collection of such oracle paths to train a model of oracle inclusi
 
 The appendix contains additional details regarding model tuning and implementation. 
 
+\subsection{Implementation: ablations and baselines}
+For comparison, we implement two additional methods. We implement a random method which accepts $v_i$ randomly at the marginal training-time acceptance rate, establishing a lower bound for this task. We also implement an additive method, which makes inclusion decisions using only edge features. This technique achieves a lower F1 than the ILP (Table \ref{t:results}), which integrates the same information to optimize a global objective.
+Adding global features to represent the overall state of the compression system improves F1 score. 
+
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
 Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. In our constrained compression setting, $Q$ determines the ``important'' information from $S$. Thus, human importance evaluations are inappropriate.
@@ -184,8 +188,9 @@ ILP&{\small 0.000}&{\small 0.000}&{\small 0.000}\\
 Additive {\small (edge only) }&{\small 0.818}&{\small 0.000}&{\small 5.680}\\
 \textbf{Additive}&\textbf{\small 0.875}&\textbf{\small 0.000}&\textbf{\small 11.806}\\
 \end{tabular}
-\caption{Test F1 scores, SLOR scores and average latency (milliseconds per sentence) for the constrained compression task. Additive {\small (edge only)} makes inclusion decisions using only edge-level features from \citet{filippova2013overcoming}; this method has a lower F1 than an ILP, which integrates the same information into a global objective. However, adding global features to represent the overall state of the compression system achieves similar performance with much lower latency. 
-The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Random {\small (lower bound)} shows scores from accepting randomly at the marginal training-time acceptance rate. \ahcomment{$\sigma$?}}
+\caption{Test F1 scores, SLOR scores and average latency (milliseconds per sentence) for the constrained compression task. 
+The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}.
+\ahcomment{$\sigma$?}}
 \label{t:results}
 \end{table}
 
