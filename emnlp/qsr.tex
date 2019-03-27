@@ -63,12 +63,16 @@
 \maketitle
 
 \begin{abstract}
-Search applications often display shortened sentences which must contain a user's query term, must fit within the space constraints of a user interface and must be generated quickly, to avoid lags in a UI. This study introduces a new transition-based sentence compression technique, developed for such settings. Our method constructs compressions in linear time by growing a forest in a dependency parse, achieving a \speedup speed up over baseline ILP techniques. This speedup does not sacrifice compression quality: our method also better reconstructs known-good shortenings under constraints.
+Search applications often display shortened sentences which must contain a user's query term, must fit within the space constraints of a user interface and must be generated quickly, to facilitate fluid user experience. This study introduces a new transition-based sentence compression technique, developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a forest in a sentence's dependency parse tree. This approach achieves a \speedup speed up over baseline ILP techniques, and better reconstructs known-good shortenings under constraints.
 \end{abstract}
+
 
 \section{Introduction}\label{s:intro}
 
-Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface and often must contain a user's query term, which defines the ``important'' information in the sentence. Query-focused applications applications also require low latency to support interactive browsing. An example application is shown in Figure \ref{f:qf}.
+Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But in search applications, 
+compressions often must include a user's query terms, and must fit within the space alloted in a user interface (e.g.\ desktop or phone).  An example search application is shown in Figure \ref{f:qf}.
+
+This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, source sentences $S$ are shortened to compressions $C$ which (1) must include a set of query words $Q$ and (2) must be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, the task is to map $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$.
 
 \begin{figure}[htb!]
 \includegraphics[width=8.5cm]{qf.pdf}
@@ -76,9 +80,12 @@ Traditional study of extractive sentence compression seeks to create short, read
 \label{f:qf}
 \end{figure}
 
-This study examines the English-language compression problem with such length and lexical requirements. In constrained compression, source sentences $S$ are shortened to compressions $C$ which (1) must include query words $Q$ and (2) must be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, the task is to construct a function $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$.
+Existing compression techniques are poorly suited to this constrained task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}. Moreover, newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require access to specialized graphics processing hardware (GPU). These deficits prevent application of existing compression techniques in search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency constraints are paramount. 
 
-Older compression methods  \cite{clarke2008global,filippova2013overcoming} based on integer linear programming can trivially accommodate such restrictions, but rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}. Newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints and require access to specialized graphics processing hardware (GPU) to achieve low latency, presenting a barrier for practitioners in fields like social science and journalism. These deficits make existing compression techniques unsuitable for search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency constraints are paramount. 
+Thus, in this work, we present a new linear method for constrained compression, which grows a forest in a sentence's dependency parse. We compare this \textit{additive compression} technique to supervised, ILP systems, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
+
+\section{Related work}\label{s:relatedwork}
+
 
 \begin{table}[htb!]
 \begin{tabular}{lcc}
@@ -91,9 +98,6 @@ LSTM taggers   & linear              & no         \\
 \label{t:algos}
 \end{table}
 
-Thus, in this work, we present a new method for constrained compression which grows a forest in a dependency parse in linear time. We compare this \textit{additive compression} technique to supervised, integer linear programming (ILP) systems, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
-
-\section{Related work}\label{s:relatedwork}
 
 Extractive compression \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH} shortens a sentence by removing tokens, often to aid in a summarization task \cite{Knight2000StatisticsBasedS,almeida2013fast,P16-1188}.\footnote{Some methods shorten sentences via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}: users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under length and lexical constraints.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, but do not examine the compression problem under lexical and length constraints.}
 
@@ -101,7 +105,7 @@ Our interest in the constrained compression problem is motivated by search user 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
 Because such user-facing systems require low-latency \cite{Nielsen,heerschei,Liu2014TheEO}, we adopt a computationally efficient approach. 
 
-We compare our compression method to ILP-based compression techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements. Such methods optimize an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ if when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} ILP-based techniques typically optimize with an off-the-shelf solver. 
+We compare our compression method to ILP-based compression techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements. These methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ if when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} ILP-based techniques typically optimize with an off-the-shelf solver. 
 
 At this time, sequence to sequence sentence compression methods \cite{filippova2015sentence} are unsuitable for query-focused applications, because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
 
@@ -169,15 +173,15 @@ Adding global features to represent the overall state of the compression system 
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
-Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. In our constrained compression setting, $Q$ determines the ``important'' information from $S$. Thus, human importance evaluations are inappropriate.
+Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so human importance evaluations are inappropriate.
 
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions, known to correlate with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Based on SLOR scores, our method might produce slightly more readable compressions (Table \ref{t:results}). The appendix details our implementation of SLOR. 
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length, and is known to correlate with human readability judgements for the compression task \cite{kannConl}.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Based on SLOR scores, our method might produce slightly more readable compressions (Table \ref{t:results}). The appendix details our implementation of SLOR. 
 
 \subsection{Latency evaluation}\label{s:costs}
 
-Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by compressing 10,000 sentences sampled with replacement from the test set, and observing the wall clock speed. We repeat this experiment with our additive compression approach. Our method is \speedup faster (Table \ref{t:results}). The appendix contains additional computational details.
+Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by measuring the wall clock speed of each technique. We observe a \speedup speedup (Table \ref{t:results}) in mean compression time. The appendix contains additional measurement details.
 
-In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 10 sentences with an ILP (e.g.\ for 10 query results) takes more than a second. Additive compression finishes in under a tenth of a second. We implement in Python 3; additional speedup might be possible using more efficient languages. 
+In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 10 sentences with an ILP (e.g.\ for 10 query results) would take more than a second, a noticeable lag. Unlike ILP-based methods (which are reliant on external solver), our Python 3 implementation could also be sped up by rewriting in a more performant language. 
 
 \begin{table}[]
 \begin{tabular}{lccc}
