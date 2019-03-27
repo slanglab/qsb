@@ -50,7 +50,7 @@ def get_features_of_dep(dep, sentence, depths):
     # syntactic
     out["dep"] = dep["dep"]
     for s in sibs:
-        out[("ds", s)] = 1
+        out["ds", s] = 1
     out["pos_h"] = governor_token["pos"]
     out["pos_n"] = depentent_token["pos"]
 
@@ -88,7 +88,6 @@ def pick_l2r_connected(frontier, current_compression, sentence):
         return min(connected)
     else:
         return min(frontier)
-
 
 
 def get_depths(sentence):
