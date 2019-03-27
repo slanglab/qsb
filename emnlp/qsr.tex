@@ -63,16 +63,15 @@
 \maketitle
 
 \begin{abstract}
-Search applications often display shortened sentences which must contain a user's query term, must fit within the space constraints of a user interface and must be generated quickly, to facilitate fluid user experience. This study introduces a new transition-based sentence compression technique, developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a forest in a sentence's dependency parse tree. This approach achieves a \speedup speed up over baseline ILP techniques, and better reconstructs known-good shortenings under constraints.
+Search applications often display shortened sentences which must contain certain query terms, must fit within the space constraints of a user interface and should be generated quickly, to enhance user experience. This study introduces a new transition-based sentence compression technique, developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a forest in the dependency parse of a sentence. This approach achieves a \speedup speed up over baseline ILP techniques, and better reconstructs known-good shortenings under constraints.
 \end{abstract}
 
 
 \section{Introduction}\label{s:intro}
 
-Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But in search applications, 
-compressions often must include a user's query terms, and must fit within the space alloted in a user interface (e.g.\ desktop or phone).  An example search application is shown in Figure \ref{f:qf}.
+Traditional study of extractive sentence compression seeks to create short, readable, single-sentence summaries which retain the most ``important'' information from source sentences. But search applications often require compressions which must include a user's query terms, and must not exceed some maximum length permitted by screen space.  Figure \ref{f:qf} shows an example.
 
-This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, source sentences $S$ are shortened to compressions $C$ which (1) must include a set of query words $Q$ and (2) must be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, the task is to map $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$.
+This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, source sentences $S$ are shortened to compressions $C$ which (1) must include a set of query words $Q$ and (2) must be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, constrained compression maps $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$.
 
 \begin{figure}[htb!]
 \includegraphics[width=8.5cm]{qf.pdf}
@@ -80,7 +79,7 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing compression techniques are poorly suited to this constrained task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}. Moreover, newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require access to specialized graphics processing hardware (GPU). These deficits prevent application of existing compression techniques in search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency constraints are paramount. 
+Existing compression techniques are poorly suited to this task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}, requiring user wait time. Meanwhile, newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require access to expensive graphics processing units (GPU). These deficits prevent application of existing compression techniques in traditional search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency requirements are paramount. 
 
 Thus, in this work, we present a new linear method for constrained compression, which grows a forest in a sentence's dependency parse. We compare this \textit{additive compression} technique to supervised, ILP systems, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
 
@@ -101,25 +100,25 @@ LSTM taggers   & linear              & no         \\
 
 Extractive compression \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH} shortens a sentence by removing tokens, often to aid in a summarization task \cite{Knight2000StatisticsBasedS,almeida2013fast,P16-1188}.\footnote{Some methods shorten sentences via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}: users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under length and lexical constraints.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, but do not examine the compression problem under lexical and length constraints.}
 
-Our interest in the constrained compression problem is motivated by search user interfaces \cite{hearst2009search}, which often display query-biased \cite{tombros1998advantages} and length-restricted shortenings.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}} 
+Our interest in the constrained compression problem is motivated by search user interfaces \cite{hearst2009search}, which often display query-biased \cite{tombros1998advantages} and length-restricted shortenings.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}.} 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
 Because such user-facing systems require low-latency \cite{Nielsen,heerschei,Liu2014TheEO}, we adopt a computationally efficient approach. 
 
 We compare our compression method to ILP-based compression techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements. These methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ if when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} ILP-based techniques typically optimize with an off-the-shelf solver. 
 
-At this time, sequence to sequence sentence compression methods \cite{filippova2015sentence} are unsuitable for query-focused applications, because such methods cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,aaimh}.
+At this time, sequence to sequence sentence compression methods \cite{filippova2015sentence}  cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{N18-1119,D18-1443,aaimh}.
 
 \section{Additive compression}\label{s:system}
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compression because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
-compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of additive compression is that it can construct constrained compressions in linear time, leading to lower latency than ILP-based methods (\S\ref{s:autoeval}). 
+compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of additive compression is that it can construct constrained compressions in linear time, leading to \speedup lower latency than ILP-based methods (\S\ref{s:autoeval}). 
 
-Additive compression assumes a boolean relevance model, which defines some initial compression, containing the user's query term. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such constrained compressions.
+Additive compression assumes a boolean relevance model: source sentences must contain a user's query term. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such constrained compressions.
 
 
 \begin{figure}[h]
 \includegraphics[width=8.2cm]{additive.pdf}
-\caption{A stateful procedure (from left to right) produces the compression $\{$A,C,B,E$\}$. Each candidate $v_i$ is boxed. All rejected candidates $\neg C$ are unshaded.}
+\caption{A stateful procedure (from left to right) produces the final compression $\{$A,C,B,E$\}$. Each candidate $v_i$ is boxed; rejected candidates $\neg C_i$ are unshaded.}
 \label{f:walkthru}
 \end{figure}
 
