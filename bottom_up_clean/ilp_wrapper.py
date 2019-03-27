@@ -21,10 +21,6 @@ UNIGRAMS = get_unigram_probs()
 LANGUAGE_MODEL = LM()
 
 
-def strip_tags(tokens):
-    return [_ for _ in tokens if "SOS" not in _["word"] and "EOS"
-            not in _["word"] and "OOV" not in _["word"]]
-
 
 def get_model(config):
     print(config)
@@ -45,18 +41,12 @@ def get_model(config):
 
 def do_sentence(_, no_compression, config, model, vno):
     sentence = json.loads(_)
-    sentence["tokens"] = strip_tags(sentence["tokens"])
     
     orig_ix = [_["index"] for _ in sentence["tokens"]] 
     y_true = [_ in sentence["compression_indexes"] for
               _ in orig_ix]
     out = model.predict(sentence)
     y_pred = out["y_pred"]
-    ops = out["nops"]
-    if "prunes" in out:
-        prunes = out["prunes"]
-    else:
-        prunes = -999999
     if out["y_pred"] == "could not find a compression":
         f1 = 0.0
         no_compression += 1
@@ -69,24 +59,22 @@ def do_sentence(_, no_compression, config, model, vno):
                    if y_pred[ono]]
     compression = " ".join(compression)# SLOR implementation trained on stripped punct b/c models dont include punct b.c not in training data 
 
-    lm_score = slor(sequence=compression,
-                    lm=LANGUAGE_MODEL,
-                    unigram_log_probs_=UNIGRAMS)
+    slor_score = slor(sequence=compression,
+                     lm=LANGUAGE_MODEL,
+                     unigram_log_probs_=UNIGRAMS)
 
     config["sentence{}".format(vno)] = {'f1': f1,
-                                        "lm": lm_score,
-                                        "nops": ops,
-                                        "prunes": prunes,
+                                        "slor": slor_score,
                                         "y_pred": y_pred,
                                         "y_true": y_true}
 
 
-def get_F1_from_config(config):
+def get_metric_from_config(config, metric):
     f1s = 0
     total = 0
     for o in config:
         if "sentence" in o:
-            f1s += config[o]["f1"]
+            f1s += config[o][metric]
             total += 1
     return f1s/total
 
@@ -138,4 +126,5 @@ if __name__ == "__main__":
     model = get_model(config)
 
     run_fn(config, args.do_jsonl, early_stop=10000)
-    print(get_F1_from_config(config))
+    print(get_metric_from_config(config, "f1"))
+    print(get_metric_from_config(config, "slor"))
