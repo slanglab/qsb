@@ -1,10 +1,11 @@
 from __future__ import division
-import random
-import numpy as np
-
-import json
 from tqdm import tqdm
 from code.log import logger
+import random
+import csv
+import numpy as np
+import json
+
 
 
 class SamplingParameters(object):
@@ -37,7 +38,7 @@ def boostrap(pairs):
 
 def run_sample(params):
     '''compute delta for a bootstraped sample'''
-    pairs = zip(params.model_one_data, params.model_two_data)
+    pairs = list(zip(params.model_one_data, params.model_two_data))
     bootstrap_world = boostrap(pairs)
     model_one = params.f([_[0] for _ in bootstrap_world])
     model_two = params.f([_[1] for _ in bootstrap_world])
@@ -50,10 +51,6 @@ def run_b_samples(params):
     return pval, samples
 
 
-def filelist2datadict(list_):
-    return {_: json.loads(open(_)) for _ in list_}
-
-
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -63,28 +60,31 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    dt = filelist2datadict([args.file1, args.file2])
+    one = [json.loads(i)[args.metric] for i in open(args.file1)]
+    two = [json.loads(i)[args.metric] for i in open(args.file2)]
 
-    pairs_we_care_about = []
+    f1_1 = np.mean(one)
+    f1_2 = np.mean(two)
 
-    pairs_we_care_about.append((args.file1, args.file2))
+    if f1_1 > f1_2:
+        bigger_dataset, smaller_dataset = (one, two)
+        bigger_file, smaller_file = (args.file1, args.file2)
+    else:
+        bigger_dataset, smaller_dataset = (two, one)
+        bigger_file, smaller_file = (args.file2, args.file1)
 
-    for _ in pairs_we_care_about:
-        file_one, file_two = _
-        if file_one != file_two:
-            one = [dt[file_one][i][args.metric] for i in dt[file_one] if "sentence" in i]
-            two = [dt[file_two][i][args.metric] for i in dt[file_two] if "sentence" in i]
-            f1_1 = np.mean(one)
-            f1_2 = np.mean(two)
-            bigger, smaller = (one, two) if f1_1 > f1_2 else (two, one)
-            bigger_file, smaller_file = (file_one, file_two) if f1_1 > f1_2 else (file_two, file_one)
-            assert bigger != smaller
-            params = SamplingParameters(model_one_data=bigger,
-                                        model_two_data=smaller,
-                                        f=np.mean,
-                                        b=10000)
-            pv, samples = run_b_samples(params)
-            logger.info("sig p" + ",".join([bigger_file,
-                                            smaller_file,
-                                            str(pv),
-                                            str(params.delta_x)]))
+    params = SamplingParameters(model_one_data=bigger_dataset,
+                                model_two_data=smaller_dataset,
+                                f=np.mean,
+                                b=10000)
+
+    pv, samples = run_b_samples(params)
+
+    with open("bottom_up_clean/stat_sig.csv", "a") as of:
+        writer = csv. writer(of)
+        writer.writerow(["bigger", "smaller", "metric", "p", "delta"])
+        writer.writerow([bigger_file,
+                         smaller_file,
+                         args.metric,
+                         str(pv),
+                         str(params.delta_x)])
