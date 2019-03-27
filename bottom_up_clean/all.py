@@ -284,8 +284,7 @@ def get_connected2(sentence, frontier, current_compression):
     out = set()
     for ix in current_compression:
         out |= sentence["neighbors"][ix]
-    out &= frontier
-    out -= current_compression
+    out &= frontier # b/c intersects w/ frontier no need to exclude current compression
     return out
 
 
