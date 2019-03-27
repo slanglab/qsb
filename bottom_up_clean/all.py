@@ -359,7 +359,7 @@ def get_marginal(fn="training.paths"):
         for ln in inf:
             ln = json.loads(ln)
             for p in ln["paths"]:
-                current_compression, vertex, decision = p
+                current_compression, vertex, decision, frontier = p
                 all_decisions.append(decision)
 
     return np.mean(all_decisions)
@@ -393,8 +393,6 @@ def oracle_path(sentence, pi=pick_l2r_connected):
     T = {i for i in sentence["q"]}
 
     F = init_frontier(sentence, sentence["q"])
-
-    preproc(sentence)
 
     #suspected dead decided = []
 
