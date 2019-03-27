@@ -83,7 +83,7 @@ def config2json(config):
     for o in config:
         if "sentence" in o:
             out.append({"f1": config[o]["f1"], "slor": config[o]["slor"]})
-    return f1s/total
+    return out 
 
 def run_fn(config, fn, early_stop=None):
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     if args.assess_convergence:
         assess_convergence()
 
-    config = {"algorithm": "ilp", "weights": "snapshots/5"}
+    config = {"algorithm": "ilp", "weights": "snapshots/1"}
 
     model = get_model(config)
 
