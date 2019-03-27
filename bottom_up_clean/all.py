@@ -77,7 +77,7 @@ def get_features_of_dep(dep, sentence, depths):
 
 def len_current_compression(current_compression, sentence):
     '''get the character length of the current compression'''
-    return sum(o["len"] for o in sentence["tokens"] if o["index"] in current_compression) + len(current_compression) - 1
+    return sum(sentence['ix2tok'][o]["len"] for o in current_compression) + len(current_compression) - 1
 
 
 def pick_l2r_connected(frontier, current_compression, sentence):
@@ -136,12 +136,6 @@ def preproc(sentence):
         has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
         return any(has_mark_or_xcomp)
 
-    sentence["is_root_and_mark_or_xcomp"] = get_mark(sentence)
-    sentence["lsentence"] = len(" ".join([_["word"] for _ in sentence["tokens"]]))
-    sentence["lqwords"] = len(" ".join([_["word"] for _ in sentence["tokens"] if _["index"] in sentence["q"]]))
-    sentence["cr_goal"] = sentence["r"]/sentence["lsentence"]
-    sentence["q_as_frac_of_cr"] = sentence["lqwords"]/sentence["r"]
-
     ix2children = defaultdict(list)
     ix2parent = defaultdict(list)
     gov_dep_lookup = {}
@@ -187,10 +181,14 @@ def preproc(sentence):
     sentence["depths"] = get_depths(sentence)
     sentence["childrencount"] = childrencount
     sentence["dep2gov"] = dep2gov
-    dep2gov[0] = None
-    vx2gov[0] = "ROOT"
     sentence["feats_included"] = ix2feats_included
 
+    sentence["is_root_and_mark_or_xcomp"] = get_mark(sentence)
+
+    sentence["lsentence"] = len(sentence["original"])
+    sentence["lqwords"] = sum(_["len"] for _ in sentence["tokens"] if _["index"] in sentence["q"]) + len(sentence["q"]) - 1
+    sentence["cr_goal"] = sentence["r"]/sentence["lsentence"]
+    sentence["q_as_frac_of_cr"] = sentence["lqwords"]/sentence["r"]
 
 def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_decision_lr,  marginal=None):
     '''
@@ -339,7 +337,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
         for f in sentence["feats_included"][ix]:
             add_feat(f, 1)
 
-    add_feat("is_root_and_mark_or_xcomp", "is_root_and_mark_or_xcomp")
+    add_feat("is_root_and_mark_or_xcomp", 1)
 
     return feats
 
