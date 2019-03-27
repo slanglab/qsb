@@ -15,20 +15,27 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
 parser.add_argument('-training_paths', type=str, default="training.paths")
 parser.add_argument('-random', dest='random', action='store_true', default=False)
-parser.add_argument('-skip_globals', dest='skip_globals', action='store_true', default=False, help="don't use global features")
+parser.add_argument('-only_locals', dest='only_locals', action='store_true', default=False, help="don't use global features")
 parser.add_argument('-skip_training', dest='skip_training', action='store_true', default=False)
 
 args = parser.parse_args()
 
-def do_training(training_paths, validation_paths, skip_globals = False):
+def do_training(training_paths, validation_paths, only_locals = False):
     clf, vectorizer, validationPreds = train_clf(training_paths=training_paths,
                                                  validation_paths=validation_paths,
-                                                 skip_globals=skip_globals)
+                                                 only_locals=only_locals)
 
-    with open("bottom_up_clean/clf.p", "wb") as of:
+    if only_locals:
+        clf_of = "bottom_up_clean/clf_only_locals.p"
+        vec_of = "bottom_up_clean/vectorizer_only_locals.p"
+    else:
+        clf_of = "bottom_up_clean/clf.p"
+        vec_of = "bottom_up_clean/vectorizer.p"
+
+    with open(clf_of, "wb") as of:
         pickle.dump(clf, of)
 
-    with open("bottom_up_clean/vectorizer.p", "wb") as of:
+    with open(vec_of, "wb") as of:
         pickle.dump(vectorizer, of)
 
     return clf, vectorizer
@@ -51,7 +58,7 @@ if __name__ == "__main__":
 
     if not args.skip_training:
         # writes the .p files
-        clf, vectorizer = do_training(args.training_paths, args.validation_paths, args.skip_globals)
+        clf, vectorizer = do_training(args.training_paths, args.validation_paths, args.only_locals)
     else:
         with open("bottom_up_clean/clf.p", "rb") as of:
             clf = pickle.load(of)
@@ -65,9 +72,8 @@ if __name__ == "__main__":
     else:
         marginal = None
 
-    out = []
+    out, slors = [], []
     tot = 0
-    slors = []
 
     for pno, paths in enumerate(tqdm(open(args.validation_paths, "r"))):
         paths = json.loads(paths)
@@ -95,8 +101,8 @@ if __name__ == "__main__":
 
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
 
-    if args.skip_globals:
-        name = "skipglobals"
+    if args.only_locals:
+        name = "only_locals"
     else:
         name = decider.__name__
 

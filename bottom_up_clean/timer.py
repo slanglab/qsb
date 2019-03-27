@@ -23,17 +23,23 @@ args = parser.parse_args()
 S = []
 
 weights = "snapshots/1"
-clf = "bottom_up_clean/clf.p"
-vectorizer = "bottom_up_clean/vectorizer.p"
 
 
-with open(clf, "rb") as of:
-    clf = pickle.load(of)
+def get_clf_and_vectorizer(only_locals=False):
 
-with open(vectorizer, "rb") as of:
-    vectorizer = pickle.load(of)
+    if only_locals:
+        clf = "bottom_up_clean/clf_only_locals.p"
+        vectorizer = "bottom_up_clean/vectorizer_only_locals.p"
+    else:
+        clf = "bottom_up_clean/clf.p"
+        vectorizer = "bottom_up_clean/vectorizer.p"
 
+    with open(clf, "rb") as of:
+        clf = pickle.load(of)
 
+    with open(vectorizer, "rb") as of:
+        vectorizer = pickle.load(of)
+    return clf, vectorizer
 
 
 with open(args.path_to_set_to_evaluate, "r") as inf:
@@ -59,6 +65,7 @@ def test_additive():
     decider=make_decision_lr
     marginal = None
     sentence = random.sample(S, k=1)[0]["sentence"]
+
     runtime_path(sentence,
                  frontier_selector=pick_l2r_connected,
                  clf=clf,
@@ -71,6 +78,7 @@ def test_additive_at_random():
     decider=make_decision_random
     marginal = .3
     sentence = random.sample(S, k=1)[0]["sentence"]
+
     runtime_path(sentence,
                  frontier_selector=pick_l2r_connected,
                  clf=clf,
@@ -80,16 +88,32 @@ def test_additive_at_random():
 
 
 if __name__ == '__main__':
-    with open("bottom_up_clean/timer.csv", "w") as of:
+    with open("bottom_up_clean/timer.csv", "a") as of:
         writer = csv.writer(of)
-        writer.writerow(["mu", "sigma", "method"])
+
+        #global clf and vectorizer b/c of timing problems 
+        clf, vectorizer = get_clf_and_vectorizer()
+
+        ## Full feature
         mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "make_decision_lr"]) 
+
+        ### Only local vectorizer and classifier. Note reimport clf and vectorizer to only local version
+        clf, vectorizer = get_clf_and_vectorizer(only_locals=True)
+        mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        writer.writerow([mean, var, "make_decision_only_locals"])
+
+        ## Random
+        mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
+        writer.writerow([mean, var, "make_decision_random"]) 
+
+        ## ILP
         with open(weights, "rb") as of:
             weights = pickle.load(of)
+
         mean,var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
  
-        mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
+       
 
-        writer.writerow([mean, var, "make_decision_random"]) 
+       

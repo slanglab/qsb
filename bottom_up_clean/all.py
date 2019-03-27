@@ -365,7 +365,7 @@ def get_marginal(fn="training.paths"):
     return np.mean(all_decisions)
 
 
-def get_labels_and_features(list_of_paths, skip_globals=False):
+def get_labels_and_features(list_of_paths, only_locals=False):
     '''get the labels and the features from the list of paths'''
     labels = []
     features = []
@@ -380,7 +380,7 @@ def get_labels_and_features(list_of_paths, skip_globals=False):
                 feats = get_local_feats(vertex, sentence, depths, set(current_compression))
 
                 # global features
-                if not skip_globals:
+                if not only_locals:
                     feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier)
 
                 labels.append(decision)
@@ -423,19 +423,19 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 def train_clf(training_paths="training.paths",
               validation_paths="validation.paths",
               vectorizer=DictVectorizer(sparse=True, sort=False),
-              skip_globals=False):
+              only_locals=False):
     '''Train a classifier on the oracle path, and check on validation paths'''
 
     training_paths = [_ for _ in open(training_paths)]
     validation_paths = [_ for _ in open(validation_paths)]
 
-    train_features, train_labels = get_labels_and_features(training_paths, skip_globals)
+    train_features, train_labels = get_labels_and_features(training_paths, only_locals)
 
     X_train = vectorizer.fit_transform(train_features)
 
     y_train = np.asarray(train_labels)
 
-    val_features, val_labels = get_labels_and_features(validation_paths, skip_globals)
+    val_features, val_labels = get_labels_and_features(validation_paths, only_locals)
 
     X_val = vectorizer.transform(val_features)
 
