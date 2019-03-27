@@ -3,7 +3,6 @@ import random
 import numpy as np
 import json
 from code.log import logger
-from tqdm import tqdm
 
 
 class SamplingParameters(object):
@@ -50,25 +49,29 @@ def run_b_samples(params):
 
 
 def filelist2datadict(list_):
-    return {_: json.load(open(_)) for _ in files_to_load}
+    return {_: json.load(open(_)) for _ in list_}
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-file1', type=str, default="bottom_up_clean/ilp_results.jsonl")
+    parser.add_argument('-file2', type=str, action='bottom_up_clean/additive_results.json')
+    parser.add_argument('-metric', type=str, action='f1')
 
-    files_to_load = ["comp_experiments_f1/output/full-556251071-nn-prune-greedy-test",
-                     "comp_experiments_f1/output/full-fixtures-ilp7-test"]
+    args = parser.parse_args()
 
-    dt = filelist2datadict(files_to_load)
+    dt = filelist2datadict([args.file1, args.file2])
 
     pairs_we_care_about = []
 
-    pairs_we_care_about.append((files_to_load[0], files_to_load[1]))
+    pairs_we_care_about.append((args.file1, args.file2))
 
     for _ in pairs_we_care_about:
         file_one, file_two = _
         if file_one != file_two:
-            one = [dt[file_one][i]["f1"] for i in dt[file_one] if "sentence" in i]
-            two = [dt[file_two][i]["f1"] for i in dt[file_two] if "sentence" in i]
+            one = [dt[file_one][i][args.metric] for i in dt[file_one] if "sentence" in i]
+            two = [dt[file_two][i][args.metric] for i in dt[file_two] if "sentence" in i]
             f1_1 = np.mean(one)
             f1_2 = np.mean(two)
             bigger, smaller = (one, two) if f1_1 > f1_2 else (two, one)
