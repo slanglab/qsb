@@ -289,12 +289,10 @@ def get_connected2(sentence, frontier, current_compression):
 
 
 def get_depf(feats):
-    if ('dep', 'g') in feats:
-        return ('dep', 'g')
+    if "dep" in feats:
+        return "dep"
     elif "dep_discon" in feats:
         return "dep_discon"
-    elif "dep" in feats:
-        return "dep"
     else:
         assert "bad" == "thng"
 
