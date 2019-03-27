@@ -14,47 +14,61 @@ from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connec
 parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
 parser.add_argument('-training_paths', type=str, default="training.paths")
-parser.add_argument('-feature_config', type=str, default="bottom_up_clean/feature_config.json")
 parser.add_argument('-random', dest='random', action='store_true', default=False)
+parser.add_argument('-skip_globals', dest='skip_globals', action='store_true', default=False, help="don't use global features")
+parser.add_argument('-skip_training', dest='skip_training', action='store_true', default=False)
 
 args = parser.parse_args()
 
-if __name__ == "__main__":
-
-    with open(args.feature_config, "r") as inf:
-        feature_config = json.load(inf)
-
-    if socket.gethostname() == "hobbes":
-        from klm.query import LM, get_unigram_probs, slor
-        lm = LM()
-        unigram_log_probs_ = get_unigram_probs()
-
-    '''
-    clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
-                                                 validation_paths=args.validation_paths,
-                                                 feature_config=feature_config)
+def do_training(training_paths, validation_paths, skip_globals = False):
+    clf, vectorizer, validationPreds = train_clf(training_paths=training_paths,
+                                                 validation_paths=validation_paths,
+                                                 skip_globals=skip_globals)
 
     with open("bottom_up_clean/clf.p", "wb") as of:
         pickle.dump(clf, of)
 
     with open("bottom_up_clean/vectorizer.p", "wb") as of:
         pickle.dump(vectorizer, of)
-    '''
 
-    with open("bottom_up_clean/clf.p", "rb") as of:
-        clf = pickle.load(of)
+    return clf, vectorizer
 
-    with open("bottom_up_clean/vectorizer.p", "rb") as of:
-        vectorizer = pickle.load(of)
+def get_scores():
+    if socket.gethostname() == "hobbes":
+        slor_score = slor(" ".join(compression), lm, unigram_log_probs_)
+    else:
+        slor_score = 0
+    f1_score = get_f1(predicted, sentence)
+    return slor_score, f1_score
 
+
+if __name__ == "__main__":
+
+    if socket.gethostname() == "hobbes":
+        from klm.query import LM, get_unigram_probs, slor
+        lm = LM()
+        unigram_log_probs_ = get_unigram_probs()
+
+    if not args.skip_training:
+        # writes the .p files
+        clf, vectorizer = do_training(args.training_paths, args.validation_paths, args.skip_globals)
+    else:
+        with open("bottom_up_clean/clf.p", "rb") as of:
+            clf = pickle.load(of)
+
+        with open("bottom_up_clean/vectorizer.p", "rb") as of:
+            vectorizer = pickle.load(of)
+
+    if args.random:
+        print("[*] getting marginal")
+        marginal = get_marginal(args.training_paths)
+    else:
+        marginal = None
+
+    out = []
     tot = 0
     slors = []
 
-    print("[*] getting marginal")
-    marginal = get_marginal(args.training_paths)
-
-    totalNonTrees = 0
-    out = []
     for pno, paths in enumerate(tqdm(open(args.validation_paths, "r"))):
         paths = json.loads(paths)
         sentence = paths["sentence"]
@@ -71,28 +85,26 @@ if __name__ == "__main__":
                                  decider=decider)
         compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted]
 
-        ### check if the sentence has any non trees?
-        slor_score = 0
-        if socket.gethostname() == "hobbes":
-            slor_score = slor(" ".join(compression), lm, unigram_log_probs_)
-        else:
-            slor_score = 0
-        slors.append(slor_score)
-        if has_forest(predicted, sentence):
-            totalNonTrees += 1
-        f1_score = get_f1(predicted, sentence)
-        tot += f1_score
-        out.append({"f1": f1_score, "slor": slor_score, "method": "additive"})
+        slor_score, f1_score = get_scores()
 
+        slors.append(slor_score)
+
+        tot += f1_score
+
+        out.append({"f1": f1_score, "slor": slor_score, "method": "additive"})
 
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
 
+    if args.skip_globals:
+        name = "skipglobals"
+    else:
+        name = decider.__name__
+
     with open("bottom_up_clean/results.csv", "a") as of:
         writer = csv.writer(of)
-        results = [tot/totalVal, np.mean(slors), np.std(slors), decider.__name__]
+        results = [tot/totalVal, np.mean(slors), np.std(slors), name]
         writer.writerow(results)
-    
+
     with open("bottom_up_clean/additive_results.jsonl", "w") as of:
         for i in out:
             of.write(json.dumps(i) + "\n")
-
