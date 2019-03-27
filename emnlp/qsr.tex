@@ -164,7 +164,7 @@ We then use a collection of such oracle paths to train a model of oracle inclusi
 The appendix contains additional details regarding model tuning and implementation. 
 
 \subsection{Implementation: ablations and baselines}
-For comparison, we implement two additional methods. We implement a random method which accepts $v_i$ randomly at the marginal training-time acceptance rate, establishing a lower bound for this task. We also implement an additive method, which makes inclusion decisions using only edge features. This technique achieves a lower F1 than the ILP (Table \ref{t:results}), which integrates the same information to optimize a global objective.
+For comparison, we implement two additional methods. We implement a random method which accepts $v_i$ randomly at the marginal training-time acceptance rate, establishing a lower bound for this task. We also implement an additive method, which makes inclusion decisions using only edge features. This ablated method achieves a lower F1 than the ILP (Table \ref{t:results}), which integrates the same information to optimize a global objective.
 Adding global features to represent the overall state of the compression system improves F1 score. 
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
