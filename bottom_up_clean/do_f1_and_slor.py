@@ -89,8 +89,8 @@ if __name__ == "__main__":
 
     with open("bottom_up_clean/results.csv", "a") as of:
         writer = csv.writer(of)
-        out = [tot/totalVal, np.mean(slors), np.std(slors), decider.__name__]
-        writer.writerow(out)
+        results = [tot/totalVal, np.mean(slors), np.std(slors), decider.__name__]
+        writer.writerow(results)
     
     with open("bottom_up_clean/additive_results.jsonl", "w") as of:
         for i in out:
