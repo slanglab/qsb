@@ -39,7 +39,7 @@ with open(timer_fn, "r") as inf:
     header = next(reader)
     for ln in reader:
         time_mu, time_sigma, method = ln
-        method2time_mu[method] = float(time_mu)
+        method2time_mu[method] = float(time_mu) * 1000 
         method2time_sigma[method] = float(time_sigma)
 
 
@@ -60,11 +60,11 @@ for method in ['make_decision_random', 'ilp', 'only_locals', 'make_decision_lr']
         print("&".join([print_method[method],
               todec(method2f1[method]),
               todec(method2slormu[method]),
-              todec(method2time_mu[method]) + " (" + "{})".format(todec(method2time_sigma[method])),
+              todec(method2time_mu[method]),
               ]) + "\\\\")
     else:
         print("&".join(["\\textbf{" + print_method[method] + "}",
               todec_bold(method2f1[method]),
               todec_bold(method2slormu[method]),
-              todec_bold(method2time_mu[method]) + " (" + "{})".format(todec_bold(method2time_sigma[method])),
+              todec_bold(method2time_mu[method]),
               ]) + "\\\\")

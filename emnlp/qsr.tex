@@ -178,13 +178,14 @@ In user-facing applications such latency gains are non-trivial \cite{Nielsen,hee
 \begin{table}[]
 \begin{tabular}{lccc}
 \centering
-Approach & F1 & SLOR &  sec. / sentence  \\ \hline
-Rand.&{\small 0.654}&{\small 0.000}&{\small 0.001} ({\small 0.000})\\
-ILP&{\small 0.000}&{\small 0.000}&{\small 0.000} ({\small 0.000})\\
-Additive {\small (edge only) }&{\small 0.818}&{\small 0.000}&{\small 0.007} ({\small 0.005})\\
-\textbf{Additive}&\textbf{\small 0.874}&\textbf{\small 0.000}&\textbf{\small 0.008} (\textbf{\small 0.006})\\\end{tabular}
-\caption{Test F1 scores, SLOR scores and average latency (seconds per sentence) for the constrained compression task. Additive {\small (edge only)} makes inclusion decisions using only edge-level features from \citet{filippova2013overcoming}; this method has a lower F1 than an ILP, which integrates the same information into a global objective. However, adding global features to represent the overall state of the compression system achieves similar performance with much lower latency. 
-The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Random {\small (lower bound)} shows scores from accepting randomly at the marginal training-time acceptance rate. \ahcomment{why only show sigma for some of these?}}
+Approach & F1 & SLOR &  ms. / sentence  \\ \hline
+Rand.&{\small 0.654}&{\small 0.000}&{\small 0.557}\\
+ILP&{\small 0.000}&{\small 0.000}&{\small 0.000}\\
+Additive {\small (edge only) }&{\small 0.818}&{\small 0.000}&{\small 5.680}\\
+\textbf{Additive}&\textbf{\small 0.875}&\textbf{\small 0.000}&\textbf{\small 11.806}\\
+\end{tabular}
+\caption{Test F1 scores, SLOR scores and average latency (milliseconds per sentence) for the constrained compression task. Additive {\small (edge only)} makes inclusion decisions using only edge-level features from \citet{filippova2013overcoming}; this method has a lower F1 than an ILP, which integrates the same information into a global objective. However, adding global features to represent the overall state of the compression system achieves similar performance with much lower latency. 
+The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Random {\small (lower bound)} shows scores from accepting randomly at the marginal training-time acceptance rate. \ahcomment{$\sigma$?}}
 \label{t:results}
 \end{table}
 
