@@ -23,7 +23,7 @@
 \usepackage{bm}
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
-\newcommand{\speedup}[0]{100X~}
+\newcommand{\speedup}[0]{20X~}
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
 
 \usepackage{url}
@@ -71,13 +71,9 @@ Extractive sentence compression seeks to reduce the length of a sentence, while 
 Traditional study of extractive sentence compression seeks to create short, readable compressions which retain the most ``important'' information from source sentences. But query-focused and user-facing applications impose additional requirements on the output of a compression system. Compressions must be short enough to be shown in a user interface and often must contain a user's query term, which defines the ``important'' information in the sentence. Query-focused applications applications also require low latency to support interactive browsing. An example application is shown in Figure \ref{f:qf}.
 
 \begin{figure}[htb!]
-%\fbox{
-%\begin{minipage}{7.6 cm}
 \includegraphics[width=8.5cm]{qf.pdf}
 \caption{A search interface (boxed, top) returns a headline $h$ above a constrained compression $C$, shortened from a sentence $S$ in a query-relevant document (italics, bottom). The constrained compression must contain $Q$, the users' query terms (bold), and must not exceed $b=$75 characters in length.}
 \label{f:qf}
-%\end{minipage}
-%}
 \end{figure}
 
 This study examines the English-language compression problem with such length and lexical requirements. In constrained compression, source sentences $S$ are shortened to compressions $C$ which (1) must include query words $Q$ and (2) must be shorter than or equal in length to a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, the task is to construct a function $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$.
@@ -128,26 +124,29 @@ Additive compression assumes a boolean relevance model, which defines some initi
 Our method builds a compression by maintaining a state
 $(C_i,P_i)$ where $C_i \subseteq S$ is a set of added candidates, $P_i  \subseteq S$ is a priority queue of vertexes, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P)$ from the head of $P$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P$ get higher priority than non-neighbors in the queue. We break ties in left-to-right order, by sentence position.) If we accept $v_i$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P$ is empty or $C_i$ is $b$ characters long.\footnote{We linearize $C$ by left-to-right vertex position in $S$, which is common for English-language compression.} The appendix includes a formal algorithm. We never accept $v_i$ if the length of $C_i \cup v_i$ is more than $b$, respecting the character budget; we respect $Q$ because $C_0 \gets Q$. 
+During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P)$ from the head of $P$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P$ get higher priority than non-neighbors in the queue. We break ties in left-to-right order, by sentence position.) If we accept $v_i$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P$ is empty or $C_i$ is $b$ characters long.\footnote{We linearize $C$ by left-to-right vertex position in $S$, which is common for English-language compression.} The appendix includes a formal algorithm. We never accept $v_i$ if the length of $C_i \cup v_i$ is more than $b$, respecting the character budget. We respect $Q$ because $C_0 \gets Q$. 
 
-Our additive framework is linear in the token length of $S$ because $P_0  \gets S \setminus Q$, and because we pop and evaluate 1 vertex from $P$ at each timestep.
+Our method is linear in the token length of $S$ because we pop and evaluate some vertex from $P$ at each timestep, after $P_0  \gets S \setminus Q$.
 
 \section{Evaluation}\label{s:autoeval}
 
-We compare additive compression to a supervised ILP baseline in terms of latency, readability and token-level F1 score. F1 is the standard automatic evaluation metric for the compression task, used to measure how well each compression method can reconstruct known-good shortenings. Our method achieves higher F1 scores, higher automatic readability scores and 100X lower latency (Table \ref{t:results}) than ILP techniques. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We compare additive compression to a supervised ILP baseline in terms of latency, readability and token-level F1 score. F1 is the standard automatic evaluation metric for the compression task, used to measure how well each compression method can reconstruct known-good shortenings. Our method achieves higher F1 scores, higher automatic readability scores and \speedup lower latency (Table \ref{t:results}) than ILP techniques. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
 \subsection{Synthetic constrained compression experiment}\label{s:constrained}
 
 In order to evaluate different approaches to constrained compression, we require a dataset of sentences, constraints and known-good shortenings, which respect the constraints. This means we need tuples $(S, Q, b, C_g)$, where $C_g$ is a known-good compression of $S$ which respects $Q$ and $b$ (\S\ref{s:intro}).
 
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
-as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we set $b$ equal to  the character length of $C_g$, and we sample some query $Q$ from the tokens in $C_g$. We sample $Q$ to mimic the observed distribution of query token lengths \cite{Jansen2000RealLR} and observed distribution of query part-of-speech tags \cite{Barr2008TheLS} from real-world searches.\footnote{See appendix for detailed discussion of query sampling.} Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR.'' By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {\ahcomment{TODO}} test tuples, each of the form $(S,Q,b,C_g)$. We re-tokenize, parse and tag the dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}.
+as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we set $b$ equal to  the character length of $C_g$. We then sample some query set $Q$ from the proper and improper nouns in $C_g$ so that the distribution of cardinalities of queries across our dataset is very similar to the observed distribution \cite{Jansen2000RealLR} of cardinalities (i.e.\ number of query tokens) in real-world search. Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR,'' much like many real-world queries \cite{Barr2008TheLS}.\footnote{See appendix for detailed discussion of query sampling.} 
+
+
+By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {\ahcomment{TODO}} test tuples, each of the form $(S,Q,b,C_g)$. We re-tokenize, parse and tag the dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}.
 
 \subsection{Implementation: ILP-based compression}\label{s:ilp}
 
 We compare our system to a state-of-the-art, ILP-based method, presented in \citet{filippova2013overcoming}. This approach represents each edge in a syntax tree with a vector of binary features, then learns weights for each feature using a structured perceptron trained on a corpus of sentence--compression pairs. Learned weights are used to compute a global compression objective, subject to structural constraints which ensure the output is a valid tree. This approach can easily perform constrained compression: after training the model, we specify that output must contain the query and respect the character budget.
 
-To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of  0.690 on the unconstrained compression task, lower than the result reported by the original authors. There are some important differences between our reimplementation and the method reported in \citet{filippova2013overcoming}, largely resulting from differences in syntactic formalisms. We describe these differences in detail in the appendix.
+To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of  0.690 on the unconstrained compression task, lower than the result reported by the original authors. (Because our additive method initializes $C_0 \gets Q$, it is not suitable for traditional compression.) There are some important differences between our reimplementation and the method reported in \citet{filippova2013overcoming}, largely resulting from differences in syntactic formalisms. We describe these differences in detail in the appendix.
 
 \subsection{Implementation: additive compression}\label{s:transition}
 
@@ -156,7 +155,7 @@ We learn such decisions using a corpus of tuples $(S,Q,b,C_g)$ (\S\ref{s:constra
 
 We then use a collection of such oracle paths to train a model of oracle inclusion decisions, ${p(y_i  = 1 | v_i, C_i, S_i)}$. We initially experimented with neural techniques, following the \citet{D14-1082} approach to transition-based parsing. But we found that feature-based, binary logistic regression achieved similar performance with much lower latency. This non-neural approach allows our method to be applied in fields like social science and journalism, where expensive graphics hardware is not available. The features in our model fall into 3 classes.
 
-\textbf{Local features} describe the properties of the edge $(u,v)$ between $v_i \in P$ and $u \in C_i$. We use feature function from \citet{filippova2013overcoming}, described in detail in the appendix. This allows us to compare the performance of our local additive model with a global ILP objective (Table \ref{t:results}), which uses the same feature set.\footnote{If $v_i$ is disconnected from $C_i$, as in step 3 of Figure \ref{f:walkthru}, no local features are used.}
+\textbf{Local features} describe the properties of the edge $(u,v)$ between $v_i \in P$ and $u \in C_i$. We use the feature function from \citet{filippova2013overcoming}, described in detail in the appendix. This allows us to compare the performance of our local additive model with a global ILP objective (Table \ref{t:results}), which uses the same feature set.\footnote{If $v_i$ is disconnected from $C_i$, as in step 3 of Figure \ref{f:walkthru}, no local features are used.}
 
 \textbf{Overall features} represent the relationship between $v_i$ and the overall compression $C_i$. Overall features include information such as the position of $v_i$ in the sentence, relative to the right-most and left-most vertex in $C_i$, or the fraction of the character budget used so far during addition. Such  features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to add tokens to the right or left of $C_i$.
 
@@ -168,13 +167,13 @@ The appendix contains additional details regarding model tuning and implementati
 
 Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence}. In our constrained compression setting, $Q$ determines the ``important'' information from $S$. Thus, human importance evaluations are inappropriate.
 
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. Prior work shows that this metric correlates with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Based on SLOR scores, our method might produce slightly more readable compressions (Table \ref{t:results}). The appendix details our implementation of SLOR. 
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions, known to correlate with human readability judgements for the compression task \cite{kannConl}. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} Based on SLOR scores, our method might produce slightly more readable compressions (Table \ref{t:results}). The appendix details our implementation of SLOR. 
 
 \subsection{Latency evaluation}\label{s:costs}
 
-Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by compressing 10,000 sentences sampled with replacement from the test set, and observing the wall clock speed. We repeat this experiment with our additive compression approach. Our method is \speedup faster (Table \ref{t:results}).The appendix contains additional computational details.
+Unlike ILPs, our method is linear instead of exponential in the worst-case (\S\ref{s:formal}). We test the real latency advantage from such theoretical gains by compressing 10,000 sentences sampled with replacement from the test set, and observing the wall clock speed. We repeat this experiment with our additive compression approach. Our method is \speedup faster (Table \ref{t:results}). The appendix contains additional computational details.
 
-In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 10 sentences with an ILP (e.g.\ for 10 query results) takes more than a second. Additive compression finishes in under a tenth of a second. 
+In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 10 sentences with an ILP (e.g.\ for 10 query results) takes more than a second. Additive compression finishes in under a tenth of a second. We implement in Python 3; additional speedup might be possible using more efficient languages. 
 
 \begin{table}[]
 \begin{tabular}{lccc}
@@ -183,13 +182,13 @@ Approach & F1 & SLOR &  seconds / sentence  \\ \hline
 ILP&{\small 0.000}&{\small 0.000}&{\small 0.105} ({\small 0.053})\\
 Rand.&{\small 0.493}&{\small 0.093}&{\small 0.001} ({\small 0.001})\\
 \textbf{Additive}&\textbf{\small 0.845}&\textbf{\small 1.153}&\textbf{\small 0.008} (\textbf{\small 0.003})\\\end{tabular}
-\caption{Test F1 scores, SLOR scores and average latency for three compression methods, for the constrained compression task. The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Additive compression which accepts or rejects randomly (Rand.) at the marginal training-time acceptance rate achieves F1 = 0.490, a lower-bound for the task. \ahcomment{why only show sigma for some of these?}}
+\caption{Test F1 scores, SLOR scores and average latency for three compression methods, for the constrained compression task. The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Additive compression which accepts or rejects randomly (Rand.) at the marginal training-time acceptance rate achieves F1 = 0.490, a lower-bound for the task. \ahcomment{why only show sigma for some of these? Also: split feats}}
 \label{t:results}
 \end{table}
 
 \section{Conclusion}
 
-Low-latency, query-based compression is crucial for search applications. We introduce a new additive technique which is much \speedup faster than an ILP baseline, and which better reconstructs known-good constrained compressions. 
+Low-latency, query-focused compression is crucial for search applications. We introduce a new additive technique which is much \speedup faster than an ILP baseline, and which better reconstructs known-good constrained compressions. 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
@@ -201,25 +200,3 @@ Low-latency, query-based compression is crucial for search applications. We intr
 \bibliographystyle{acl_natbib}
 
 \end{document}
-
-%\ahcomment{Sort of hard to tell what formalism F and A use. I thnk it is stanford, but they don't come out and say it.They cite Nivre's book which references the malt parser which seems to use stanford deps. but I don't see mention of the ``in" relation referenced in F and A paper in a guide to stanford deps. Writing around it.}
-
-% other ideas... 
- 
-%\section{Computational experiments part 2: investigating properties of q,s,r compression}
-
-%\ahcomment{include?}
-
-%\ahcomment{only outline / notes here}
-
-%\begin{enumerate}
-%\item{q = a list of 1 to 3 NER}
-%\item{r = random}
-%\item{What is the size of the minimum compression?}
-%\item{Reachability by budget by position of q in syntax tree. (If q is more than one entity then how the entities are dispersed across the tree probably matters a bunch too).}%
-%\item{Hang on. reachability == min compression, eh? if min compression $>$ b, it is clearly bad.}
-%\item{Avoid computational waste w/ grammar.  Examine: ops you never have to worry about if you prune a branch v. dependency type deletion endorsement rate. Some ops get rid of lots of tokens w/ very high probability of deletion endorsements: e.g. parataxis (a great op!). By contrast: pruning a noun subj destroys acceptability and usually does not delete many tokens. Not worth the risk!}
-%\item{What is the empirical number of ops (i.e. decisions you have to make about pruning) if you greedily drop branches but never drop if the single op probability is less than $p$? My guess is you can make this problem way, way, simpler than implied by exponential formulation. Is it really quadratic?}
-%\item{Distribution of number of ops used for different q and r: when choosing ops at random? when choosing greedily? When pruning $\propto$ p(endorsement)?}
-%\item{Other stuff: min compression, reachability, operations saved w/ big prunes? position of query in the tree?}
-%\end{enumerate}
