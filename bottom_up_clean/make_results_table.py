@@ -19,6 +19,7 @@ method2time_sigma = defaultdict(float)
 
 print_method = {}
 print_method["make_decision_lr"] = "Additive"
+print_method["only_locals"] = "Additive {\\small (edge only) }"
 print_method["make_decision_random"] = "Rand."
 print_method["ilp"] = "ILP"
 
@@ -54,7 +55,7 @@ def todec_bold(float_):
     return small
 
 
-for method in ['ilp', 'make_decision_random', 'make_decision_lr']:
+for method in ['make_decision_random', 'ilp', 'only_locals', 'make_decision_lr']:
     if method != "make_decision_lr":
         print("&".join([print_method[method],
               todec(method2f1[method]),

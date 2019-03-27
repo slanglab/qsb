@@ -157,7 +157,7 @@ We then use a collection of such oracle paths to train a model of oracle inclusi
 
 \textbf{Edge features} describe the properties of the edge $(u,v)$ between $v_i \in P$ and $u \in C_i$. We use the feature function from \citet{filippova2013overcoming}, described in detail in the appendix. This allows us to compare the performance of our local additive model with a global ILP objective (Table \ref{t:results}), which uses the same feature set.\footnote{If $v_i$ is disconnected from $C_i$, as in step 3 of Figure \ref{f:walkthru}, the only local feature is the type of the edge governing $v_i$.}
 
-\textbf{Global features} represent the relationship between $v_i$ and the overall compression $C_i$. Overall features include information such as the position of $v_i$ in the sentence, relative to the right-most and left-most vertex in $C_i$, or the fraction of the character budget used so far during addition. Such  features allow the feature-based model to reason about which sort of vertexes should be added to compressions in general. For instance, global features allow the model to learn if the oracle tends to add tokens to the right or left of $C_i$.
+\textbf{Global features} represent the relationship between $v_i$ and the overall compression $C_i$. Overall features include information such as the position of $v_i$ in the sentence, relative to the right-most and left-most vertex in $C_i$, as well as history-based information such as the fraction of the character budget used so far during addition. Such features allow the feature-based model to reason about which sort of vertexes should be added to $C$, given the $Q$ and the sentence. For instance, global features allow the model to learn if the oracle tends to add tokens to the right or left of $C_i$.
 
 \textbf{Interaction features} are formed by crossing all global features with information about if $u$ governs $v_i$, if $v_i$ governs $u$ or if there is no edge $(u,v_i)$ in the parse.
 
@@ -179,10 +179,10 @@ In user-facing applications such latency gains are non-trivial \cite{Nielsen,hee
 \begin{tabular}{lccc}
 \centering
 Approach & F1 & SLOR &  sec. / sentence  \\ \hline
-Random {\small (lower bound)} &{\small 0.493}  &{\small 0.093}&{\small 0.001} ({\small 0.001})\\
-ILP&{\small 0.000}&{\small 0.000}&{\small 0.105} ({\small 0.053})\\
-Additive {\small (edge only) } &\textbf{\small 0.845}&\textbf{\small 1.153}&\textbf{\small 0.008} (\textbf{\small 0.003})\\
-\textbf{Additive}&\textbf{\small 0.883}&\textbf{\small 1.153}&\textbf{\small 0.008} (\textbf{\small 0.003})\\\end{tabular}
+Rand.&{\small 0.654}&{\small 0.000}&{\small 0.001} ({\small 0.000})\\
+ILP&{\small 0.000}&{\small 0.000}&{\small 0.000} ({\small 0.000})\\
+Additive {\small (edge only) }&{\small 0.818}&{\small 0.000}&{\small 0.007} ({\small 0.005})\\
+\textbf{Additive}&\textbf{\small 0.874}&\textbf{\small 0.000}&\textbf{\small 0.008} (\textbf{\small 0.006})\\\end{tabular}
 \caption{Test F1 scores, SLOR scores and average latency (seconds per sentence) for the constrained compression task. Additive {\small (edge only)} makes inclusion decisions using only edge-level features from \citet{filippova2013overcoming}; this method has a lower F1 than an ILP, which integrates the same information into a global objective. However, adding global features to represent the overall state of the compression system achieves similar performance with much lower latency. 
 The difference between all metrics is statistically significant {\small $(p < 10^{-2})$}. Random {\small (lower bound)} shows scores from accepting randomly at the marginal training-time acceptance rate. \ahcomment{why only show sigma for some of these?}}
 \label{t:results}
