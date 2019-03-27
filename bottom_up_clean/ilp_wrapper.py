@@ -122,13 +122,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-do_jsonl', type=str, default="validation.jsonl")
     parser.add_argument('-assess_convergence', dest='assess_convergence', action='store_true', default=False)
-
+    parser.add_argument('-ilp_snapshot', type=str, dest="ilp_snapshot", action='store')
     args = parser.parse_args()
 
     if args.assess_convergence:
         assess_convergence()
 
-    config = {"algorithm": "ilp", "weights": "snapshots/1"}
+    config = {"algorithm": "ilp", "weights": "snapshots/" + args.ilp_snapshot}
 
     model = get_model(config)
 

@@ -18,11 +18,11 @@ if socket.gethostname() == "hobbes":
 parser = argparse.ArgumentParser()
 parser.add_argument('-path_to_set_to_evaluate', type=str, default="validation.paths")
 parser.add_argument('-N', type=int, default=100000)
+parser.add_argument('-ilp_snapshot', type=str, dest="ilp_snapshot", action='store')
 args = parser.parse_args()
 
-S = []
 
-weights = "snapshots/1"
+weights = "snapshots/" + args.ilp_snapshot
 
 
 def get_clf_and_vectorizer(only_locals=False):
@@ -42,7 +42,9 @@ def get_clf_and_vectorizer(only_locals=False):
     return clf, vectorizer
 
 
+# you need to load everything into memory to sample fast
 with open(args.path_to_set_to_evaluate, "r") as inf:
+    S = []
     for ln in inf:
         ln = json.loads(ln)
         S.append(ln)
@@ -101,7 +103,7 @@ if __name__ == '__main__':
         ### Only local vectorizer and classifier. Note reimport clf and vectorizer to only local version
         clf, vectorizer = get_clf_and_vectorizer(only_locals=True)
         mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
-        writer.writerow([mean, var, "make_decision_only_locals"])
+        writer.writerow([mean, var, "only_locals"])
 
         ## Random
         mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
