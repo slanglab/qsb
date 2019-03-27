@@ -394,6 +394,10 @@ def oracle_path(sentence, pi=pick_l2r_connected):
 
     F = init_frontier(sentence, sentence["q"])
 
+    sentence = copy.deepcopy(sentence)
+
+    preproc(sentence)
+
     #suspected dead decided = []
 
     path = []
