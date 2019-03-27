@@ -20,7 +20,7 @@ method2time_sigma = defaultdict(float)
 print_method = {}
 print_method["make_decision_lr"] = "Additive"
 print_method["only_locals"] = "Additive {\\small (edge only) }"
-print_method["make_decision_random"] = "Rand."
+print_method["make_decision_random"] = "Random {\\small (lower bound) }"
 print_method["ilp"] = "ILP"
 
 
