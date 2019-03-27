@@ -82,7 +82,7 @@ def config2json(config):
     out = []
     for o in config:
         if "sentence" in o:
-            out.append({"f1": config[o]["f1"], "slor": config[o]["slor"]})
+            out.append({"f1": config[o]["f1"], "weights": config["weights"], "method": "ILP", "slor": config[o]["slor"]})
     return out 
 
 def run_fn(config, fn, early_stop=None):
@@ -135,6 +135,6 @@ if __name__ == "__main__":
     run_fn(config, args.do_jsonl, early_stop=10000)
     print(get_metric_from_config(config, "f1"))
     print(get_metric_from_config(config, "slor"))
-    with open("bottom_up_clean/ilp.json", "w") as of:
+    with open("bottom_up_clean/ilp_results.jsonl", "w") as of:
         for i in config2json(config):
             of.write(json.dumps(i) + "\n")

@@ -29,6 +29,7 @@ if __name__ == "__main__":
         lm = LM()
         unigram_log_probs_ = get_unigram_probs()
 
+    '''
     clf, vectorizer, validationPreds = train_clf(training_paths=args.training_paths,
                                                  validation_paths=args.validation_paths,
                                                  feature_config=feature_config)
@@ -38,7 +39,7 @@ if __name__ == "__main__":
 
     with open("bottom_up_clean/vectorizer.p", "wb") as of:
         pickle.dump(vectorizer, of)
-
+    '''
 
     with open("bottom_up_clean/clf.p", "rb") as of:
         clf = pickle.load(of)
@@ -53,6 +54,7 @@ if __name__ == "__main__":
     marginal = get_marginal(args.training_paths)
 
     totalNonTrees = 0
+    out = []
     for pno, paths in enumerate(tqdm(open(args.validation_paths, "r"))):
         paths = json.loads(paths)
         sentence = paths["sentence"]
@@ -60,6 +62,7 @@ if __name__ == "__main__":
             decider=make_decision_random
         else:
             decider=make_decision_lr
+
         predicted = runtime_path(sentence,
                                  frontier_selector=pick_l2r_connected,
                                  clf=clf,
@@ -69,13 +72,17 @@ if __name__ == "__main__":
         compression = [_["word"] for _ in sentence["tokens"] if _["index"] in predicted]
 
         ### check if the sentence has any non trees?
+        slor_score = 0
         if socket.gethostname() == "hobbes":
-            slors.append(slor(" ".join(compression), lm, unigram_log_probs_))
+            slor_score = slor(" ".join(compression), lm, unigram_log_probs_)
         else:
-            slors.append(0)
+            slor_score = 0
+        slors.append(slor_score)
         if has_forest(predicted, sentence):
             totalNonTrees += 1
-        tot += get_f1(predicted, sentence)
+        f1_score = get_f1(predicted, sentence)
+        tot += f1_score
+        out.append({"f1": f1_score, "slor": slor_score, "method": "additive"})
 
 
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
@@ -84,3 +91,8 @@ if __name__ == "__main__":
         writer = csv.writer(of)
         out = [tot/totalVal, np.mean(slors), np.std(slors), decider.__name__]
         writer.writerow(out)
+    
+    with open("bottom_up_clean/additive_results.jsonl", "w") as of:
+        for i in out:
+            of.write(json.dumps(i) + "\n")
+
