@@ -115,7 +115,7 @@ def assess_convergence():
         config = run_fn(config, fn, early_stop=1000)
 
         print("snapshot {}".format(i))
-        print(get_F1_from_config(config))
+        print(get_metric_from_config(config, "f1"))
 
 if __name__ == "__main__":
 
