@@ -98,7 +98,7 @@ def get_depths(sentence):
 
 def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
-    return {i["index"] for i in sentence["tokens"] if i["index"] not in Q}
+    return sentence["indexes"].difference(Q)
 
 
 def make_decision_lr(**kwargs):
@@ -122,6 +122,7 @@ def make_decision_lr(**kwargs):
 
 
 def preproc(sentence):
+    sentence["q"] = set(sentence["q"])
 
     def get_feats_included(ix):
         out = []
@@ -147,6 +148,7 @@ def preproc(sentence):
     ix2pos = {}
     neighbors = {}
     gov2deps = defaultdict(set)
+    indexes = set()
 
     for i in sentence["basicDependencies"]:
         dep2gov[i['dependent']] = i['governor']
@@ -157,20 +159,21 @@ def preproc(sentence):
         vx2children[i["governor"]].append(i)
         vx2gov[i["dependent"]] = i
         childrencount[i["governor"]] += 1
-  
+
     sentence["gov2deps"] = gov2deps
 
     ix2feats_included = {}
     for tno, t in enumerate(sentence["tokens"]):
         sentence["tokens"][tno]["len"] = len(t["word"])
         ix2tok[t["index"]] = t
+        indexes.add(t["index"])
         ix2pos[t["index"]] = t["pos"]
         ix2feats_included[t["index"]] = get_feats_included(t["index"])
         b = gov2deps[t["index"]]
         b.add(dep2gov[t["index"]])
         neighbors[t["index"]] = b
     sentence["neighbors"] = neighbors
-
+    sentence["indexes"] = indexes
     sentence["ix2tok"] = ix2tok
     sentence["gov_dep_lookup"] = gov_dep_lookup
     sentence["ix2pos"] = ix2pos
@@ -196,11 +199,16 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
     
     The model is provided w/ the decider variable. It is either logistic regression or random based on marginal
     '''
-    current_compression = set(sentence["q"])
-    frontier = init_frontier(sentence, sentence["q"])
 
     preproc(sentence)
 
+
+    current_compression =  sentence["q"]
+
+
+    frontier = init_frontier(sentence, sentence["q"])
+
+    
     lt = len_current_compression(current_compression, sentence)
 
     depths = sentence["depths"]
