@@ -44,7 +44,7 @@
 \DeclareMathOperator*{\argmaxA}{arg\,max} % Jan Hlavacek
 
 % Extractive sentence compression under lexical and length constraints
-\title{Linear Compression under Lexical and Length Constraints}
+\title{Linear-time Sentence Compression under Lexical and Length Constraints}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -88,12 +88,12 @@ Thus, in this work, we present a new linear method for constrained compression, 
 
 \begin{table}[htb!]
 \begin{tabular}{lcc}
-\textbf{Approach} & \textbf{Worst-case} & \textbf{Constrained}  \\ \hline
+\textbf{Approach} & \textbf{Complexity} & \textbf{Constrained}  \\ \hline
 ILP       &   exponential    & yes     \\
 LSTM taggers   & linear              & no         \\   
 \textbf{Additive} {\small (this work)}  & \textbf{linear}     &      \textbf{yes}   
 \end{tabular}
-\caption{Supervised ILP compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical restrictions, but must solve a known NP-hard problem with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised additive approach (\S\ref{s:system}) which constructs constained compressions in linear time.} 
+\caption{Supervised ILP compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH} can easily accommodate length and lexical restrictions, but must solve a known NP-hard problem with worst-case exponential runtime. LSTM taggers \cite{filippova2015sentence} achieve comparable results with worst-case linear runtime, but cannot accommodate length or lexical requirements. This work introduces a supervised additive approach (\S\ref{s:system}) which constructs constained compressions in linear time.} 
 \label{t:algos}
 \end{table}
 
@@ -102,15 +102,15 @@ Extractive compression \cite{Knight2000StatisticsBasedS,clarke2008global,filippo
 
 Our interest in the constrained compression problem is motivated by search user interfaces \cite{hearst2009search}, which often display query-biased \cite{tombros1998advantages} and length-restricted shortenings.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}.} 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
-Because such user-facing systems require low-latency \cite{Nielsen,heerschei,Liu2014TheEO}, we adopt a computationally efficient approach. 
+Because such user-facing systems require low latency \cite{Nielsen,heerschei,Liu2014TheEO}, we adopt a computationally efficient approach. 
 
-We compare our compression method to ILP-based compression techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements. These methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ if when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} ILP-based techniques typically optimize with an off-the-shelf solver. 
+We compare our compression method to ILP-based compression techniques \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements. These methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} ILP-based techniques typically optimize with an off-the-shelf solver. 
 
 At this time, sequence to sequence sentence compression methods \cite{filippova2015sentence}  cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{D16-1140,N18-1119,D18-1443,aaimh}.
 
 \section{Additive compression}\label{s:system}
 
-In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compressifon because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
+In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as additive compression because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence. This approach differs from some prior work which
 compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of additive compression is that it can construct constrained compressions in linear time, leading to \speedup lower latency than ILP-based methods (\S\ref{s:autoeval}). 
 
 Additive compression assumes a boolean relevance model: source sentences selected for compression must contain query terms. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such constrained compressions.
@@ -166,8 +166,8 @@ We use such oracle paths to train a model of oracle inclusion decisions, ${p(y_i
 
 The appendix contains additional details regarding model tuning and implementation. 
 
-\subsection{Implementation: ablations and baselines}
-We implement two additional methods, for comparison. We measure performance of a random baseline, which accepts $v_i$ randomly at the marginal training-time acceptance rate. We also implement an additive method, which makes inclusion decisions using just edge features. This ablated method achieves a lower F1 than the ILP (Table \ref{t:results}), which integrates the same information to optimize a global objective. However, adding global features (Table \ref{t:results}, bold) informs local acceptance decisions, raising F1 score. 
+\subsection{Implementation: ablation and baseline}
+We implement two additional methods, for comparison. We measure performance of a random baseline, which accepts each proposed vertex in proportion to $p(y_i = 1)$, across training data. We also implement an additive method which makes inclusion decisions using just edge features. This ablated method achieves a lower F1 than the ILP (Table \ref{t:results}), which integrates the same information to optimize a global objective. However, adding global features (Table \ref{t:results}, bold) informs local acceptance decisions, raising F1 score. 
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
