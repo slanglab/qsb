@@ -12,7 +12,7 @@ from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connect
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
-    from ilp2013.fillipova_altun_supporting_code import get_all_vocabs, f, semantic, structural, lexical, syntactic 
+    from ilp2013.fillipova_altun_supporting_code import *
     vocabs = get_all_vocabs()
 
 parser = argparse.ArgumentParser()
@@ -56,6 +56,26 @@ def test_ILP():
     run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights)
 
 
+def structural_fast(e, jdoc):
+    '''
+    return structural features features in Filipova/Altun 2013
+    inputs:
+        e(tuple): h, n (see paper)
+        jdoc(dict): stanford CoreNLP json sentence
+    '''
+    h, n = e
+    d = jdoc["d"]
+
+
+    out = [depth(index=n, d=d),
+           num_children(index=n, jdoc=jdoc),
+           num_children(index=h, jdoc=jdoc),
+           char_length(index=n, jdoc=jdoc),
+           no_words_in(index=n, jdoc=jdoc)]
+
+    return csr_matrix(np.asarray(out), dtype=np.int8)
+
+
 def test_ILP_feature_extraction():
     '''how long does it take to just do feature extraction?'''
     s = random.sample(S, k=1)[0]["sentence"]
@@ -63,12 +83,14 @@ def test_ILP_feature_extraction():
     def to_edge(d):
         return (d["governor"], d["dependent"])
 
+    d, pi, c = bfs(s, hop_s=0)
     for d in s["enhancedDependencies"]:
         e = to_edge(d)    
-        #syntactic(e, s, vocabs)
-        #semantic(e, s, vocabs)
-        structural(e, s)
-        #lexical(e, s, vocabs)
+        syntactic(e, s, vocabs)
+        semantic(e, s, vocabs)
+        structural_fast(e, s)
+        lexical(e, s, vocabs)
+
 
 def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
     all_ = []
