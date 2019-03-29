@@ -8,7 +8,7 @@ import timeit
 import csv
 import socket
 
-from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs
+from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
@@ -56,25 +56,6 @@ def test_ILP():
     run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights)
 
 
-def structural_fast(e, jdoc):
-    '''
-    return structural features features in Filipova/Altun 2013
-    inputs:
-        e(tuple): h, n (see paper)
-        jdoc(dict): stanford CoreNLP json sentence
-    '''
-    h, n = e
-    d = jdoc["d"]
-
-
-    out = [depth(index=n, d=d),
-           num_children(index=n, jdoc=jdoc),
-           num_children(index=h, jdoc=jdoc),
-           char_length(index=n, jdoc=jdoc),
-           no_words_in(index=n, jdoc=jdoc)]
-
-    return csr_matrix(np.asarray(out), dtype=np.int8)
-
 
 def test_ILP_feature_extraction():
     '''how long does it take to just do feature extraction?'''
@@ -90,6 +71,11 @@ def test_ILP_feature_extraction():
         semantic(e, s, vocabs)
         structural_fast(e, s)
         lexical(e, s, vocabs)
+
+
+def test_preproc():
+    s = random.sample(S, k=1)[0]["sentence"]
+    preproc(s)
 
 
 def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
