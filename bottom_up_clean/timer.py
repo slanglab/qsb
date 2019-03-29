@@ -54,18 +54,28 @@ with open(args.path_to_set_to_evaluate, "r") as inf:
 def test_ILP():
     """Do compression"""
     s = random.sample(S, k=1)[0]["sentence"]
-    run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights) 
+    run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights)
 
-def get_mean_var(f='test_ILP()',setup_='from __main__ import test_ILP'):
+
+def test_ILP_feature_extraction():
+    s = random.sample(S, k=1)[0]["sentence"]
+    run_model_do_edge_scores(s,
+                             r=s["r"],
+                             Q=s["q"],
+                             vocab=vocabs,
+                             weights=weights)
+
+
+def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
     all_ = []
     for i in tqdm(range(args.N)):
         a = timeit.timeit(f, setup=setup_, number=1)
         all_.append(a)
     return np.mean(all_), np.std(all_)
-    
+
 
 def test_additive():
-    decider=make_decision_lr
+    decider = make_decision_lr
     marginal = None
     sentence = random.sample(S, k=1)[0]["sentence"]
 
@@ -78,7 +88,7 @@ def test_additive():
 
 
 def test_additive_at_random():
-    decider=make_decision_random
+    decider = make_decision_random
     marginal = .3
     sentence = random.sample(S, k=1)[0]["sentence"]
 
@@ -97,6 +107,9 @@ if __name__ == '__main__':
         #global clf and vectorizer b/c of timing problems 
         clf, vectorizer = get_clf_and_vectorizer()
 
+        mean, var = get_mean_var(f="test_ILP_feature_extraction()", setup_="from __main__ import test_ILP_feature_extraction")
+        writer.writerow([mean, var, "ilp_features"])
+
         ## Full feature
         mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "make_decision_lr"]) 
@@ -114,9 +127,5 @@ if __name__ == '__main__':
         with open(weights, "rb") as of:
             weights = pickle.load(of)
 
-        mean,var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
+        mean, var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
- 
-       
-
-       
