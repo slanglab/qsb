@@ -69,7 +69,7 @@ def test_ILP_feature_extraction():
         e = to_edge(d)
         syntactic(e, s, vocabs)
         semantic(e, s, vocabs)
-        structural_fast(e, s)
+        structural(e, s)
         lexical(e, s, vocabs)
 
 
@@ -123,8 +123,8 @@ if __name__ == '__main__':
         #global clf and vectorizer b/c of timing problems 
         clf, vectorizer = get_clf_and_vectorizer()
 
-        mean, var = get_mean_var(f="test_ILP_feature_extraction()", setup_="from __main__ import test_ILP_feature_extraction")
-        writer.writerow([mean, var, "ilp_features"])
+        mean, var = get_mean_var(f="test_preproc()", setup_="from __main__ import test_preproc")
+        writer.writerow([mean, var, "test_preproc"])
 
         ## Full feature
         mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
