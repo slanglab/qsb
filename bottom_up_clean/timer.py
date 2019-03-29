@@ -12,7 +12,7 @@ from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connect
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
-    from ilp2013.fillipova_altun_supporting_code import get_all_vocabs, f 
+    from ilp2013.fillipova_altun_supporting_code import get_all_vocabs, f, semantic, structural, lexical, syntactic 
     vocabs = get_all_vocabs()
 
 parser = argparse.ArgumentParser()
@@ -64,8 +64,11 @@ def test_ILP_feature_extraction():
         return (d["governor"], d["dependent"])
 
     for d in s["enhancedDependencies"]:
-        f(e=to_edge(d), jdoc=s, vocabs=vocabs)
-
+        e = to_edge(d)    
+        #syntactic(e, s, vocabs)
+        #semantic(e, s, vocabs)
+        structural(e, s)
+        #lexical(e, s, vocabs)
 
 def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
     all_ = []
