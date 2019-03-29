@@ -18,6 +18,13 @@ from ilp2013.fillipova_altun_supporting_code import get_featurized_dependency_sc
 from ilp2013.fillipova_altun_supporting_code import get_q_word_and_governor
 
 
+def run_model_do_edge_scores(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_debug=[]):
+    '''
+    Only for timing issues. How to to get the feats for ILP
+    '''
+    get_featurized_dependency_scores(jdoc, vs=vocab, weights=weights)
+
+
 def run_model(jdoc, weights, vocab, k=1, r=100000, Q=[], verbose=False, force_debug=[]):
     '''
     Run the Fillipova and Strube model with Gurobi

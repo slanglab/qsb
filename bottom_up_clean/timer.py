@@ -13,6 +13,7 @@ from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connect
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
     from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+    from ilp2013.fillipova_altun import run_model_do_edge_scores
     vocabs = get_all_vocabs()
 
 parser = argparse.ArgumentParser()
