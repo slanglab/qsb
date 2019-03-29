@@ -12,8 +12,7 @@ from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connect
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
-    from ilp2013.fillipova_altun_supporting_code import get_all_vocabs, f
-    from ilp2013.fillipova_altun import run_model_do_edge_scores
+    from ilp2013.fillipova_altun_supporting_code import get_all_vocabs, f 
     vocabs = get_all_vocabs()
 
 parser = argparse.ArgumentParser()
@@ -106,6 +105,10 @@ if __name__ == '__main__':
     with open("bottom_up_clean/timer.csv", "a") as of:
         writer = csv.writer(of)
 
+        ## ILP
+        with open(weights, "rb") as of:
+            weights = pickle.load(of)
+
         #global clf and vectorizer b/c of timing problems 
         clf, vectorizer = get_clf_and_vectorizer()
 
@@ -124,10 +127,6 @@ if __name__ == '__main__':
         ## Random
         mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
         writer.writerow([mean, var, "make_decision_random"]) 
-
-        ## ILP
-        with open(weights, "rb") as of:
-            weights = pickle.load(of)
 
         mean, var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
