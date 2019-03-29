@@ -8,7 +8,7 @@ import timeit
 import csv
 import socket
 
-from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random
+from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
@@ -85,7 +85,7 @@ def test_ILP_feature_extraction():
 
     d, pi, c = bfs(s, hop_s=0)
     for d in s["enhancedDependencies"]:
-        e = to_edge(d)    
+        e = to_edge(d)
         syntactic(e, s, vocabs)
         semantic(e, s, vocabs)
         structural_fast(e, s)
