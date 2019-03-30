@@ -180,21 +180,13 @@ def filippova_tree_transform(jdoc):
                 tokens_with_this_preposition.sort(key=lambda x:abs(x["index"] - enhanced_edge["dependent"]))
                 token_with_this_preposition = tokens_with_this_preposition[0]
                 jdoc["enhancedDependencies"].append({"governor": dependent_of_enhanced, "dependent": token_with_this_preposition["index"],"governorGloss": enhanced_edge["dependentGloss"], "dependentGloss": token_with_this_preposition["word"], "dep": "case"})
-            except IndexError: # in some cases it will not be possible to add an edge w/ the rules above. these might be revisited eventually.e.g. nmod:such_as, there is no token such_as.
+            except IndexError: # in some cases it will not be possible to add an edge w/ the rules above.
                 pass
 
     def unidecode_tok(t):
         t["word"] = unidecode(t["word"])
         return t
     jdoc["tokens"] = [unidecode_tok(t) for t in jdoc["tokens"]]
-    jdoc["tokens"] = [_ for _ in jdoc["tokens"]]
-    retained_indexes = [_["index"] for _ in jdoc["tokens"]]
-    if "compression_indexes" in jdoc: # some test cases dont go thru preproc/proc_fillipova.py so they don't have this.
-                                      # eventually it would be go to run them thru this for more uniformity but also prob not worth it
-        jdoc["compression_indexes"] = list(set([_ for _ in jdoc["compression_indexes"] if _ in retained_indexes]))
-
-    jdoc["enhancedDependencies"] = [_ for _ in jdoc['enhancedDependencies'] if _["dependentGloss"]]
-    jdoc["enhancedDependencies"] = [_ for _ in jdoc['enhancedDependencies'] if _["governorGloss"]]
 
     return jdoc
 

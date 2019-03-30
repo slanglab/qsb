@@ -319,9 +319,6 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier, lc)
     feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
     feats["remaining"] = (lc + len_tok)/sentence["r"]
 
-    # If you stop oracle compression once you hit budget this is not really needed 
-    # add_feat("over_r", lc + len_tok + 1 > sentence["r"], feats)
-
     add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression), feats)
 
     add_feat("r_add", vertex > max(current_compression), feats)
