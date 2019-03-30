@@ -109,7 +109,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
                 epoch_scores.append(f1_score(y_true=y_gold, y_pred=y_pred))
             if verbose:
                 print(f1_score(y_true=y_gold, y_pred=y_pred))
-            if (t % 1 == 0):
+            if (t % 1000 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []
                 with open("checkpoints/latest", "wb") as of:
@@ -155,11 +155,11 @@ if __name__ == "__main__":
     parser.add_argument('-epochs', nargs="?", default=20, type=int)
     args = parser.parse_args()
     with open("preproc/training.paths",  "r") as inf:
-        data = [_ for _ in inf][0:5]
+        data = [_ for _ in inf]
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    init_all(data, "preproc/mini.training.paths")
+    init_all(data, "preproc/training.paths")
 
     data = [json.loads(_)["sentence"] for _ in data]
 
