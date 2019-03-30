@@ -6,13 +6,14 @@ from __future__ import division
 from ilp2013.fillipova_altun import run_model
 from code.log import logger
 import numpy as np
+import json
 import random
 import pickle
 import argparse
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
 from ilp2013.fillipova_altun_supporting_code import *
-from bottom_up_clean.all import get_labels_and_features
+from bottom_up_clean.all import get_labels_and_features, preproc
 
 random.seed(1)
 
@@ -31,6 +32,9 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
     start_epoch = checkpoint["epoch"]
 
     print("[*] running on ", len(dataset))
+
+    for d in dataset:
+        preproc(d, "enhancedDependencies")
 
     for epoch in range(start_epoch, epochs):
         if verbose:
@@ -111,16 +115,13 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
     return {"avg_weights": avg_weights, "final_weights": weights}
 
 
-def init_all(dataset):
+def init_all(dataset, paths_fn):
     dataset_queue = list(range(len(dataset)))
     random.shuffle(dataset_queue)
 
-    vectorizer = DictVectorizer(sparse=True, sort=False)
-
     features, labels = get_labels_and_features(dataset, only_locals=True)
-
-    vectorizer.fit(features)
-
+    vectorizer=DictVectorizer(sparse=True, sort=False)
+    vectorizer.fit(features) 
     nfeats = len(vectorizer.get_feature_names())
 
     with open("checkpoints/latest", "wb") as of:
@@ -137,14 +138,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-epochs', nargs="?", default=20, type=int)
     args = parser.parse_args()
-    with open("preproc/training.paths",  "rb") as of:
-        data = pickle.load(of)
+    with open("preproc/training.paths",  "r") as inf:
+        data = [_ for _ in inf][0:500]
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    init_all(data)
+    init_all(data, "preproc/mini.training.paths")
 
-    averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
+    averaged_weights = learn(dataset=data, snapshot=True,
                              epochs=args.epochs, verbose=False)
     with open("output/{}".format(args.epochs), "wb") as of:
         pickle.dump(averaged_weights, of)
