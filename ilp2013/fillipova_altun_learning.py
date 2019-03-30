@@ -36,7 +36,8 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
 
     for d in dataset:
         preproc(d, "enhancedDependencies")
-
+        filippova_tree_transform(d)
+    
     for epoch in range(start_epoch, epochs):
         if verbose:
             print("[*] epoch {}".format(epoch))
@@ -79,7 +80,21 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
                 gold.sort()
                 pred = output["predicted"]
                 pred.sort()
-                weights = non_averaged_update(gold=gold, predicted=output["predicted"],
+
+                gold_d, pred_d = [], []
+                for g in gold:
+                    h,n = g
+                    gold_h = [i for i in source_jdoc["enhancedDependencies"] if i['dependent'] == h and i["governor"] == n]
+                    #gold_h = [i for i source_jdoc["enhancedDependencies"]]# if i["dependent"] == h and i["governor"] == n]
+                    gold_n = [i for i in source_jdoc["enhancedDependencies"] if i["governor"] == n and i['dependent'] == h]
+                    gold_d = gold_d + gold_h + gold_n
+
+                for g in pred_d:
+                    h,n = g
+                    pred_h = [i for i in source_jdoc['enhancedDependencies'] if i['dependent'] == h and i['governor'] == n]                    
+                    pred_n = [i for i in source_jdoc["enhancedDependencies"] if i["governor"] == n and i['dependent'] == h]
+                    pred_d = pred_d + pred_h + pred_n
+                weights = non_averaged_update(gold=gold_d, predicted=pred_d,
                                               w_t=weights, vectorizer=vectorizer, jdoc=source_jdoc,
                                               epsilon=epsilon)
                 avg_weights *= (t - 1)
