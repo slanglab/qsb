@@ -34,3 +34,5 @@ dead_code/naacl/*.pdf
 dead_code/models/*
 dead_code/comp_experiments_f1*
 emnlp/qsr.synctex.gz
+emnlp/qsr.pdf
+emnlp/appendix.pdf
