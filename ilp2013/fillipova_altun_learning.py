@@ -50,6 +50,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
             random.shuffle(dataset_queue)
             gold = get_gold_edges(source_jdoc)
 
+
             # "The maximum permitted compression length is set to be the same as the
             # length of the oracle compression" => F & A
 
@@ -77,23 +78,21 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
                 output = {"solved": False}
                 print("error")
             if output["solved"]:
-                gold.sort()
                 pred = output["predicted"]
-                pred.sort()
-
                 gold_d, pred_d = [], []
-                for g in gold:
+    
+                lookup = {}
+                for e in source_jdoc["enhancedDependencies"]:
+                    lookup[(e["governor"], e["dependent"])] = e       
+     
+                for g in gold: 
                     h,n = g
-                    gold_h = [i for i in source_jdoc["enhancedDependencies"] if i['dependent'] == h and i["governor"] == n]
-                    #gold_h = [i for i source_jdoc["enhancedDependencies"]]# if i["dependent"] == h and i["governor"] == n]
-                    gold_n = [i for i in source_jdoc["enhancedDependencies"] if i["governor"] == n and i['dependent'] == h]
-                    gold_d = gold_d + gold_h + gold_n
+                    gold_d.append(lookup[(h,n)])
 
                 for g in pred:
                     h,n = g
-                    pred_h = [i for i in source_jdoc['enhancedDependencies'] if i['dependent'] == h and i['governor'] == n]                    
-                    pred_n = [i for i in source_jdoc["enhancedDependencies"] if i["governor"] == n and i['dependent'] == h]
-                    pred_d = pred_d + pred_h + pred_n
+                    pred_d.append(lookup[(h,n)]) 
+                
                 weights = non_averaged_update(gold=gold_d, predicted=pred_d,
                                               w_t=weights, vectorizer=vectorizer, jdoc=source_jdoc,
                                               epsilon=epsilon)
@@ -110,7 +109,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
                 epoch_scores.append(f1_score(y_true=y_gold, y_pred=y_pred))
             if verbose:
                 print(f1_score(y_true=y_gold, y_pred=y_pred))
-            if (t % 1000 == 0):
+            if (t % 1 == 0):
                 logger.info("{}-{}-{}".format(np.mean(epoch_scores), t, epoch))
                 epoch_scores = []
                 with open("checkpoints/latest", "wb") as of:
@@ -156,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('-epochs', nargs="?", default=20, type=int)
     args = parser.parse_args()
     with open("preproc/training.paths",  "r") as inf:
-        data = [_ for _ in inf][0:500]
+        data = [_ for _ in inf][0:5]
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP

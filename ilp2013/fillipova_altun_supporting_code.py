@@ -181,8 +181,8 @@ def non_averaged_update(gold, predicted, w_t, jdoc, vectorizer, epsilon=1):
         epsilon: a learning rate
     returns:
         w_(t + 1): an updated weight vector w/ no averaging
-    '''
-    for e in A_but_not_B(gold, predicted):
+    ''' 
+    for e in A_but_not_B(gold, predicted): 
         features = f(e, jdoc, vectorizer)
         add_features(features=features, weights=w_t, epsilon=epsilon)
     for e in A_but_not_B(predicted, gold):
