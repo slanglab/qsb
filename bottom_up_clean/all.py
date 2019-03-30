@@ -332,11 +332,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier, lc)
     # really annoying to do so. The type of each token (e.g. disconnected or connected)
     # will change as the sentence changes
 
-    # history based feature
-    for tok in frontier:
-        add_feat(("out_", sentence["ix2pos"][tok]), 1, feats)
-
-    # history based feature
+    # history based feature. This seems to help w/ 2 points of F1
     for ix in current_compression:
         for f in sentence["feats_included"][ix]:
             add_feat(f, 1, feats)
