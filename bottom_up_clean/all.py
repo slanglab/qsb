@@ -27,7 +27,7 @@ def get_siblings(e, jdoc):
     return {i["dependentGloss"] for i in jdoc["vx2children"][e[0]] if i["dependent"] != e[1]}
 
 
-def get_features_of_dep(dep, sentence, depths):
+def get_features_of_dep(dep, sentence):
     '''
     Dep is some dependent in basicDependencies
 
@@ -57,7 +57,7 @@ def get_features_of_dep(dep, sentence, depths):
     # Structural
     out["childrenCount_h"] = sentence["childrencount"][dep["governor"]]
     out["childrenCount_e"] = sentence["childrencount"][dep["dependent"]]
-    out["depth_h"] = depths[dep["dependent"]]
+    out["depth_h"] = sentence['depths'][dep["dependent"]]
     out["char_len_h"] = governor_token["len"]
     out["no_words_in_h"] = governor_token["index"]
 
@@ -264,7 +264,7 @@ def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths
     
     child = sentence["gov_dep_lookup"][governor_vertex, dependent_vertex]
 
-    out = get_features_of_dep(dep=child, sentence=sentence, depths=depths)
+    out = get_features_of_dep(dep=child, sentence=sentence)
 
     out["type"] = "CHILD"
 
@@ -275,8 +275,7 @@ def featurize_governor_proposal(sentence, dependent_vertex, depths):
     '''get the features of the proposed governor'''
 
     out = get_features_of_dep(dep=sentence["vx2gov"][dependent_vertex],
-                              sentence=sentence,
-                              depths=depths)
+                              sentence=sentence)
 
     out["type"] = "GOVERNOR"
 
