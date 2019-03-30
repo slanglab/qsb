@@ -192,7 +192,7 @@ def preproc(sentence, dependencies="basicDependencies"):
     sentence["dep2gov"] = dep2gov
     sentence["feats_included"] = ix2feats_included
 
-    sentence["is_root_and_mark_or_xcomp"] = get_mark(sentence)
+    # does not seem to really matter much... sentence["is_root_and_mark_or_xcomp"] = get_mark(sentence)
 
     sentence["lsentence"] = len(sentence["original"])
     sentence["lqwords"] = sum(_["len"] for _ in sentence["tokens"] if _["index"] in sentence["q"]) + len(sentence["q"]) - 1
@@ -262,7 +262,7 @@ def get_local_feats(vertex, sentence, depths, current_compression):
                                             depths=depths)
 
     else:
-        return {"type":"DISCONNECTED", "dep_discon": sentence["vx2gov"][vertex]["dep"]}
+        return {"type":"DISCONNECTED", "dep": sentence["vx2gov"][vertex]["dep"]}
 
 
 def featurize_child_proposal(sentence, dependent_vertex, governor_vertex, depths):
@@ -298,13 +298,12 @@ def get_connected2(sentence, frontier, current_compression):
     return out
 
 
-def get_depf(feats):
-    if "dep" in feats:
-        return "dep"
-    elif "dep_discon" in feats:
-        return "dep_discon"
-    else:
-        assert "bad" == "thng"
+def add_feat(name, val, feats):
+    '''also does interactions'''
+    feats[name] = val
+    feats[name, feats["dep"]] = val # dep + globalfeat
+    feats[name, feats["type"]] = val # type (parent/gov/child) + globalfeat
+    feats[name, feats["type"], feats["dep"]] = val # type (parent/gov/child) + dep + global feat
 
 
 def get_global_feats(sentence, feats, vertex, current_compression, frontier):
@@ -319,38 +318,27 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
     feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
     feats["remaining"] = (lt + len_tok)/sentence["r"]
 
-    depf = get_depf(feats)
-
-    def add_feat(name, val):
-        '''also does interactions'''
-        feats[name] = val
-        feats[name, feats[depf]] = val # dep + globalfeat
-        feats[name, feats["type"]] = val # type (parent/gov/child) + globalfeat
-        feats[name, feats["type"], feats[depf]] = val # type (parent/gov/child) + dep + global feat
-
     # these two help. it is showing the method is able to reason about what is left in the compression
-    add_feat("over_r", lt + len_tok + 1 > sentence["r"])
+    add_feat("over_r", lt + len_tok + 1 > sentence["r"], feats)
 
-    add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression))
+    add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression), feats)
 
-    add_feat("r_add", vertex > max(current_compression))
+    add_feat("r_add", vertex > max(current_compression), feats)
 
-    add_feat("l_add", vertex < min(current_compression))
+    add_feat("l_add", vertex < min(current_compression), feats)
 
     governor = sentence["vx2gov"][vertex]['governor']
 
-    add_feat("ggovDep", sentence["vx2children"][governor][0]["dep"])
+    add_feat("ggovDep", sentence["vx2children"][governor][0]["dep"], feats)
 
     # history based feature
     for tok in frontier:
-        add_feat(("out_", sentence["ix2pos"][tok]), 1)
+        add_feat(("out_", sentence["ix2pos"][tok]), 1, feats)
 
     # history based feature
     for ix in current_compression:
         for f in sentence["feats_included"][ix]:
-            add_feat(f, 1)
-
-    add_feat("is_root_and_mark_or_xcomp", 1)
+            add_feat(f, 1, feats)
 
     return feats
 
