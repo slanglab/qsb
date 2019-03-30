@@ -330,7 +330,7 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier, lc)
 
     ## These seem tempting to cache, but because they are crossed w/ the type feature it is 
     # really annoying to do so. The type of each token (e.g. disconnected or connected)
-    # will change as the sentence changes
+    # will change as the sentence changes. It would give you like 1ms so perhaps no worth it
 
     # history based feature. This seems to help w/ 2 points of F1
     for ix in current_compression:
