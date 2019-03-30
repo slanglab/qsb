@@ -319,18 +319,14 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier, lc)
     feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
     feats["remaining"] = (lc + len_tok)/sentence["r"]
 
-    # these two help. it is showing the method is able to reason about what is left in the compression
-    add_feat("over_r", lc + len_tok + 1 > sentence["r"], feats)
+    # If you stop oracle compression once you hit budget this is not really needed 
+    # add_feat("over_r", lc + len_tok + 1 > sentence["r"], feats)
 
     add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression), feats)
 
     add_feat("r_add", vertex > max(current_compression), feats)
 
     add_feat("l_add", vertex < min(current_compression), feats)
-
-    governor = sentence["vx2gov"][vertex]['governor']
-
-    add_feat("ggovDep", sentence["vx2children"][governor][0]["dep"], feats)
 
     ## These seem tempting to cache, but because they are crossed w/ the type feature it is 
     # really annoying to do so. The type of each token (e.g. disconnected or connected)
