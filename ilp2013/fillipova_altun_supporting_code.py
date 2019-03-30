@@ -5,7 +5,6 @@ from __future__ import division
 from bottom_up_clean.utils import bfs
 from unidecode import unidecode
 import gzip
-import string
 import _pickle as pickle
 import numpy as np
 import json
@@ -13,15 +12,17 @@ import random
 from code.log import logger
 from scipy.sparse import csr_matrix
 from itertools import product
-from scipy.sparse import hstack
 from scipy.sparse import find
+from bottom_up_clean.all import get_features_of_dep
 
+'''
+suspected dead code: AH 3/29
 PUNCT = [_ for _ in string.punctuation]
 PUNCT.remove("$") # the dollar sign is a semantically meaningful token and needs to be included
 PUNCT.remove("%")
 PUNCT.append("''")
 PUNCT.append('``')
-
+'''
 
 
 def get_gold_y(jdoc):
@@ -31,7 +32,6 @@ def get_gold_y(jdoc):
 def get_pred_y(predicted_compression, original_indexes):
     assert all(type(o) == int for o in predicted_compression)
     return [o in predicted_compression for o in original_indexes]
-
 
 
 def get_oracle_r(source_jdoc):
@@ -107,6 +107,7 @@ def edge_precision(predicted, gold):
     assert p >= 0 and p <= 1
     return p
 
+
 def edge_recall(predicted, gold):
     '''returns the edge-level recall'''
     true_pos = sum(1 for i in predicted if i in gold)
@@ -114,6 +115,7 @@ def edge_recall(predicted, gold):
     r = true_pos/(true_pos + false_negative)
     assert r >= 0 and r <= 1
     return r
+
 
 def f1(predicted, gold):
     '''calculate f1 score'''
@@ -130,12 +132,13 @@ def f1(predicted, gold):
         return 0
     return (2 * (prec * rec))/(prec + rec)
 
+
 def jdoc2goldlist(jdoc):
     '''return a pair of tuples, (gov, dep) for all in gold'''
     return [(_["governor"], _["dependent"]) for _ in jdoc["enhancedDependencies"]]
 
 
-def A_but_not_B(A,B):
+def A_but_not_B(A, B):
     '''
     return everything in A that is not in B
     inputs:
@@ -151,9 +154,10 @@ def subtract_features(features, weights, epsilon, t=None):
     weights is a numpy array
     this subtracts f[0][j]=v from weights[j] for all v > 0 in f
     '''
-    i,j,v, = find(features) # get the coordinates and values of non-0 entries
-    for j,v in zip(j,v):
+    i, j, v, = find(features) # get the coordinates and values of non-0 entries
+    for j, v in zip(j, v):
         weights[j] -= v * epsilon
+
 
 def add_features(features, weights, epsilon, t=None):
     '''
@@ -161,11 +165,12 @@ def add_features(features, weights, epsilon, t=None):
     weights is a numpy array
     this adds f[0][j]=v from weights[j] for all v > 0 in f
     '''
-    i,j,v, = find(features) # get the coordinates and values of non-0 entries
-    for j,v in zip(j,v):
+    i, j, v, = find(features)  # get the coordinates and values of non-0 entries
+    for j, v in zip(j, v):
         weights[j] += v * epsilon
 
-def non_averaged_update(gold, predicted, w_t, vocabs, jdoc, epsilon=1):
+
+def non_averaged_update(gold, predicted, w_t, jdoc, epsilon=1):
     '''
     input:
         gold(list:tuple): a list of edges in gold, e.g. [(4,5), (5,6), (1,4)]
@@ -177,15 +182,14 @@ def non_averaged_update(gold, predicted, w_t, vocabs, jdoc, epsilon=1):
     returns:
         w_(t + 1): an updated weight vector w/ no averaging
     '''
-    assert all(type(e) == tuple for e in gold)
-    assert all(type(e) == tuple for e in predicted)
     for e in A_but_not_B(gold, predicted):
-        features = f(e, jdoc, vocabs)
+        features = f(e, jdoc, vocabs=None)
         add_features(features=features, weights=w_t, epsilon=epsilon)
     for e in A_but_not_B(predicted, gold):
-        features = f(e, jdoc, vocabs)
+        features = f(e, jdoc, vocabs=None)
         subtract_features(features=features, weights=w_t, epsilon=epsilon)
     return w_t
+
 
 def get_tok(index, jdoc):
     '''
@@ -193,13 +197,13 @@ def get_tok(index, jdoc):
     A helper method
     '''
     if index == 0:
-        return {"index":0, 'word':'ROOT', 'ner':'O',
-                'pos': 'ROOT', 'lemma':'ROOT'}
+        return {"index": 0, 'word': 'ROOT', 'ner': 'O',
+                'pos': 'ROOT', 'lemma': 'ROOT'}
     for _ in jdoc["tokens"]:
         if _["index"] == index:
             return _
-    print(index,jdoc["tokens"])
-    assert "unknown" == "token" 
+    print(index, jdoc["tokens"])
+    assert "unknown" == "token"
 
 
 def filippova_tree_transform(jdoc):
@@ -256,10 +260,10 @@ def get_all_vocab_quick_for_tests():
     with gzip.open("tests/fixtures/all_vocabs.json.p", "r") as inf:
         all_vocabs = pickle.load(inf)
 
-    def product_as_strings(l1,l2):
+    def product_as_strings(l1, l2):
         '''make the cross product of lists as strings, in the format A-B'''
-        for a,b in product(l1, l2):
-            yield "{}-{}".format(a,b)
+        for a, b in product(l1, l2):
+            yield "{}-{}".format(a, b)
 
     # these next two lines are slow but ultimately faster than precomuting and
     # loading from disk
@@ -267,8 +271,8 @@ def get_all_vocab_quick_for_tests():
                                                           all_vocabs["dep_v"]))
     kys = set(all_vocabs.keys())
     for v in kys:
-        v2n = {v:k for k,v in enumerate(all_vocabs[v])}
-        all_vocabs.update({v +"2n": v2n})
+        v2n = {v: k for k, v in enumerate(all_vocabs[v])}
+        all_vocabs.update({v + "2n": v2n})
 
     return all_vocabs
 
@@ -286,8 +290,8 @@ def get_all_vocabs():
 
     kys = set(all_vocabs.keys())
     for v in kys:
-        v2n = {v:k for k,v in enumerate(all_vocabs[v])}
-        all_vocabs.update({v +"2n": v2n})
+        v2n = {v: k for k, v in enumerate(all_vocabs[v])}
+        all_vocabs.update({v + "2n": v2n})
 
     return all_vocabs
 
@@ -335,11 +339,11 @@ def get_q_word_and_governor(word_, jdoc):
         e(tuple): the index of the relation from the word's head to
                   the word in the jdoc
     '''
-    
+
     assert word_ in (i["index"] for i in jdoc["tokens"])
 
     out = [_ for _ in jdoc["enhancedDependencies"]
-            if _["dependent"] == word_]
+           if _["dependent"] == word_]
     out.sort(key=lambda x:x["governor"]) # prefer root, if possible
     out = out[0]
 
@@ -366,7 +370,7 @@ def get_siblings(e, jdoc):
 def get_edge(h, n, jdoc):
     '''A helper method: get edge between h and n'''
     out = [_ for _ in jdoc["enhancedDependencies"] if _["governor"] == h
-          and _["dependent"] == n]
+           and _["dependent"] == n]
     return out.pop()
     #return filter(lambda x:x["governor"] == h and x["dependent"] == n,
     #              jdoc["enhancedDependencies"]).pop()
@@ -500,6 +504,7 @@ def semantic(e, jdoc, vocabs):
 
     return sparse
 
+
 def structural(e, jdoc):
     '''
     return structural features features in Filipova/Altun 2013
@@ -559,13 +564,14 @@ def lexical(e, jdoc, vocabs):
         row.append(0)
         data.append(1)
     except KeyError:
-        pass # oov, possible at test time
+        pass  # oov, possible at test time
 
     sparse = csr_matrix((data, (row, col)), shape=(1, row_size), dtype=np.int8)
 
     return sparse
 
-def f(e, jdoc, vocabs):
+
+def f(e, jdoc):
     '''
 
     This is the feature function from Fillipova & Altun 2013
@@ -578,13 +584,10 @@ def f(e, jdoc, vocabs):
     returns:
         a feature vector (np.ndarray)
     '''
-    feats = [syntactic(e, jdoc, vocabs),
-             semantic(e, jdoc, vocabs),
-             structural(e, jdoc),
-             lexical(e, jdoc, vocabs)]
-    return hstack(feats)
+    return get_features_of_dep(e, jdoc)
 
-def get_featurized_dependency_scores(jdoc, vs, weights):
+
+def get_featurized_dependency_scores(jdoc, weights):
     '''
     This returns w(e) for each edge in jdoc.
 
@@ -592,6 +595,6 @@ def get_featurized_dependency_scores(jdoc, vs, weights):
     '''
     def to_edge(d):
         return (d["governor"], d["dependent"])
-    out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=to_edge(d), jdoc=jdoc, vocabs=vs).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
+    out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=d, jdoc=jdoc, vocabs=None).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
     out = {k:float(v) for k,v in out.items()}
     return out
