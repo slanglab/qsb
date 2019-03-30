@@ -114,7 +114,8 @@ def make_decision_lr(**kwargs):
                              sentence=kwargs["sentence"],
                              feats=feats,
                              current_compression=kwargs["current_compression"],
-                             frontier=kwargs["frontier"])
+                             frontier=kwargs["frontier"],
+                             lc=kwargs["len_current_compression"])
 
     X = kwargs["vectorizer"].transform(feats)
     y = kwargs["clf"].predict(X)[0]
@@ -232,7 +233,8 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                     vectorizer=vectorizer,
                     marginal=marginal,
                     clf=clf,
-                    frontier=frontier)
+                    frontier=frontier,
+                    len_current_compression=lt)
 
         if y == 1:
             wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
@@ -306,20 +308,19 @@ def add_feat(name, val, feats):
     feats[name, feats["type"], feats["dep"]] = val # type (parent/gov/child) + dep + global feat
 
 
-def get_global_feats(sentence, feats, vertex, current_compression, frontier):
+def get_global_feats(sentence, feats, vertex, current_compression, frontier, lc):
     '''return global features of the edits'''
 
-    lt = len_current_compression(current_compression, sentence)
     len_tok = sentence["ix2tok"][vertex]["len"]
 
     # some global features that don't really make sense as interaction feats
     feats["position"] = round(vertex/len(sentence["tokens"]), 1)
     feats["cr_goal"] = sentence["cr_goal"]
     feats["q_as_frac_of_cr"] = sentence["q_as_frac_of_cr"]
-    feats["remaining"] = (lt + len_tok)/sentence["r"]
+    feats["remaining"] = (lc + len_tok)/sentence["r"]
 
     # these two help. it is showing the method is able to reason about what is left in the compression
-    add_feat("over_r", lt + len_tok + 1 > sentence["r"], feats)
+    add_feat("over_r", lc + len_tok + 1 > sentence["r"], feats)
 
     add_feat('middle', vertex > min(current_compression) and vertex < max(current_compression), feats)
 
@@ -330,6 +331,10 @@ def get_global_feats(sentence, feats, vertex, current_compression, frontier):
     governor = sentence["vx2gov"][vertex]['governor']
 
     add_feat("ggovDep", sentence["vx2children"][governor][0]["dep"], feats)
+
+    ## These seem tempting to cache, but because they are crossed w/ the type feature it is 
+    # really annoying to do so. The type of each token (e.g. disconnected or connected)
+    # will change as the sentence changes
 
     # history based feature
     for tok in frontier:
@@ -382,7 +387,8 @@ def get_labels_and_features(list_of_paths, only_locals=False):
 
                 # global features
                 if not only_locals:
-                    feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier)
+                    lc = len_current_compression(current_compression=current_compression, sentence=sentence)
+                    feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier, lc)
 
                 labels.append(decision)
                 features.append(feats)
