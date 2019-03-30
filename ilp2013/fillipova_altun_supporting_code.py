@@ -595,6 +595,6 @@ def get_featurized_dependency_scores(jdoc, weights):
     '''
     def to_edge(d):
         return (d["governor"], d["dependent"])
-    out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=d, jdoc=jdoc, vocabs=None).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
+    out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=d, jdoc=jdoc).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
     out = {k:float(v) for k,v in out.items()}
     return out

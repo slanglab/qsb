@@ -70,7 +70,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
             # length is set to be the same as the length
             # of the oracle compression" => so r param below is appropriate
             try:
-                output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
+                output = run_model(source_jdoc, weights=weights, r=r)
             except IndexError:
                 output = {"solved": False}
                 print("error")
@@ -144,6 +144,8 @@ if __name__ == "__main__":
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
     init_all(data, "preproc/mini.training.paths")
+
+    data = [json.loads(_)["sentence"] for _ in data]
 
     averaged_weights = learn(dataset=data, snapshot=True,
                              epochs=args.epochs, verbose=False)
