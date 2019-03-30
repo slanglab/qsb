@@ -194,26 +194,7 @@ def get_random_dependency_scores(jdoc):
             d in jdoc["enhancedDependencies"]}
 
 
-def get_q_word_and_governor(word_, jdoc):
-    '''
-    This gets the edge from a governor to a word. This is used to
-    find edges which must be included so as to include the query, Q
 
-    inputs:
-        word_(int): a word index in the sentence
-    returns:
-        e(tuple): the index of the relation from the word's head to
-                  the word in the jdoc
-    '''
-
-    assert word_ in (i["index"] for i in jdoc["tokens"])
-
-    out = [_ for _ in jdoc["enhancedDependencies"]
-           if _["dependent"] == word_]
-    out.sort(key=lambda x:x["governor"]) # prefer root, if possible
-    out = out[0]
-
-    return '{}-{}'.format(out["governor"], out["dependent"])
 
 
 def get_siblings(e, jdoc):
