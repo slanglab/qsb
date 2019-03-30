@@ -26,3 +26,11 @@ cache/*
 *aux
 .RData
 .Rhistory
+dead_code/naacl/example.pdf
+dead_code/naacl/observed.pdf
+dead_code/naacl/qf.pdf
+dead_code/naacl/qsr.pdf
+dead_code/naacl/*.pdf
+dead_code/models/*
+dead_code/comp_experiments_f1*
+emnlp/qsr.synctex.gz
