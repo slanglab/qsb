@@ -89,7 +89,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
                     gold_n = [i for i in source_jdoc["enhancedDependencies"] if i["governor"] == n and i['dependent'] == h]
                     gold_d = gold_d + gold_h + gold_n
 
-                for g in pred_d:
+                for g in pred:
                     h,n = g
                     pred_h = [i for i in source_jdoc['enhancedDependencies'] if i['dependent'] == h and i['governor'] == n]                    
                     pred_n = [i for i in source_jdoc["enhancedDependencies"] if i["governor"] == n and i['dependent'] == h]
