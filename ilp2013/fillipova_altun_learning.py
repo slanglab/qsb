@@ -12,10 +12,16 @@ import pickle
 import argparse
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
-from ilp2013.fillipova_altun_supporting_code import *
 from bottom_up_clean.all import get_labels_and_features, preproc
 
 random.seed(1)
+
+from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
+from ilp2013.fillipova_altun_supporting_code import get_gold_edges
+from ilp2013.fillipova_altun_supporting_code import get_oracle_r
+from ilp2013.fillipova_altun_supporting_code import non_averaged_update
+from ilp2013.fillipova_altun_supporting_code import get_gold_y
+from ilp2013.fillipova_altun_supporting_code import get_pred_y
 
 
 def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False):
@@ -130,7 +136,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
     return {"avg_weights": avg_weights, "final_weights": weights}
 
 
-def init_all(dataset, paths_fn):
+def init_all(dataset):
     dataset_queue = list(range(len(dataset)))
     random.shuffle(dataset_queue)
 
@@ -159,7 +165,7 @@ if __name__ == "__main__":
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    init_all(data, "preproc/training.paths")
+    init_all(data)
 
     data = [json.loads(_)["sentence"] for _ in data]
 
