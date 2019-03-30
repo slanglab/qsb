@@ -5,7 +5,6 @@ import argparse
 import socket
 import numpy as np
 
-from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
 from tqdm import tqdm
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
