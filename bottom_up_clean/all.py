@@ -121,7 +121,13 @@ def make_decision_lr(**kwargs):
     return y
 
 
-def preproc(sentence):
+def preproc(sentence, dependencies="basicDependencies"):
+    '''
+    ILP needs enhanced dependencies b/c of tree transform
+
+    vertex addition method really needs basic dependencies b/c makes strong
+    assumptions about tree structure
+    '''
     sentence["q"] = set(sentence["q"])
 
     def get_feats_included(ix):
@@ -134,7 +140,7 @@ def preproc(sentence):
         return out
 
     def get_mark(sentence):
-        has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence["basicDependencies"]]
+        has_mark_or_xcomp = [_["dep"] in ["mark", "xcomp", "auxpass"] for _ in sentence[dependencies]]
         return any(has_mark_or_xcomp)
 
     ix2children = defaultdict(list)
@@ -150,7 +156,7 @@ def preproc(sentence):
     gov2deps = defaultdict(set)
     indexes = set()
 
-    for i in sentence["basicDependencies"]:
+    for i in sentence[dependencies]:
         dep2gov[i['dependent']] = i['governor']
         gov2deps[i["governor"]].add(i["dependent"])
         ix2children[i["governor"]].append(i["dep"])

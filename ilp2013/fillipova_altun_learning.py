@@ -10,13 +10,14 @@ import random
 import pickle
 import argparse
 from sklearn.metrics import f1_score
-
+from sklearn.feature_extraction import DictVectorizer
 from ilp2013.fillipova_altun_supporting_code import *
+from bottom_up_clean.all import get_labels_and_features
 
 random.seed(1)
 
 
-def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False):
+def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=False):
     '''
     Do learning for a dataset of compression data
     '''
@@ -68,9 +69,7 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
                 output = run_model(source_jdoc, vocab=vocab, weights=weights, r=r)
             except IndexError:
                 output = {"solved": False}
-                with open("/tmp/confusion","wb") as of:
-                    debug = (source_jdoc, vocab, weights, r)
-                    pickle.dump(debug, of)
+                print("error")
             if output["solved"]:
                 gold.sort()
                 pred = output["predicted"]
@@ -112,29 +111,38 @@ def learn(dataset, vocab, epsilon=1, epochs=20, start_epoch=1, verbose=False, sn
     return {"avg_weights": avg_weights, "final_weights": weights}
 
 
-def init_checkpoints(dataset, vocab):
+def init_all(dataset):
     dataset_queue = list(range(len(dataset)))
     random.shuffle(dataset_queue)
+
+    vectorizer = DictVectorizer(sparse=True, sort=False)
+
+    features, labels = get_labels_and_features(dataset, only_locals=True)
+
+    vectorizer.fit(features)
+
+    nfeats = len(vectorizer.get_feature_names())
+
     with open("checkpoints/latest", "wb") as of:
-        checkpoint = {"weights": zero_weights(vocab),
+        checkpoint = {"weights": np.zeros(nfeats),
                       "t": 0,
                       "epoch": 0,
-                      "avg_weights": zero_weights(vocab),
+                      "avg_weights": np.zeros(nfeats),
                       "dataset_queue": dataset_queue}
         pickle.dump(checkpoint, of)
+
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-epochs', nargs="?", default=20, type=int)
     args = parser.parse_args()
-    vocab = get_all_vocabs()
-    with open("preproc/training.ilp",  "rb") as of:
+    with open("preproc/training.paths",  "rb") as of:
         data = pickle.load(of)
 
     # you need to uncomment this to start the checkpoints then comment out
     # after the first segfault. This is what I did when training ILP
-    #init_checkpoints(data, vocab)
+    init_all(data)
 
     averaged_weights = learn(dataset=data, vocab=vocab, snapshot=True,
                              epochs=args.epochs, verbose=False)
