@@ -25,6 +25,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
     with open("checkpoints/latest", "rb") as of:
         checkpoint = pickle.load(of)
 
+    vectorizer = checkpoint["vectorizer"]
     weights = checkpoint["weights"]
     avg_weights = checkpoint["avg_weights"]
     dataset_queue = checkpoint["dataset_queue"]
@@ -70,7 +71,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
             # length is set to be the same as the length
             # of the oracle compression" => so r param below is appropriate
             try:
-                output = run_model(source_jdoc, weights=weights, r=r)
+                output = run_model(jdoc=source_jdoc, vectorizer=vectorizer, weights=weights, r=r)
             except IndexError:
                 output = {"solved": False}
                 print("error")
@@ -79,7 +80,7 @@ def learn(dataset, epsilon=1, epochs=20, start_epoch=1, verbose=False, snapshot=
                 pred = output["predicted"]
                 pred.sort()
                 weights = non_averaged_update(gold=gold, predicted=output["predicted"],
-                                              w_t=weights, vocabs=vocab, jdoc=source_jdoc,
+                                              w_t=weights, vectorizer=vectorizer, jdoc=source_jdoc,
                                               epsilon=epsilon)
                 avg_weights *= (t - 1)
                 avg_weights += weights
@@ -128,6 +129,7 @@ def init_all(dataset, paths_fn):
         checkpoint = {"weights": np.zeros(nfeats),
                       "t": 0,
                       "epoch": 0,
+                      "vectorizer":vectorizer,
                       "avg_weights": np.zeros(nfeats),
                       "dataset_queue": dataset_queue}
         pickle.dump(checkpoint, of)

@@ -170,7 +170,7 @@ def add_features(features, weights, epsilon, t=None):
         weights[j] += v * epsilon
 
 
-def non_averaged_update(gold, predicted, w_t, jdoc, epsilon=1):
+def non_averaged_update(gold, predicted, w_t, jdoc, vectorizer, epsilon=1):
     '''
     input:
         gold(list:tuple): a list of edges in gold, e.g. [(4,5), (5,6), (1,4)]
@@ -183,10 +183,10 @@ def non_averaged_update(gold, predicted, w_t, jdoc, epsilon=1):
         w_(t + 1): an updated weight vector w/ no averaging
     '''
     for e in A_but_not_B(gold, predicted):
-        features = f(e, jdoc, vocabs=None)
+        features = f(e, jdoc, vectorizer)
         add_features(features=features, weights=w_t, epsilon=epsilon)
     for e in A_but_not_B(predicted, gold):
-        features = f(e, jdoc, vocabs=None)
+        features = f(e, jdoc, vectorizer)
         subtract_features(features=features, weights=w_t, epsilon=epsilon)
     return w_t
 
@@ -571,7 +571,7 @@ def lexical(e, jdoc, vocabs):
     return sparse
 
 
-def f(e, jdoc):
+def f(e, jdoc, vectorizer):
     '''
 
     This is the feature function from Fillipova & Altun 2013
@@ -584,10 +584,10 @@ def f(e, jdoc):
     returns:
         a feature vector (np.ndarray)
     '''
-    return get_features_of_dep(e, jdoc)
+    return vectorizer.transform(get_features_of_dep(e, jdoc))
 
 
-def get_featurized_dependency_scores(jdoc, weights):
+def get_featurized_dependency_scores(jdoc, weights, vectorizer):
     '''
     This returns w(e) for each edge in jdoc.
 
@@ -595,6 +595,6 @@ def get_featurized_dependency_scores(jdoc, weights):
     '''
     def to_edge(d):
         return (d["governor"], d["dependent"])
-    out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=d, jdoc=jdoc).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
+    out = {"{}-{}".format(d["governor"], d["dependent"]): f(e=d, jdoc=jdoc, vectorizer=vectorizer).dot(weights.T)[0] for d in jdoc["enhancedDependencies"]}
     out = {k:float(v) for k,v in out.items()}
     return out

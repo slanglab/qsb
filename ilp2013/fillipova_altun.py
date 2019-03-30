@@ -18,7 +18,7 @@ from ilp2013.fillipova_altun_supporting_code import get_featurized_dependency_sc
 from ilp2013.fillipova_altun_supporting_code import get_q_word_and_governor
 
 
-def run_model(jdoc, weights, k=1, r=100000, Q=[], verbose=False, force_debug=[]):
+def run_model(jdoc, weights, vectorizer, k=1, r=100000, Q=[], verbose=False, force_debug=[]):
     '''
     Run the Fillipova and Strube model with Gurobi
 
@@ -41,7 +41,7 @@ def run_model(jdoc, weights, k=1, r=100000, Q=[], verbose=False, force_debug=[])
     assert type(k) == int and k > 0
     words = jdoc["tokens"]
 
-    edge_scores = get_featurized_dependency_scores(jdoc, weights=weights)
+    edge_scores = get_featurized_dependency_scores(jdoc, weights=weights, vectorizer=vectorizer)
 
     # Model
     m = Model("fillipova_strube")
