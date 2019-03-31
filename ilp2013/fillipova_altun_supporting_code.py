@@ -64,9 +64,10 @@ def get_gold_edges(source_jdoc):
     assert set([0] + [_ for g in gold for _ in g]) == set(source_jdoc["compression_indexes"])
     return gold
 
+'''
+suspected dead code 
 
-def edge_precision(predicted, gold):
-    '''returns the edge-level precision'''
+def edge_precision(predicted, gold): 
     true_pos = sum(1 for i in predicted if i in gold)
     false_pos = sum(1 for i in predicted if i not in gold)
     p = true_pos/(true_pos + false_pos)
@@ -75,7 +76,6 @@ def edge_precision(predicted, gold):
 
 
 def edge_recall(predicted, gold):
-    '''returns the edge-level recall'''
     true_pos = sum(1 for i in predicted if i in gold)
     false_negative = sum(1 for i in gold if i not in predicted)
     r = true_pos/(true_pos + false_negative)
@@ -84,7 +84,6 @@ def edge_recall(predicted, gold):
 
 
 def f1(predicted, gold):
-    '''calculate f1 score'''
     if len(predicted) == 0:
         prec = 1.0
         rec = 0.0
@@ -97,6 +96,7 @@ def f1(predicted, gold):
     if (prec + rec) == 0:
         return 0
     return (2 * (prec * rec))/(prec + rec)
+'''
 
 
 def A_but_not_B(A, B):
