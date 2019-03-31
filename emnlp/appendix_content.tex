@@ -4,19 +4,21 @@
 
 \section{Appendix}
 
+We present the \textsc{vertex addition} compression technique, using notation defined in the paper. $\ell$ linearizes a vertex set, based on left-to-right position in $S$; $|P|$ indicates the number of tokens in the priority queue.
+
 \begin{algorithm}[]
 \SetKwInOut{Input}{input}
 \SetAlgoLined
 \Input{$s=(V,E)$, $Q \subseteq V$, $b \in \mathbb{R^+}$}
- $ C \gets Q;  F \gets V \setminus Q$; \\
- \While{ $\ell(C) < b $ and $ |F| > 0 $   }{
-  $v \gets \pi(F)$; \\
-  $F \gets F \setminus  \{v\}$ \\
-  \If{$p(v | C) > .5$* and $\ell(C \cup \{v\}) \leq b$}{$C \gets C \cup \{v\}$}
+ $ C \gets Q;  P \gets V \setminus Q$; \\
+ \While{ $\ell(C) < b $ and $ |P| > 0 $   }{
+  $v \gets \text{pop}(P)$; \\
+  \If{$p(y=1) > .5$ and $\ell(C \cup \{v\}) \leq b$}{$C \gets C \cup \{v\}$}
  }
 \KwRet{$\ell(C)$}
- \caption{Additive compression {\small(test time*)}}
+ \caption{\textsc{vertex addition}}
 \end{algorithm}\label{a:algo}
+
 
 \subsection{Query sampling}
 We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths, (2) sample a part-of-speech tag in proportion to the real-world distribution over part-of-speech tags, (3) add a token from the sentence with the sampled tag to the set $\{Q\}$, if such a token exists (4) repeat steps 2 and 3 until $\{Q\}$ is the length specified in step 1.
