@@ -166,6 +166,11 @@ def filippova_tree_transform(jdoc):
             jdoc["enhancedDependencies"].append({"governor": 0, "dependent": v["index"],
                                                  "governorGloss": "ROOT", "dependentGloss": v["word"],
                                                  "dep": "ROOT"})
+    
+    
+    '''
+    This seems buggy and also not really true to our description of reimplementation in the appendix
+
     enhanced_nominal_modifiers = [_ for _ in jdoc["enhancedDependencies"] if "nmod:" in _['dep']]
     # see issue #10 on github
     for enhanced_edge in enhanced_nominal_modifiers:
@@ -182,6 +187,7 @@ def filippova_tree_transform(jdoc):
                 jdoc["enhancedDependencies"].append({"governor": dependent_of_enhanced, "dependent": token_with_this_preposition["index"],"governorGloss": enhanced_edge["dependentGloss"], "dependentGloss": token_with_this_preposition["word"], "dep": "case"})
             except IndexError: # in some cases it will not be possible to add an edge w/ the rules above.
                 pass
+    '''
 
     def unidecode_tok(t):
         t["word"] = unidecode(t["word"])
