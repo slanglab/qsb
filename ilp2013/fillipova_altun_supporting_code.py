@@ -167,27 +167,6 @@ def filippova_tree_transform(jdoc):
                                                  "governorGloss": "ROOT", "dependentGloss": v["word"],
                                                  "dep": "ROOT"})
     
-    
-    '''
-    This seems buggy and also not really true to our description of reimplementation in the appendix
-
-    enhanced_nominal_modifiers = [_ for _ in jdoc["enhancedDependencies"] if "nmod:" in _['dep']]
-    # see issue #10 on github
-    for enhanced_edge in enhanced_nominal_modifiers:
-        relevant_preposition = enhanced_edge["dep"].split(":").pop()
-        dependent_of_enhanced = enhanced_edge["dependent"]
-        children_of_dependent = [_["dependent"] for _ in jdoc["enhancedDependencies"] if _["governor"] == dependent_of_enhanced]
-        children_of_dep_as_tokens = [_ for _ in jdoc["tokens"] if _["index"] in children_of_dependent]
-        if not any(i["lemma"] == relevant_preposition for i in children_of_dep_as_tokens) and relevant_preposition not in ["tmod", "poss", "agent", "according_to", "npmod", "because_of"]:
-            try:
-                tokens_with_this_preposition = [_ for _ in jdoc["tokens"] if str(_["word"]).lower() == str(relevant_preposition).lower()]
-                # find the closest preposition (heuristic)
-                tokens_with_this_preposition.sort(key=lambda x:abs(x["index"] - enhanced_edge["dependent"]))
-                token_with_this_preposition = tokens_with_this_preposition[0]
-                jdoc["enhancedDependencies"].append({"governor": dependent_of_enhanced, "dependent": token_with_this_preposition["index"],"governorGloss": enhanced_edge["dependentGloss"], "dependentGloss": token_with_this_preposition["word"], "dep": "case"})
-            except IndexError: # in some cases it will not be possible to add an edge w/ the rules above.
-                pass
-    '''
 
     def unidecode_tok(t):
         t["word"] = unidecode(t["word"])
