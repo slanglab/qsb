@@ -10,16 +10,14 @@ class FA2013Compressor:
     This implements a query query_focused compression w/ F and A
     '''
 
-    def __init__(self, weights):
-        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+    def __init__(self, weights, vectorizer):
         self.weights = weights
-        self.vocab = get_all_vocabs()
+        self.vectorizer = vectorizer
 
     def predict(self, original_s):
         '''
         run the ILP
         '''
-
         r = int(original_s["r"])
 
         original_indexes = [_["index"] for _ in original_s["tokens"]]
@@ -27,8 +25,8 @@ class FA2013Compressor:
         transformed_s = filippova_tree_transform(copy.deepcopy(original_s))
 
         output = run_model(transformed_s,
-                           vocab=self.vocab,
                            weights=self.weights,
+                           vectorizer=self.vectorizer,
                            Q=original_s["q"],
                            r=r)
 
@@ -43,7 +41,6 @@ class FA2013Compressor:
         assert len(output["compressed"]) <= original_s["r"]
         return {"y_pred": y_pred,
                 "compression": output["compressed"],
-                "nops": -19999999  # whut to do here????
                 }
 
 
@@ -53,10 +50,9 @@ class FA2013CompressorStandard:
     This implements a standard version of F and A
     '''
 
-    def __init__(self, weights):
-        from ilp2013.fillipova_altun_supporting_code import get_all_vocabs
+    def __init__(self, weights, vectorizer):
         self.weights = weights
-        self.vocab = get_all_vocabs()
+        self.vectorizer = vectorizer
 
     def predict(self, original_s):
         '''
@@ -74,8 +70,8 @@ class FA2013CompressorStandard:
         r = len(original_s["headline"])
 
         output = run_model(transformed_s,
-                           vocab=self.vocab,
                            weights=self.weights,
+                           vectorizer=self.vectorizer,
                            r=r)
 
         predicted_compression = [o['dependent'] for o in output["get_Xs"]]
@@ -83,6 +79,5 @@ class FA2013CompressorStandard:
                             original_indexes=original_indexes)
 
         return {"y_pred": y_pred,
-                "compression": output["compressed"],
-                "nops": -19999999  # whut to do here????
+                "compression": output["compressed"]
                 }

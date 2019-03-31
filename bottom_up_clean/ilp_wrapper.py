@@ -5,11 +5,11 @@ import json
 import argparse
 import pickle
 
-from tqdm import tqdm
+from bottom_up_clean.all import preproc
 from sklearn.metrics import f1_score
 from ilp2013.algorithms import FA2013Compressor
 from ilp2013.algorithms import FA2013CompressorStandard
-from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
+
 
 from klm.query import LM
 from klm.query import get_unigram_probs
@@ -29,18 +29,19 @@ def get_model(config):
     if config['algorithm'][0:11] == "vanilla-ilp":
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
-        return FA2013CompressorStandard(weights=weights)
+        return FA2013CompressorStandard(weights=weights,
+                                        vectorizer=config["vectorizer"])
 
     if config["algorithm"][0:3] == "ilp":
         with open(config["weights"], "rb") as of:
             weights = pickle.load(of)
-        return FA2013Compressor(weights=weights)
+        return FA2013Compressor(weights=weights,
+                                vectorizer=config["vectorizer"])
 
     assert "unknown" == "model"
 
 
-def do_sentence(_, no_compression, config, model, vno):
-    sentence = json.loads(_)
+def do_sentence(sentence, no_compression, config, model, vno):
     
     orig_ix = [_["index"] for _ in sentence["tokens"]] 
     y_true = [_ in sentence["compression_indexes"] for
@@ -93,8 +94,10 @@ def run_fn(config, fn, early_stop=None):
         no_compression = 0
         for vno, sent_ in enumerate(inf):
             try:
+                sent_ = json.loads(sent_)
+                preproc(sent_)
                 do_sentence(sent_, no_compression, config, model, vno)
-            except:
+            except UnicodeError:
                 print("Error")
             if early_stop is not None and  vno > early_stop: 
                 break
@@ -110,7 +113,7 @@ def assess_convergence():
 
     for i in range(1, 6):
 
-        config = {"algorithm": "vanilla-ilp", "weights": "snapshots/{}".format(i)}
+        config = {"vectorizer": vectorizer, "algorithm": "vanilla-ilp", "weights": "snapshots/{}".format(i)}
 
         config = run_fn(config, fn, early_stop=1000)
 
@@ -125,10 +128,14 @@ if __name__ == "__main__":
     parser.add_argument('-ilp_snapshot', type=str, dest="ilp_snapshot", action='store')
     args = parser.parse_args()
 
+    with open("bottom_up_clean/vectorizer.p", "rb") as inf:
+        vectorizer = pickle.load(inf)
+
     if args.assess_convergence:
         assess_convergence()
 
-    config = {"algorithm": "ilp", "weights": "snapshots/" + args.ilp_snapshot}
+    config = {"algorithm": "ilp", "vectorizer": vectorizer,
+              "weights": "snapshots/" + args.ilp_snapshot}
 
     model = get_model(config)
 
