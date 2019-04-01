@@ -52,7 +52,7 @@ class FA2013Compressor:
         y_pred = get_pred_y(predicted_compression=predicted_compression,
                             original_indexes=original_indexes)
 
-        assert all([i in predicted_compression for i in original_s["q"]])
+        assert all([i in predicted_compression for i in Q])
         assert len(output["compressed"]) <= original_s["r"]
         return {"y_pred": y_pred,
                 "compression": output["compressed"],
