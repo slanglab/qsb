@@ -6,6 +6,7 @@ import json
 import pickle
 
 from bottom_up_clean.query_maker import get_q
+from bottom_up_clean.all import preproc
 
 def make_paths(fn):
     paths_loc = fn.replace(".jsonl", ".paths")
@@ -16,10 +17,11 @@ def make_paths(fn):
         with open(fn, "r") as inf:
             for _ in tqdm(inf):
                 s = json.loads(_)
+                preproc(s)
                 try:
                     #s["q"] = list(get_q(s))
                     pp = oracle_path(sentence=s, pi=pick_l2r_connected)
-                    of.write(json.dumps({"paths":pp, "sentence":s}) + "\n")
+                    of.write(json.dumps({"paths":pp, "sentence":json.loads(_)}) + "\n")
                     successes += 1
                 except AssertionError:
                     failures += 1
