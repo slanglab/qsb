@@ -75,7 +75,7 @@ def test_ILP_feature_extraction():
 
 
 def test_preproc():
-    s = random.sample(S, k=1)[0]["sentence"]
+    s = random.sample(S, k=1)[0]
     preproc(s)
 
 
