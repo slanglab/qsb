@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # algorithm, vanilla-ilp is regular
     config = {"vectorizer": vectorizer, 
               "algorithm": "ilp",
-              "weights": "snapshots/{}".format(i)}
+              "weights": "snapshots/{}".format(args.ilp_snapshot)}
 
     jsonl = run_fn(config, args.do_jsonl, qsr=True, early_stop=10000)
     with open("bottom_up_clean/ilp_results.jsonl", "w") as of:
