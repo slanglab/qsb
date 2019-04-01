@@ -8,12 +8,11 @@ import timeit
 import csv
 import socket
 
-from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc
+from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc, get_labels_and_features
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
     from ilp2013.fillipova_altun_supporting_code import *
-    vocabs = get_all_vocabs()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-path_to_set_to_evaluate', type=str, default="validation.paths")
@@ -53,7 +52,7 @@ with open(args.path_to_set_to_evaluate, "r") as inf:
 def test_ILP():
     """Do compression"""
     s = random.sample(S, k=1)[0]["sentence"]
-    run_model(s, r=s["r"], Q=s["q"], vocab=vocabs, weights=weights)
+    run_model(s, r=s["r"], Q=s["q"], vectorizer=vectorizer, weights=weights)
 
 
 
@@ -138,6 +137,15 @@ if __name__ == '__main__':
         ## Random
         mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
         writer.writerow([mean, var, "make_decision_random"]) 
+
+        ### now get the vectorizer for the ILP. again copying from FA learning, should be refactored at some point
+
+        with open("preproc/training.paths",  "r") as inf:
+            dataset = [_ for _ in inf]
+
+        features, labels = get_labels_and_features(dataset, only_locals=True)
+        vectorizer=DictVectorizer(sparse=True, sort=False)
+        vectorizer.fit(features)
 
         mean, var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
