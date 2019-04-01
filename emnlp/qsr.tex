@@ -28,7 +28,7 @@
 
 \usepackage{url}
 
-%\aclfinalcopy % Uncomment this line for the final submission
+\aclfinalcopy % Uncomment this line for the final submission
 %\def\aclpaperid{***} %  Enter the acl Paper ID here
 
 %\setlength\titlebox{5cm}
@@ -46,16 +46,10 @@
 % Extractive sentence compression under lexical and length constraints
 \title{Linear-time Sentence Compression under Lexical and Length Constraints}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  {\tt email@domain} \\}
+\author{Abram Handler {\normalfont and} Brendan O'Connor \\
+  College of Information and Computer Sciences \\
+  University of Massachusetts, Amherst \\
+  {\tt ahandler@cs.umass.edu}  \\}
 
 \date{}
 
@@ -140,8 +134,7 @@ In order to evaluate different approaches to constrained compression, we require
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
 as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we set $b$ equal to  the character length of $C_g$. We then sample some query set $Q$ from the proper and improper nouns in $C_g$ so that the distribution of cardinalities of queries across our dataset simulates the observed distribution of cardinalities (i.e.\ number of query tokens) in real-world search \cite{Jansen2000RealLR}. Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR,'' approximating real-world behavior \cite{Barr2008TheLS}.\footnote{See appendix for detailed discussion of query sampling.} 
 
-
-By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {\ahcomment{TODO}} test tuples, each of the form $(S,Q,b,C_g)$. We re-tokenize, parse and tag the dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}.
+By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {9,969} test tuples, each of the form $(S,Q,b,C_g)$. We re-tokenize, parse and tag the dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}.
 
 \subsection{Implementation: \textsc{ilp}}\label{s:ilp}
 
