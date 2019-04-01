@@ -33,6 +33,6 @@ if __name__ == "__main__":
     validation_fn = "preproc/validation.jsonl"
     test_fn = "preproc/test.jsonl"
 
-    #make_paths(validation_fn)
-    #make_paths(train_fn)
+    make_paths(validation_fn)
+    make_paths(train_fn)
     make_paths(test_fn)
