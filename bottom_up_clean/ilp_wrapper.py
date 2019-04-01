@@ -43,7 +43,7 @@ class FA2013Compressor:
         output = run_model(transformed_s,
                            weights=self.weights,
                            vectorizer=self.vectorizer,
-                           Q=Q,
+                           Q=list(Q),
                            r=r)
 
         # note: not necessarily a unique set b/c multi edges possible to same
