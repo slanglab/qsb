@@ -13,9 +13,6 @@ import copy
 
 from tqdm import tqdm
 from bottom_up_clean.query_maker import get_q
-from code.log import logger
-from unidecode import unidecode
-from ilp2013.fillipova_altun_supporting_code import get_tok
 from ilp2013.fillipova_altun_supporting_code import filippova_tree_transform
 
 random.seed(1)
