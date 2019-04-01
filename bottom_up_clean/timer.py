@@ -8,6 +8,7 @@ import timeit
 import csv
 import socket
 
+from sklearn.feature_extraction import DictVectorizer
 from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc, get_labels_and_features
 
 if socket.gethostname() == "hobbes":
@@ -45,20 +46,21 @@ def get_clf_and_vectorizer(only_locals=False):
 with open(args.path_to_set_to_evaluate, "r") as inf:
     S = []
     for ln in inf:
-        ln = json.loads(ln)
+        ln = json.loads(ln)["sentence"]
+        preproc(ln)
         S.append(ln)
 
 
 def test_ILP():
     """Do compression"""
-    s = random.sample(S, k=1)[0]["sentence"]
+    s = random.sample(S, k=1)[0]
     run_model(s, r=s["r"], Q=s["q"], vectorizer=vectorizer, weights=weights)
 
 
 
 def test_ILP_feature_extraction():
     '''how long does it take to just do feature extraction?'''
-    s = random.sample(S, k=1)[0]["sentence"]
+    s = random.sample(S, k=1)[0]
 
     def to_edge(d):
         return (d["governor"], d["dependent"])
@@ -88,7 +90,7 @@ def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
 def test_additive():
     decider = make_decision_lr
     marginal = None
-    sentence = random.sample(S, k=1)[0]["sentence"]
+    sentence = random.sample(S, k=1)[0]
 
     runtime_path(sentence,
                  frontier_selector=pick_l2r_connected,
@@ -101,7 +103,7 @@ def test_additive():
 def test_additive_at_random():
     decider = make_decision_random
     marginal = .3
-    sentence = random.sample(S, k=1)[0]["sentence"]
+    sentence = random.sample(S, k=1)[0]
 
     runtime_path(sentence,
                  frontier_selector=pick_l2r_connected,
