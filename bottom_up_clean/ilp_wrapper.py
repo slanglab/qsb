@@ -1,6 +1,7 @@
 '''
 wrapper for doing some measurements w/ the ILP
 '''
+import csv
 import json
 import argparse
 import pickle
@@ -166,3 +167,11 @@ if __name__ == "__main__":
     with open("bottom_up_clean/ilp_results.jsonl", "w") as of:
         for i in jsonl:
             of.write(json.dumps(i) + "\n")
+
+    with open("bottom_up_clean/results.csv", "a") as of:
+        writer = csv.writer(of)
+        f1_mean = np.mean([_["f1"] for _ in jsonl])
+        slor_mean = np.mean([_["slor"] for _ in jsonl])
+        slor_std = np.std([_["slor"] for _ in jsonl])
+        results = [f1_mean, slor_mean, slor_std, "ilp"]
+        writer.writerow(results)
