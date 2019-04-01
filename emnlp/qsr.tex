@@ -23,7 +23,7 @@
 \usepackage{bm}
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
-\newcommand{\speedup}[0]{20X~}
+\newcommand{\speedup}[0]{4X~}
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
 
 \usepackage{url}
@@ -177,7 +177,7 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \textsc{vertex addition} has a lower theoretical runtime than \textsc{ilp} techniques (\S\ref{s:formal}). We test the corresponding real latency advantage by measuring the clock speed of each technique, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). The appendix contains additional measurement details.
 
-In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 10 sentences with an \textsc{ilp} (e.g.\ for 10 query results) takes more than a second, a noticeable lag. %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
+In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 30 sentences with an \textsc{ilp} (e.g.\ 3 line snippets for 10 query results) takes more than a half second, a noticeable lag. %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
 
 \begin{table}[]
 \begin{tabular}{lccc}
