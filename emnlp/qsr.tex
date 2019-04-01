@@ -183,13 +183,12 @@ In user-facing applications such latency gains are non-trivial \cite{Nielsen,hee
 \begin{tabular}{lccc}
 \centering
 Approach & F1 & SLOR &  ms. / sentence  \\ \hline
-\textsc{Random} {\small (lower bound) }&{\small 0.654}&{\small 0.000}&{\small 0.557}\\
-\textsc{ilp}&{\small 0.000}&{\small 0.000}&{\small 0.000}\\
-\textsc{Ablated}{ \small(vertex addition)} &{\small 0.818}&{\small 0.000}&{\small 5.680}\\
-\textsc{vertex addition} &\textbf{\small 0.875}&\textbf{\small 0.000}&\textbf{\small 11.806}\\
+\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.678}&{\small 0.5}\\
+\textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
+\textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 1.062}&{\small 3.5}\\
+\textbf{\textsc{vertex addition}}&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
 \end{tabular}
-\caption{Test results for constrained compression. All differences are statistically significant {\small $(p < 10^{-2})$}.
-\ahcomment{$\sigma$? sigfig also}}
+\caption{Validation results for constrained compression. All differences are statistically significant.}
 \label{t:results}
 \end{table}
 
