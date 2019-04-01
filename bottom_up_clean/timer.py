@@ -48,7 +48,6 @@ with open(args.path_to_set_to_evaluate, "r") as inf:
     for ln in inf:
         ln = json.loads(ln)["sentence"]
         preproc(ln)
-        ln["q"] = list(ln["q"])
         S.append(ln)
 
 
@@ -149,6 +148,9 @@ if __name__ == '__main__':
         features, labels = get_labels_and_features(dataset, only_locals=True)
         vectorizer=DictVectorizer(sparse=True, sort=False)
         vectorizer.fit(features)
+
+        for i in S:
+            i["q"] = list(i['q'])
 
         mean, var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
