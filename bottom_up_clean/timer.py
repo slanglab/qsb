@@ -48,6 +48,7 @@ with open(args.path_to_set_to_evaluate, "r") as inf:
     for ln in inf:
         ln = json.loads(ln)["sentence"]
         preproc(ln)
+        ln["q"] = list(ln["q"])
         S.append(ln)
 
 
