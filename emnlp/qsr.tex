@@ -106,9 +106,7 @@ At this time, sequence to sequence sentence compression methods \cite{filippova2
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as \textsc{vertex addition} because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence, one vertex at a time. This approach differs from some prior work which
-compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of our method is that it can construct constrained compressions in linear time, leading to \speedup lower latency than ILP-based methods (\S\ref{s:autoeval}). 
-
-\textsc{vertex addition} assumes a boolean relevance model: source sentences selected for compression must contain query terms. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such compressions.
+compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of our method is that it can construct constrained compressions in linear time, leading to \speedup lower latency than ILP-based methods (\S\ref{s:autoeval}). \textsc{vertex addition} assumes a boolean relevance model: source sentences selected for compression must contain query terms. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such compressions.
 \begin{figure}[h]
 \includegraphics[width=8.2cm]{additive.pdf}
 \caption{\textsc{vertex addition} produces the final compression $\{$A,C,B,E$\}$, by progressing through a series of states (from left to right). Each candidate $v_i$ is boxed; rejected candidates $\neg C_i$ are unshaded.}
@@ -126,7 +124,7 @@ Vertex addition is linear in the token length of $S$ because we pop and evaluate
 
 \section{Evaluation}\label{s:autoeval}
 
-We measure the latency, readability and token-level F1 score of our \textsc{vertex addition} method, which we compare to a supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}). ILPs are the only known technique for constrained compression. F1 is the standard automatic evaluation metric for the compression task. Our linear method achieves higher F1 and readability scores, with \speedup lower latency (Table \ref{t:results}) than the ILP. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We measure the latency, readability and token-level F1 score of our \textsc{vertex addition} method, which we compare to a supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}). ILPs are the only known technique for constrained compression. F1 is the standard automatic evaluation metric for the compression task. Our method achieves higher F1 and readability scores, with \speedup lower latency (Table \ref{t:results}) than the ILP. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
 \subsection{Synthetic constrained compression experiment}\label{s:constrained}
 
@@ -135,7 +133,7 @@ In order to evaluate different approaches to constrained compression, we require
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
 as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using headlines. For our experiment, we set $b$ equal to  the character length of $C_g$. We then sample some query set $Q$ from the proper and improper nouns in $C_g$ so that the distribution of cardinalities of queries across our dataset simulates the observed distribution of cardinalities (i.e.\ number of query tokens) in real-world search \cite{Jansen2000RealLR}. Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR,'' approximating real-world behavior \cite{Barr2008TheLS}.\footnote{See appendix for detailed discussion of query sampling.} 
 
-By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {9,969} test tuples, each of the form $(S,Q,b,C_g)$. We re-tokenize, parse and tag the dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}.
+By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {9,969} test tuples, each of the form $(S,Q,b,C_g)$. The dataset defines the train/test split. We re-tokenize, parse and tag the dataset with Stanford CoreNLP 3.8.0 \cite{corenlp}.
 
 \subsection{Implementation: \textsc{ilp}}\label{s:ilp}
 
@@ -159,7 +157,7 @@ We use such oracle paths to train a model of oracle inclusion decisions, ${p(y_i
 We implement with Python 3 using scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. We tune the inverse regularization constant to $c=10$ via grid search over powers of ten, to optimize validation F1. 
 
 \subsection{Implementations:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
-For comparison, we also implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP (Table \ref{t:results}), which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}, bold) to inform local vertex addition decisions raises F1 score. We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data.
+For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}, bold) to inform local vertex addition decisions raises F1 score. We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data.
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
