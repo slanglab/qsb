@@ -169,7 +169,7 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \subsection{Latency evaluation}\label{s:costs}
 
-\textsc{vertex addition} has a lower theoretical runtime than \textsc{ilp} techniques (\S\ref{s:formal}). We test the corresponding practical latency advantage by measuring the clock speed of each technique, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). The appendix contains additional measurement details.
+\textsc{vertex addition} has a lower theoretical runtime than \textsc{ilp} techniques (\S\ref{s:formal}). We test the corresponding practical latency advantage by measuring the clock speed of each technique, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). We implement in Python 3; greater latency improvements might be possible with reimplementation in a more performant language such as Java or C. The appendix contains additional measurement details.
 
 In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 30 sentences with an \textsc{ilp} (e.g.\ 3 sentence snippets for 10 query results) takes more than a half second, a noticeable lag. %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
 
@@ -192,7 +192,7 @@ Search interfaces often require low-latency, query-focused and length-constraine
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
-% ack => Katie, Javier, NLP reading group! 
+% ack => Katie, Javier, Nick Eubank, NLP reading group! 
 
 %\include{appendix_content}
 
