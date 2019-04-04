@@ -57,7 +57,6 @@ def test_ILP():
     run_model(s, r=s["r"], Q=s["q"], vectorizer=vectorizer, weights=weights)
 
 
-
 def test_ILP_feature_extraction():
     '''how long does it take to just do feature extraction?'''
     s = random.sample(S, k=1)[0]
