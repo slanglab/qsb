@@ -134,11 +134,24 @@ def assess_convergence():
         print(np.mean([_["f1"] for _ in jsonl]))
 
 
+def test_set_score():
+    config = {"vectorizer": vectorizer, 
+              "algorithm": "vanilla-ilp",
+              "weights": "snapshots/5".format}
+
+    fn = "preproc/validation.jsonl"
+    jsonl = run_fn(config, fn)
+    print(np.mean([_["f1"] for _ in jsonl]))
+
+
 if __name__ == "__main__":
 
     UNIGRAMS = get_unigram_probs()
 
     LANGUAGE_MODEL = LM()
+
+    test_set_score()
+    import os; os._exit(0)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-do_jsonl', type=str, default="validation.jsonl")
