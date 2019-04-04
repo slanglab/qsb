@@ -18,10 +18,10 @@ method2time_mu = defaultdict(float)
 method2time_sigma = defaultdict(float)
 
 print_method = {}
-print_method["make_decision_lr"] = "Additive"
-print_method["only_locals"] = "Additive {\\small (edge only) }"
-print_method["make_decision_random"] = "Random {\\small (lower bound) }"
-print_method["ilp"] = "ILP"
+print_method["make_decision_lr"] = "\\textsc{vertex addition}"
+print_method["only_locals"] = "\\textsc{ablated} {\\small (edge only) }"
+print_method["make_decision_random"] = "\\textsc{random} {\\small (lower bound) }"
+print_method["ilp"] = "\\textsc{ilp}"
 
 
 with open(results_fn, "r") as inf:
@@ -43,14 +43,17 @@ with open(timer_fn, "r") as inf:
         method2time_sigma[method] = float(time_sigma)
 
 
-def todec(float_):
-    dec = "{:.3f}".format(float_)
+def get_format(sigfig):
+    return "{:." + str(sigfig) + "f}"
+
+def todec(float_, sigfig=3):
+    dec = get_format(sigfig).format(float_)
     small = "{\small " + dec + "}"
     return small
 
 
-def todec_bold(float_):
-    dec = "{:.3f}".format(float_)
+def todec_bold(float_,sigfig=3):
+    dec = get_format(sigfig).format(float_)
     small = "\\textbf{\small " + dec + "}"
     return small
 
@@ -60,11 +63,11 @@ for method in ['make_decision_random', 'ilp', 'only_locals', 'make_decision_lr']
         print("&".join([print_method[method],
               todec(method2f1[method]),
               todec(method2slormu[method]),
-              todec(method2time_mu[method]),
+              todec(method2time_mu[method], 1),
               ]) + "\\\\")
     else:
         print("&".join(["\\textbf{" + print_method[method] + "}",
               todec_bold(method2f1[method]),
               todec_bold(method2slormu[method]),
-              todec_bold(method2time_mu[method]),
+              todec_bold(method2time_mu[method], 1),
               ]) + "\\\\")
