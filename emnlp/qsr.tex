@@ -97,11 +97,11 @@ Extractive compression \cite{Knight2000StatisticsBasedS,clarke2008global,filippo
 
 Our interest in the constrained compression problem is motivated by search user interfaces \cite{hearst2009search}, which often display query-biased \cite{tombros1998advantages} and length-restricted shortenings.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}.} 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
-Such user-facing systems require low-latency techniques \cite{Nielsen,heerschei,Liu2014TheEO}.
+Such user-facing systems require low-latency methods \cite{Nielsen,heerschei,Liu2014TheEO}.
 
-We compare our approach to ILP-based compression methods \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} ILP-based techniques typically optimize with an off-the-shelf solver. 
+We compare our approach to ILP-based compression methods \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
 
-At this time, compression methods based on LSTM taggers \cite{filippova2015sentence}  cannot enforce lexical or length requirements. This limitation might be reexamined in future work, by modifying or adapting new constrained generation techniques \cite{D16-1140,N18-1119,D18-1443,aaimh}.
+Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation with constrained generation techniques \cite{D16-1140,N18-1119,D18-1443}.
 
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
@@ -125,7 +125,7 @@ Vertex addition is linear in the token length of $S$ because we pop and evaluate
 
 \section{Evaluation}\label{s:autoeval}
 
-We observe the latency, readability and token-level F1 score of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a leading, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. F1 is the standard automatic evaluation metric for the compression task. Our method achieves higher F1 and readability scores, with \speedup lower latency (Table \ref{t:results}) than the ILP. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We observe the latency, readability and token-level F1 score of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a leading, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. F1 is the standard automatic evaluation metric for the compression task. Our method achieves higher F1 and readability scores (Table \ref{t:results}), with \speedup lower latency  than the ILP. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
 \subsection{Constrained compression experiment}\label{s:constrained}
 
@@ -168,20 +168,20 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \subsection{Latency evaluation}\label{s:costs}
 
-\textsc{vertex addition} has a lower theoretical runtime than \textsc{ilp} techniques (\S\ref{s:formal}). We test the corresponding practical latency advantage by measuring the clock speed of each technique, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). We implement in Python 3; greater latency improvements might be possible with reimplementation in a more performant language such as Java or C. Local feature extraction code is shared across both methods. The appendix contains additional measurement details.
+\textsc{vertex addition} has a lower theoretical runtime than \textsc{ilp} techniques (\S\ref{s:formal}). We test the empirical latency gains by measuring the clock speed, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). We implement in Python 3; greater latency improvements might be possible with reimplementation in a more performant language such as Java or C. The appendix contains additional measurement details, including detailed latency breakdowns.
 
 In user-facing applications such latency gains are non-trivial \cite{Nielsen,heerschei,Liu2014TheEO}: compressing even 30 sentences with an \textsc{ilp} (e.g.\ 3 sentence snippets for 10 query results) takes more than a half second, a noticeable lag. %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
 
 \begin{table}[]
 \begin{tabular}{lccc}
 \centering
-Approach & F1 & SLOR &  millisec. / sentence  \\ \hline
+Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 \textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.678}&{\small 0.5}\\
 \textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
 \textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 1.062}&{\small 3.5}\\
 \textbf{\textsc{vertex addition}}&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
 \end{tabular}
-\caption{Validation results for constrained compression. All differences are significant {\small $(p < 10^{-2})$}.}
+\caption{Validation results for constrained compression. All differences are significant {\small $(p < 10^{-2})$}. Latency is shown in milliseconds (ms.)}
 \label{t:results}
 \end{table}
 
