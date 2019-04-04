@@ -83,7 +83,7 @@ def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
     for i in tqdm(range(args.N)):
         a = timeit.timeit(f, setup=setup_, number=1)
         all_.append(a)
-    return np.mean(all_), np.std(all_)
+    return np.mean(all_), np.std(all_), all_
 
 
 def test_additive():
@@ -111,6 +111,10 @@ def test_additive_at_random():
                  marginal=marginal,
                  decider=decider)
 
+def write_timing_results(all_, outfile):
+    with open(outfile, "w") as of:
+        for i in all_:
+            of.write(json.dumps({"method": "additive", "time": i}) + "\n")
 
 if __name__ == '__main__':
     with open("bottom_up_clean/timer.csv", "a") as of:
@@ -123,21 +127,24 @@ if __name__ == '__main__':
         #global clf and vectorizer b/c of timing problems 
         clf, vectorizer = get_clf_and_vectorizer()
 
-        mean, var = get_mean_var(f="test_preproc()", setup_="from __main__ import test_preproc")
+        mean, var, all_ = get_mean_var(f="test_preproc()", setup_="from __main__ import test_preproc")
         writer.writerow([mean, var, "test_preproc"])
 
         ## Full feature
-        mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
-        writer.writerow([mean, var, "make_decision_lr"]) 
+        mean,var, all_= get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        writer.writerow([mean, var, "make_decision_lr"])
+        write_timing_results(all_, "bottom_up_clean/timing/additive_full.jsonl")
 
         ### Only local vectorizer and classifier. Note reimport clf and vectorizer to only local version
         clf, vectorizer = get_clf_and_vectorizer(only_locals=True)
-        mean,var = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        mean,var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "only_locals"])
+        write_timing_results(all_, "bottom_up_clean/timing/additive_ablated.jsonl")
 
         ## Random
-        mean,var = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
+        mean,var, all_ = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
         writer.writerow([mean, var, "make_decision_random"]) 
+        write_timing_results(all_, "bottom_up_clean/timing/random.jsonl")
 
         ### now get the vectorizer for the ILP. again copying from FA learning, should be refactored at some point
 
@@ -151,5 +158,6 @@ if __name__ == '__main__':
         for i in S:
             i["q"] = list(i['q'])
 
-        mean, var = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
+        mean, var, all_ = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
+        write_timing_results(all_, "bottom_up_clean/timing/ilp.jsonl")
