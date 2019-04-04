@@ -5,3 +5,4 @@ python bottom_up_clean/ilp_wrapper.py -do_jsonl preproc/test.jsonl -ilp_snapshot
 py bottom_up_clean/ilp_wrapper.py -test_set_score -ilp_snapshot 5
 python code/significance_testing.py
 python bottom_up_clean/timer.py -path_to_set_to_evaluate preproc/test.paths -N 5 -ilp_snapshot 5
+python code/significance_testing.py -file1 bottom_up_clean/timing/random.jsonl -file2 bottom_up_clean/timing/random.jsonl -metric time
