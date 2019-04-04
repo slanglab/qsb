@@ -12,7 +12,6 @@ import os
 local = Connection("localhost").local
 
 
-
 def download():
     '''
     Download the data from Google. Will redownload if already found on machine
@@ -46,5 +45,10 @@ def preproc():
 def train_ilp():
     local("python ilp2013/fillipova_altun_learning.py")
 
+
 def f1_and_slor():
     local("./scripts/bottom_up.sh")
+
+
+def do_test():
+    local("./scripts/test_results.sh")
