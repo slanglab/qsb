@@ -134,14 +134,16 @@ def assess_convergence():
         print(np.mean([_["f1"] for _ in jsonl]))
 
 
-def test_set_score():
-    config = {"vectorizer": vectorizer, 
+def test_set_score(epoch):
+    config = {"vectorizer": vectorizer,
               "algorithm": "vanilla-ilp",
-              "weights": "snapshots/5".format}
+              "weights": "snapshots/{}".format(epoch)}
 
-    fn = "preproc/validation.jsonl"
+    fn = "preproc/test.jsonl"
     jsonl = run_fn(config, fn)
+    print("[*] test set score")
     print(np.mean([_["f1"] for _ in jsonl]))
+    import os; os._exit(0)
 
 
 if __name__ == "__main__":
@@ -150,13 +152,12 @@ if __name__ == "__main__":
 
     LANGUAGE_MODEL = LM()
 
-    test_set_score()
-    import os; os._exit(0)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-do_jsonl', type=str, default="validation.jsonl")
     parser.add_argument('-assess_convergence', dest='assess_convergence', action='store_true', default=False)
     parser.add_argument('-ilp_snapshot', type=str, dest="ilp_snapshot", action='store')
+    parser.add_argument('-test_set_score', action='store_true', dest="test_set_score", default=False)
+
     args = parser.parse_args()
 
     # copying code from altun_learning here. 
@@ -165,8 +166,11 @@ if __name__ == "__main__":
         dataset = [_ for _ in inf]
 
     features, labels = get_labels_and_features(dataset, only_locals=True)
-    vectorizer=DictVectorizer(sparse=True, sort=False)
+    vectorizer = DictVectorizer(sparse=True, sort=False)
     vectorizer.fit(features) 
+
+    if args.test_set_score:
+        test_set_score(args.ilp_snapshot)
 
     if args.assess_convergence:
         assess_convergence()
