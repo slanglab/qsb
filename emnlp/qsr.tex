@@ -74,21 +74,20 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing compression techniques are poorly suited to this task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}, requiring user wait time. Meanwhile, newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require expensive graphics processing units (GPUs) to achieve low runtime latency. These deficits prevent application of existing compression techniques in traditional search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency requirements are paramount. 
+Existing compression techniques are poorly suited to this task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}, requiring user wait time. Meanwhile, newer LSTM tagging methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require expensive graphics processing units (GPUs) to achieve low runtime latency. These deficits prevent application of existing compression techniques in traditional search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency requirements are paramount. 
 
-Thus, in this work, we present a new linear method for constrained compression which grows a forest in a sentence's dependency parse by adding vertexes, one at a time. We compare this \textsc{vertex addition} approach to supervised, \textsc{ilp} techniques, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
+Thus, in this work, we present a new linear method for constrained compression which grows a forest in a sentence's dependency parse by adding vertexes, one at a time. We compare this \textsc{vertex addition} approach to supervised, \textsc{ilp} techniques, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. We release our implementation and experiments.
 
 \section{Related work}\label{s:relatedwork}
 
-
 \begin{table}[htb!]
 \begin{tabular}{lcc}
-\textbf{Approach} & \textbf{Complexity} & \textbf{Constrained}  \\ \hline
+Approach & Complexity & Constrained  \\ \hline
 \textsc{ilp}       &   exponential    & yes     \\
 LSTM tagger & linear              & no         \\   
-\textsc{vertex addition}  & \textbf{linear}     &      \textbf{yes}   
+\textsc{vertex addition} & \textbf{linear}     &      \textbf{yes}   
 \end{tabular}
-\caption{This work introduces a supervised \textsc{vertex addition} technique (\S\ref{s:system}) which constructs constrained compressions in linear time. Prior work (\S\ref{s:relatedwork}) has higher computational complexity (\textsc{ILP}) or does not respect constraints (LSTM tagger).} 
+\caption{Our \textsc{vertex addition} technique (\S\ref{s:system}) constructs constrained compressions in linear time. Prior work (\S\ref{s:relatedwork}) has higher computational complexity (\textsc{ILP}) or does not respect constraints (LSTM tagger).} 
 \label{t:algos}
 \end{table}
 
@@ -99,9 +98,9 @@ Our interest in the constrained compression problem is motivated by search user 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
 Such user-facing systems require low-latency methods \cite{Nielsen,heerschei,Liu2014TheEO}.
 
-We compare our approach to ILP-based compression methods \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
+We compare our approach to ILP-based compression methods \cite{filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
 
-Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation with constrained generation techniques \cite{D16-1140,N18-1119,D18-1443}.
+Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation by adapting constrained generation techniques for the compression task \cite{D16-1140,N18-1119,D18-1443}.
 
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
