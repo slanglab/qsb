@@ -1,4 +1,7 @@
 ## get the results for the test set
+set -e
+rm -rf bottom_up_clean/timing/*
+
 echo "" > bottom_up_clean/stat_sig.csv
 echo "" > bottom_up_clean/results.csv
 echo "" > bottom_up_clean/timer.csv
@@ -13,7 +16,7 @@ python bottom_up_clean/ilp_wrapper.py -do_jsonl preproc/test.jsonl -ilp_snapshot
 python bottom_up_clean/ilp_wrapper.py -test_set_score -ilp_snapshot 5
 
 # run timing experiments
-python bottom_up_clean/timer.py -path_to_set_to_evaluate preproc/test.paths -N 5 -ilp_snapshot 100000
+python bottom_up_clean/timer.py -path_to_set_to_evaluate preproc/test.paths -N 100000 -ilp_snapshot 5
 
 # do significance tests on time
 python code/significance_testing.py -file1 bottom_up_clean/timing/random.jsonl -file2 bottom_up_clean/timing/random.jsonl -metric time
