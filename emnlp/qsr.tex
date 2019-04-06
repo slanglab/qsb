@@ -46,7 +46,7 @@
 
 % Linear-time Sentence Compression under Lexical and Length Constraints
 % I think we should call our method query-focused because it sells why you want this in the first place. We are similar enuf to query-focused summairzation I think ths is fine.
-\title{Query-focused sentence compression in linear time}
+\title{Query-focused Sentence Compression in Linear Time}
 
 \author{Abram Handler {\normalfont and} Brendan O'Connor \\
   College of Information and Computer Sciences \\
@@ -79,7 +79,7 @@ Existing compression techniques are poorly suited to this task. While older meth
 
 Thus, in this work, we present a new linear method for query-focused compression, which grows a forest in a sentence's dependency parse by adding vertexes one by one. We compare this \textsc{vertex addition} approach to supervised, \textsc{ilp} techniques, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. We release our implementation and experiments.
 
-\section{Related work}\label{s:relatedwork}
+
 
 \begin{table}[htb!]
 \begin{tabular}{lcc}
@@ -92,16 +92,18 @@ LSTM tagger & linear              & no         \\
 \label{t:algos}
 \end{table}
 
+\section{Related work}\label{s:relatedwork}
+
 Extractive compression shortens a sentence by removing tokens, often to aid in a summarization task \cite{Knight2000StatisticsBasedS,clarke2008global,P13-1136,almeida2013fast,filippova2015sentence,P16-1188,Wang2017CanSH}.\footnote{Some methods shorten sentences via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under hard length and lexical constraints.\footnote{\citet{Li2013DocumentSV} solicit annotations for ``guided'' compression, but do not examine the compression problem under lexical and length constraints.} Our interest in this setting is motivated by search user interfaces (e.g.\ Figure \ref{f:qf}), which might employ such restricted shortenings in snippet extracts \cite{tombros1998advantages,hearst2009search}.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}.} 
 
-We compare our approach to ILP-based compression methods \cite{filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
+We compare our \textsc{vertex addition} approach to ILP-based compression methods \cite{filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. \textsc{ilp} methods shorten sentences by optimizing an integer programming objective, requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
 
 Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation by applying and modifying constrained generation techniques \cite{D16-1140,N18-1119,D18-1443}.
 
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
 In this work, we present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as \textsc{vertex addition} because it constructs a shortening by \textit{growing} a forest in the dependency parse of a sentence, one vertex at a time. This approach differs from some prior work which
-compresses sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of our method is that it can construct constrained compressions in linear time, leading to \speedup lower latency than ILP-based methods (\S\ref{s:autoeval}). \textsc{vertex addition} assumes a boolean relevance model: source sentences selected for compression must contain query terms. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such compressions.
+shortens sentences by \textit{pruning} subtrees \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. The chief advantage of our method is that it can construct constrained compressions in linear time, leading to \speedup lower latency than ILP-based methods (\S\ref{s:autoeval}). \textsc{vertex addition} assumes a boolean relevance model: source sentences selected for compression must contain query terms. Many search interfaces (e.g.\ Figure \ref{f:qf}) require such compressions.
 
 \subsection{Formal description}\label{s:formal}
 
