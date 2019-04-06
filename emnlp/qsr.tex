@@ -74,21 +74,20 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing compression techniques are poorly suited to this task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}, requiring user wait time. Meanwhile, newer sequence to sequence methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require expensive graphics processing units (GPUs) to achieve low runtime latency. These deficits prevent application of existing compression techniques in traditional search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency requirements are paramount. 
+Existing compression techniques are poorly suited to this task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective\label{s:relatedwork}, requiring user wait time. Meanwhile, newer LSTM tagging methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require expensive graphics processing units (GPUs) to achieve low runtime latency. These deficits prevent application of existing compression techniques in traditional search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency requirements are paramount. 
 
-Thus, in this work, we present a new linear method for constrained compression which grows a forest in a sentence's dependency parse by adding vertexes, one at a time. We compare this \textsc{vertex addition} approach to supervised, \textsc{ilp} techniques, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. 
+Thus, in this work, we present a new linear method for constrained compression which grows a forest in a sentence's dependency parse by adding vertexes, one at a time. We compare this \textsc{vertex addition} approach to supervised, \textsc{ilp} techniques, which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. We release our implementation and experiments.
 
 \section{Related work}\label{s:relatedwork}
 
-
 \begin{table}[htb!]
 \begin{tabular}{lcc}
-\textbf{Approach} & \textbf{Complexity} & \textbf{Constrained}  \\ \hline
+Approach & Complexity & Constrained  \\ \hline
 \textsc{ilp}       &   exponential    & yes     \\
 LSTM tagger & linear              & no         \\   
-\textsc{vertex addition}  & \textbf{linear}     &      \textbf{yes}   
+\textsc{vertex addition} & \textbf{linear}     &      \textbf{yes}   
 \end{tabular}
-\caption{This work introduces a supervised \textsc{vertex addition} technique (\S\ref{s:system}) which constructs constrained compressions in linear time. Prior work (\S\ref{s:relatedwork}) has higher computational complexity (\textsc{ILP}) or does not respect constraints (LSTM tagger).} 
+\caption{Our \textsc{vertex addition} technique (\S\ref{s:system}) constructs constrained compressions in linear time. Prior work (\S\ref{s:relatedwork}) has higher computational complexity (\textsc{ILP}) or does not respect constraints (LSTM tagger).} 
 \label{t:algos}
 \end{table}
 
@@ -99,9 +98,9 @@ Our interest in the constrained compression problem is motivated by search user 
 %\url{https://lucene.apache.org/core/7_5_0/highlighter/index.html}} 
 Such user-facing systems require low-latency methods \cite{Nielsen,heerschei,Liu2014TheEO}.
 
-We compare our approach to ILP-based compression methods \cite{clarke2008global,filippova2008dependency,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
+We compare our approach to ILP-based compression methods \cite{filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget requirements with additional optimization constraints. ILP methods shorten sentences by optimizing an integer programming objective, a well-known, NP-hard problem \cite{clarke2008global} requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
 
-Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation with constrained generation techniques \cite{D16-1140,N18-1119,D18-1443}.
+Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation by adapting constrained generation techniques for the compression task \cite{D16-1140,N18-1119,D18-1443}.
 
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
@@ -125,7 +124,7 @@ Vertex addition is linear in the token length of $S$ because we pop and evaluate
 
 \section{Evaluation}\label{s:autoeval}
 
-We observe the latency, readability and token-level F1 score of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a leading, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. F1 is the standard automatic evaluation metric for the compression task. Our method achieves higher F1 and readability scores (Table \ref{t:results}), with \speedup lower latency  than the ILP. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We observe the latency, readability and token-level F1 score (the standard automatic metric in this setting)  of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a leading, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. Each method shortens to the same compression rate, following known best practices \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
 \subsection{Constrained compression experiment}\label{s:constrained}
 
@@ -158,7 +157,7 @@ We use such oracle paths to train a model of oracle inclusion decisions, ${p(y_i
 We implement with Python 3 using scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. We tune the inverse regularization constant to $c=10$ via grid search over powers of ten, to optimize validation set F1. 
 
 \subsection{Implementations:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
-For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}, bold) to inform local vertex addition decisions raises F1 score. We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data.
+For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}, bold) to inform local vertex addition decisions raises F1 score. We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data. The baseline achieves reasonable F1 in part because (1) additive compressions are initialized with $Q \in C_g$ and (2) compression performance correlates with compression rate \cite{napoles2011evaluating}, and $b$ is set to the length of $C_g$.
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
