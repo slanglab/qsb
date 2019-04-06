@@ -67,7 +67,7 @@ Search applications often display shortened sentences which must contain certain
 
 Traditional study of extractive sentence compression seeks to create short, readable, single-sentence summaries which retain the most ``important'' information from source sentences. But search applications often require compressions which must include a user's query terms and must not exceed some maximum length, permitted by screen space.  Figure \ref{f:qf} shows an example.
 
-This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, a source sentence $S$ is shortened to a compression $C$ which (1) must include a set of query words $Q$ and (2) must be no longer than a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, constrained compression maps $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$. We describe this task as query-focused compression because $Q$ places a hard requirement on information from $S$ which must be included in $C$.
+This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, a source sentence $S$ is shortened to a compression $C$ which (1) must include all tokens in a set of query terms $Q$ and (2) must be no longer than a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, constrained compression maps $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$. We describe this task as query-focused compression because $Q$ places a hard requirement on words from $S$ which must be included in $C$.
 
 \begin{figure}[htb!]
 \includegraphics[width=8.5cm]{qf.pdf}
@@ -182,7 +182,7 @@ Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 
 \section{Conclusion}
 
-Search interfaces often require low-latency, query-focused and length-constrained compression. We introduce a new vertex addition technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 scores. 
+Search interfaces often require low-latency, query-focused and length-constrained compression. We introduce a new vertex addition technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 and readability scores. 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
