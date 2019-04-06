@@ -1,4 +1,4 @@
-Extractive sentence compression shortens a source sentence S to a shorter compression C by removing words from S. 
+Extractive [sentence compression](https://www.isi.edu/~marcu/papers/aaai-stat-sum-00.pdf) shortens a source sentence S to a shorter compression C by removing words from S. 
 
 For instance:
 
