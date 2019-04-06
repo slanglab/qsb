@@ -1,5 +1,7 @@
 ## get the results for the test set
 echo "" > bottom_up_clean/stat_sig.csv
+echo "" > bottom_up_clean/results.csv
+echo "" > bottom_up_clean/timer.csv
 
 # get f1 and slor for additive + ablated
 python bottom_up_clean/do_f1_and_slor.py -training_paths preproc/training.paths -skip_training -validation_paths preproc/test.paths
