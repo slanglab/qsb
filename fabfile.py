@@ -7,6 +7,8 @@ python3
 '''
 from __future__ import with_statement
 from fabric import Connection
+from fabric import task
+
 import os
 
 local = Connection("localhost").local
@@ -50,5 +52,6 @@ def f1_and_slor():
     local("./scripts/bottom_up.sh")
 
 
-def do_train_and_test():
+@task
+def do_train_and_test(ctx):
     local("./scripts/train.sh && ./scripts/test_results.sh")
