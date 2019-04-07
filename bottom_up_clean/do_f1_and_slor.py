@@ -60,7 +60,7 @@ if __name__ == "__main__":
         clf, vectorizer = do_training(args.training_paths, args.validation_paths, args.only_locals)
     else:
 
-        if only_locals:
+        if args.only_locals:
             clf_of = "bottom_up_clean/clf_only_locals.p"
             vec_of = "bottom_up_clean/vectorizer_only_locals.p"
         else:
