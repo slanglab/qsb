@@ -29,4 +29,4 @@ python code/significance_testing.py -file1 bottom_up_clean/timing/additive_ablat
 
 # do results on slor/f1
 python code/significance_testing.py -file1 bottom_up_clean/additive_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric slor
-python code/significance_testing.py -file bottom_up_clean/additive_results.jsonl -file2 
+python code/significance_testing.py -file1 bottom_up_clean/additive_results.jsonl -file2 
