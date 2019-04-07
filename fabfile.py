@@ -50,5 +50,5 @@ def f1_and_slor():
     local("./scripts/bottom_up.sh")
 
 
-def do_test():
-    local("./scripts/test_results.sh")
+def do_train_and_test():
+    local("./scripts/train.sh && ./scripts/test_results.sh")
