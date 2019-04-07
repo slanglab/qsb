@@ -13,12 +13,12 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ##### Repo tour
 
-`bottom_up_clean` code for vertex addition is here
-`code` utilities, such as printers, loggers and significance testers
-`dead_code` old code not in use
-`ilp2013` F & A implementation
-`latex` paper & writing
-`klm` some utilties for computing slor
-`preproc` holds preprocessing code
-`scripts` runs experiments
-`snapshots` ILP weights, learned from training. Committed for replicability b/c ILP training takes days
+- `bottom_up_clean` code for vertex addition is here
+- `code` utilities, such as printers, loggers and significance testers
+- `dead_code` old code not in use
+- `ilp2013` F & A implementation
+- `latex` paper & writing
+- `klm` some utilties for computing slor
+- `preproc` holds preprocessing code
+- `scripts` runs experiments
+- `snapshots` ILP weights, learned from training. Committed for replicability b/c ILP training takes days
