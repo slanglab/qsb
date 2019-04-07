@@ -59,10 +59,18 @@ if __name__ == "__main__":
         # writes the .p files
         clf, vectorizer = do_training(args.training_paths, args.validation_paths, args.only_locals)
     else:
-        with open("bottom_up_clean/clf.p", "rb") as of:
+
+        if only_locals:
+            clf_of = "bottom_up_clean/clf_only_locals.p"
+            vec_of = "bottom_up_clean/vectorizer_only_locals.p"
+        else:
+            clf_of = "bottom_up_clean/clf.p"
+            vec_of = "bottom_up_clean/vectorizer.p"
+
+        with open(clf_of, "rb") as of:
             clf = pickle.load(of)
 
-        with open("bottom_up_clean/vectorizer.p", "rb") as of:
+        with open(vec_of, "rb") as of:
             vectorizer = pickle.load(of)
 
     if args.random:
