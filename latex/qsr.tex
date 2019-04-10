@@ -132,6 +132,8 @@ as a collection of input triples and constrained compressions. The original data
 
 By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {9,969} test tuples, each of the form $(S,Q,b,C_g)$. \citet{filippova2013overcoming} define the train/test split. We re-tokenize, parse and tag with CoreNLP v3.8.0 \cite{corenlp}. We reserve 24,999 training tuples as a validation set.
 
+The appendix describes additional details of our latency and readability experiments.
+
 \subsection{Implementation: \textsc{ilp}}\label{s:ilp}
 
 We compare our system to a baseline, \textsc{ilp} method, presented in \citet{filippova2013overcoming}. This approach represents each edge in a syntax tree with a vector of real-valued features, then learns feature weights using a structured perceptron trained on a corpus of $(S,C_g)$ pairs. Learned weights are used to compute a global compression objective, subject to structural constraints which ensure $C$ is a valid tree. This baseline can easily perform constrained compression: at test time, we add optimization constraints specifying that $C$ must include $Q$, and not exceed length $b$.
@@ -153,18 +155,20 @@ We use such oracle paths to train a model of oracle inclusion decisions, ${p(y_i
 
 We implement with Python 3 using scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. We tune the inverse regularization constant to $c=10$ via grid search over powers of ten, to optimize validation set F1. 
 
-\subsection{Implementations:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
-For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}, bold) to inform local vertex addition decisions raises F1 score. We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data. The baseline achieves reasonable F1 in part because (1) additive compressions are initialized with $Q \in C_g$ and (2) compression performance correlates with compression rate \cite{napoles2011evaluating}, and $b$ is set to the length of $C_g$.
+\subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
+For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}, bold) to inform local vertex addition decisions raises F1 score. The relatively strong performance of \textsc{ablated} hints that edge-level information alone can largely guide $v_i$ decisions, e.g.\ should the compression system add some verb $v_i$ governing some object in $C_i$?
+
+We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data. \textsc{random} achieves reasonable F1 because (1) $C_0 = Q \in C_g$ and (2) F1 correlates with compression rate \cite{napoles2011evaluating}, and $b$ is set to the length of $C_g$.
 
 \subsection{Importance and readability evaluation}\label{s:readabilityinformativeness}
 
 Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so human importance evaluations are inappropriate.
 
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} SLOR is known to correlate with human readability judgements for the compression task \cite{kannConl}. The appendix details our implementation of SLOR. 
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} SLOR is known to correlate with human judgements of compression readability \cite{kannConl}.  
 
 \subsection{Latency evaluation}\label{s:costs}
 
-\textsc{vertex addition} has lower theoretical complexity than the \textsc{ilp} baseline. We test corresponding empirical latency gains by measuring the clock speed of each compression method, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Greater latency improvements might be possible by reimplementing our Python 3 code in a more performant language such as Java or C. The appendix contains additional measurement details.
+\textsc{vertex addition} has lower theoretical complexity than the \textsc{ilp} baseline. We test corresponding empirical latency gains by measuring the clock speed of each compression method, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Added speedups might be possible by reimplementing our Python 3 code in a more performant language such as C.
 
 In search applications, latency gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,heerschei,Liu2014TheEO}.
  %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
