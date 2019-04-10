@@ -77,7 +77,7 @@ This study examines the English-language compression problem with such length an
 
 Existing compression techniques are poorly suited to this task. While older methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective \cite{clarke2008global}, requiring user wait time. Meanwhile, newer LSTM tagging methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require expensive graphics processing units (GPUs) to achieve low runtime latency. These deficits prevent application of existing compression techniques in traditional search engines \cite{hearst2009search}, concept map browsers \cite{falke2017graphdocexplore} and new forms of exploratory textual interfaces \cite{marchionini2006exploratory}, where length, lexical and latency requirements are paramount. 
 
-Thus, in this work, we present a new linear method for query-focused compression, which grows a forest in a sentence's dependency parse by adding vertexes one by one. We compare this \textsc{vertex addition} approach to supervised \textsc{ilp} techniques which also accommodate length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. We release our implementation and experiments.
+Thus, in this work, we present a new linear method for query-focused compression, which grows a forest in a sentence's dependency parse by adding vertexes one by one. We compare this \textsc{vertex addition} approach to a supervised \textsc{ilp} technique which also accommodates length and lexical restrictions. Our method has lower theoretical and empirical computational costs, while better reconstructing known-good shortenings. We release our implementation and experiments.
 
 
 \begin{table}[htb!]
@@ -184,7 +184,7 @@ Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 
 \section{Conclusion}
 
-Search interfaces would benefit from low-latency, query-focused and length-constrained compression. We introduce a new \textsc{vertex addition} technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 and readability scores. 
+Both novel and traditional search interfaces would benefit from low-latency, query-focused and length-constrained compression. We introduce a new \textsc{vertex addition} technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 and readability scores. 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
