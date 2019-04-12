@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 import numpy
 from overrides import overrides
+import numpy as np
 import torch
 import torch.nn.functional as F
 
@@ -56,6 +57,13 @@ class AcademicPaperClassifier(Model):
         self.abstract_encoder = abstract_encoder
         self.classifier_feedforward = classifier_feedforward
 
+        n_classes = 2
+        counts = [459881, 1716695]
+        nsamples = sum(counts)
+        counts = np.asarray(counts, dtype=np.float32)
+        weight = nsamples /(counts * n_classes)
+        weight = torch.from_numpy(weight).float()
+
         if text_field_embedder.get_output_dim() != title_encoder.get_input_dim():
             raise ConfigurationError("The output dimension of the text_field_embedder must match the "
                                      "input dimension of the title_encoder. Found {} and {}, "
@@ -67,10 +75,9 @@ class AcademicPaperClassifier(Model):
                                      "respectively.".format(text_field_embedder.get_output_dim(),
                                                             abstract_encoder.get_input_dim()))
         self.metrics = {
-                "accuracy": CategoricalAccuracy(),
-                "accuracy3": CategoricalAccuracy(top_k=3)
+                "accuracy": CategoricalAccuracy()
         }
-        self.loss = torch.nn.CrossEntropyLoss()
+        self.loss = torch.nn.CrossEntropyLoss(weight=weight)
 
         initializer(self)
 
