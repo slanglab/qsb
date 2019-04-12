@@ -99,13 +99,13 @@ class AcademicPaperClassifier(Model):
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
-        embedded_title = self.text_field_embedder(title)
-        title_mask = util.get_text_field_mask(title)
-        encoded_title = self.title_encoder(embedded_title, title_mask)
-
-        values, indices = torch.max(encoded_title, 1)
-
-        logits = self.classifier_feedforward(values)
+        
+        embedded_abstract = self.text_field_embedder(title)
+        abstract_mask = util.get_text_field_mask(title)
+        encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
+        
+        logits = self.classifier_feedforward(encoded_abstract)
+        
         output_dict = {'logits': logits}
         if label is not None:
             loss = self.loss(logits, label)
