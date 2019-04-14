@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from allennlp.common.checks import ConfigurationError
 from allennlp.data import Vocabulary
-from allennlp.modules import FeedForward, Seq2VecEncoder, TextFieldEmbedder
+from allennlp.modules import FeedForward, Seq2VecEncoder, TextFieldEmbedder, Seq2SeqEncoder
 from allennlp.models.model import Model
 from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn import util
@@ -43,9 +43,8 @@ class AcademicPaperClassifier(Model):
         If provided, will be used to calculate the regularization penalty during training.
     """
     def __init__(self, vocab: Vocabulary,
-                 text_field_embedder: TextFieldEmbedder,
-                 title_encoder: Seq2VecEncoder,
-                 abstract_encoder: Seq2VecEncoder,
+                 text_field_embedder: TextFieldEmbedder, 
+                 abstract_encoder: Seq2SeqEncoder,
                  classifier_feedforward: FeedForward,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
@@ -53,7 +52,6 @@ class AcademicPaperClassifier(Model):
 
         self.text_field_embedder = text_field_embedder
         self.num_classes = self.vocab.get_vocab_size("labels")
-        self.title_encoder = title_encoder
         self.abstract_encoder = abstract_encoder
         self.classifier_feedforward = classifier_feedforward
 
@@ -64,11 +62,6 @@ class AcademicPaperClassifier(Model):
         weight = nsamples /(counts * n_classes)
         weight = torch.from_numpy(weight).float()
 
-        if text_field_embedder.get_output_dim() != title_encoder.get_input_dim():
-            raise ConfigurationError("The output dimension of the text_field_embedder must match the "
-                                     "input dimension of the title_encoder. Found {} and {}, "
-                                     "respectively.".format(text_field_embedder.get_output_dim(),
-                                                            title_encoder.get_input_dim()))
         if text_field_embedder.get_output_dim() != abstract_encoder.get_input_dim():
             raise ConfigurationError("The output dimension of the text_field_embedder must match the "
                                      "input dimension of the abstract_encoder. Found {} and {}, "
@@ -77,7 +70,7 @@ class AcademicPaperClassifier(Model):
         self.metrics = {
                 "accuracy": CategoricalAccuracy()
         }
-        self.loss = torch.nn.CrossEntropyLoss(weight=weight)
+        self.loss = torch.nn.CrossEntropyLoss()#weight=weight)
 
         initializer(self)
 
@@ -109,9 +102,13 @@ class AcademicPaperClassifier(Model):
         
         embedded_abstract = self.text_field_embedder(title)
         abstract_mask = util.get_text_field_mask(title)
-        encoded_abstract = self.abstract_encoder(embedded_abstract, abstract_mask)
-        
-        logits = self.classifier_feedforward(encoded_abstract)
+        o = self.abstract_encoder(embedded_abstract, abstract_mask)
+        batchsize, max_seq, hidden_size_times_two = o.shape 
+        max_, indices = torch.max(o, 1)
+      
+        #print(max_, indices)
+        #import os;os._exit(0) 
+        logits = self.classifier_feedforward(max_)
         
         output_dict = {'logits': logits}
         if label is not None:

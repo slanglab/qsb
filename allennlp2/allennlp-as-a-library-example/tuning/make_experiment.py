@@ -29,10 +29,10 @@ def make_rando():
         dt = json.load(inf)
 
     fn = "/home/ahandler/qsr/glove.6B.{}d.txt.gz".format(inputd)
-    dt['model']['text_field_embedder']["token_embedders"]['tokens']['embedding_dim'] = inputd
+    #dt['model']['text_field_embedder']["token_embedders"]['tokens']['embedding_dim'] = inputd
 
-    dt["model"]["title_encoder"]["embedding_dim"] = inputd
-    dt["model"]["abstract_encoder"]["embedding_dim"] = inputd
+    #dt["model"]["title_encoder"]["embedding_dim"] = inputd
+    #dt["model"]["abstract_encoder"]["embedding_dim"] = inputd
 
     classification_layers = list(range(1, 4))
     random.shuffle(classification_layers)
@@ -52,16 +52,16 @@ def make_rando():
 
     for component in ['classifier_feedforward']:
         dt["model"][component]["dropout"] = dropouts
-        dt["model"][component]["input_dim"] = inputd 
+        #dt["model"][component]["input_dim"] = inputd 
         dt["model"][component]["activations"] = activations_
         dt["model"][component]["num_layers"] = classification_layers
         dt["model"][component]["hidden_dims"] = sizes
 
-    x = random.uniform(3, 5)
+    x = random.uniform(1, 9)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(5, 8)
+    x = random.uniform(1, 9)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
