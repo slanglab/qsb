@@ -2,15 +2,15 @@
   "dataset_reader": {
     "type": "s2_papers"
   },
-  "train_data_path": "tests/fixtures/s2_papers.jsonl",
-  "validation_data_path": "tests/fixtures/s2_papers.jsonl",
+  "train_data_path": "experiments/mini.training.lstm.jsonl",
+  "validation_data_path": "experiments/mini.validation.lstm.jsonl",
   "model": {
     "type": "paper_classifier",
     "text_field_embedder": {
       "token_embedders": {
         "tokens": {
           "type": "embedding",
-          "embedding_dim": 2,
+          "embedding_dim": 100,
           "trainable": true
         }
       }
@@ -18,11 +18,11 @@
     "abstract_encoder": {
       "type": "lstm",
       "bidirectional": true,
-      "input_size": 2,
-      "hidden_size":7
+      "input_size": 100,
+      "hidden_size":25
     },
     "classifier_feedforward": {
-      "input_dim": 14,
+      "input_dim": 50,
       "num_layers": 2,
       "hidden_dims": [2, 2],
       "activations": ["sigmoid", "linear"],
@@ -37,8 +37,8 @@
   },
 
   "trainer": {
-    "num_epochs": 1,
-    "cuda_device": -1,
+    "num_epochs": 5,
+    "cuda_device": 0,
     "grad_clipping": 5.0,
     "validation_metric": "+accuracy",
     "optimizer": {
