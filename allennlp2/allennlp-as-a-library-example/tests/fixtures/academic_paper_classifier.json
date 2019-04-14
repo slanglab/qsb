@@ -11,22 +11,18 @@
         "tokens": {
           "type": "embedding",
           "embedding_dim": 2,
-          "trainable": false
+          "trainable": true
         }
       }
     },
-    "title_encoder": {
-      "type": "boe",
-      "embedding_dim": 2,
-      "averaged": true
-    },
     "abstract_encoder": {
-      "type": "boe",
-      "embedding_dim": 2,
-      "averaged": true
+      "type": "lstm",
+      "bidirectional": true,
+      "input_size": 2,
+      "hidden_size":7
     },
     "classifier_feedforward": {
-      "input_dim": 2,
+      "input_dim": 14,
       "num_layers": 2,
       "hidden_dims": [2, 2],
       "activations": ["sigmoid", "linear"],
