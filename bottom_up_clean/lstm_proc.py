@@ -1,19 +1,12 @@
 import json
-import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-fn', type=str, dest="fn")
-
-args = parser.parse_args()
 
 C_char = "π"  # "proposedprune"
 v_char = "ε"  # 'proposedextract'
 
 f_char = "F"
 
-fn = args.fn
 
-tx = [json.loads(i) for i in open(fn)]
 
 
 def get_sorted_toks_with_markers(sentence, C, v, F):
@@ -29,18 +22,30 @@ def get_sorted_toks_with_markers(sentence, C, v, F):
 
     return [_[0] for _ in tok]
 
-with open(fn.replace(".paths", ".lstm.jsonl"), "w") as of:
-    for i in tx:
+if __name__ == "__main__":
+    import argparse
 
-        paths, sentence = i["paths"], i["sentence"]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-fn', type=str, dest="fn")
 
-        for p in paths:
+    args = parser.parse_args()
 
-            C, v, decision, F = p
+    fn = args.fn
 
-            toks = get_sorted_toks_with_markers(sentence, C, v, F)            
+    tx = [json.loads(i) for i in open(fn)]
 
-            label = decision
+    with open(fn.replace(".paths", ".lstm.jsonl"), "w") as of:
+        for i in tx:
 
-            out = {"sentence": " ".join(toks), "label": str(label)}
-            of.write(json.dumps(out) + "\n")
+            paths, sentence = i["paths"], i["sentence"]
+
+            for p in paths:
+
+                C, v, decision, F = p
+
+                toks = get_sorted_toks_with_markers(sentence, C, v, F)            
+
+                label = decision
+
+                out = {"sentence": " ".join(toks), "label": str(label)}
+                of.write(json.dumps(out) + "\n")
