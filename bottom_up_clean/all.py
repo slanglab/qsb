@@ -1,3 +1,4 @@
+# export PYTHONPATH=.:allennlp2/allennlpallennlpasalibraryexample/
 import json
 import string
 import numpy as np
@@ -113,6 +114,7 @@ def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
     return sentence["indexes"].difference(Q)
 
+import datetime
 
 def make_decision_nn(**kwargs):
     sentence=kwargs["sentence"]
@@ -122,8 +124,11 @@ def make_decision_nn(**kwargs):
     toks = get_sorted_toks_with_markers(sentence, C, v, F)
     markup = " ".join(toks)
     instance = predictor._dataset_reader.text_to_instance(markup)
-    return int(predictor.predict_instance(instance)['label'])
-
+    #now = datetime.datetime.now()
+    decide = int(predictor.predict_instance(instance)['label'])
+    #later = datetime.datetime.now()
+    #print((now - later).total_seconds())
+    return decide
 
 def make_decision_lr(**kwargs):
 
