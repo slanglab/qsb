@@ -22,6 +22,6 @@ with open(fn, "r") as inf:
         sentence = _["sentence"] 
         label = _["label"]
         instance = predictor._dataset_reader.text_to_instance(sentence, label)
-
+        print(predictor.predict_instance(instance))
 
 
