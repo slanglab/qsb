@@ -7,7 +7,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random
+from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random, make_decision_nn
 
 
 parser = argparse.ArgumentParser()
@@ -19,6 +19,9 @@ parser.add_argument('-only_locals', dest='only_locals', action='store_true', def
 parser.add_argument('-skip_training', dest='skip_training', action='store_true', default=False)
 
 args = parser.parse_args()
+
+if args.nn:
+    args.skip_training = True
 
 def do_training(training_paths, validation_paths, only_locals = False):
     clf, vectorizer, validationPreds = train_clf(training_paths=training_paths,
