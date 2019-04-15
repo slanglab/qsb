@@ -92,7 +92,7 @@ if __name__ == "__main__":
         if args.random is True:
             decider=make_decision_random
         elif args.nn is True:
-            decide=make_decision_nn
+            decider=make_decision_nn
         else:
             decider=make_decision_lr
 
