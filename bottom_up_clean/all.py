@@ -9,6 +9,19 @@ from collections import defaultdict
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction import DictVectorizer
+from bottom_up_clean.lstm_proc import get_sorted_toks_with_markers
+from allennlp.predictors.predictor import Predictor
+from allennlp.models.archival import load_archive
+
+from allennlp2.allennlpallennlpasalibraryexample.my_library.models import *
+from allennlp2.allennlpallennlpasalibraryexample.my_library.dataset_readers import *
+from allennlp2.allennlpallennlpasalibraryexample.my_library.predictors import *
+
+import json
+
+archive_file = "models/457282793/model.tar.gz"
+archive = load_archive(archive_file=archive_file)
+predictor = Predictor.from_archive(archive, "paper-classifier") 
 
 NULLSET = set()
 
@@ -99,6 +112,17 @@ def get_depths(sentence):
 def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
     return sentence["indexes"].difference(Q)
+
+
+def make_decision_nn(**kwargs):
+    sentence=kwargs["sentence"]
+    C = kwargs["current_compression"]
+    v = kwargs["vertex"]
+    F = kwargs["frontier"]
+    toks = get_sorted_toks_with_markers(sentence, C, v, F)
+    markup = " ".join(toks)
+    instance = predictor._dataset_reader.text_to_instance(markup)
+    return int(predictor.predict_instance(instance)['label'])
 
 
 def make_decision_lr(**kwargs):

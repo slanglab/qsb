@@ -16,7 +16,7 @@ fn = args.fn
 tx = [json.loads(i) for i in open(fn)]
 
 
-def get_sorted_toks_with_markers(sentence):
+def get_sorted_toks_with_markers(sentence, C, v, F):
     C_toks = [(_["word"] + C_char, _["index"]) for _ in sentence["tokens"] if _["index"] in C]
     V_toks = [(_["word"] + v_char, _["index"]) for _ in sentence["tokens"] if _["index"] == v]
     F_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] in F and _["index"] != v]
@@ -38,7 +38,7 @@ with open(fn.replace(".paths", ".lstm.jsonl"), "w") as of:
 
             C, v, decision, F = p
 
-            toks = get_sorted_toks_with_markers(sentence)            
+            toks = get_sorted_toks_with_markers(sentence, C, v, F)            
 
             label = decision
 
