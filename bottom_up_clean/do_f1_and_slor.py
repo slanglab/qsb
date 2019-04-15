@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-validation_paths', type=str, default="validation.paths")
 parser.add_argument('-training_paths', type=str, default="training.paths")
 parser.add_argument('-random', dest='random', action='store_true', default=False)
+parser.add_argument('-nn', dest='nn', action='store_true', default=False)
 parser.add_argument('-only_locals', dest='only_locals', action='store_true', default=False, help="don't use global features")
 parser.add_argument('-skip_training', dest='skip_training', action='store_true', default=False)
 
@@ -87,6 +88,8 @@ if __name__ == "__main__":
         sentence = paths["sentence"]
         if args.random is True:
             decider=make_decision_random
+        elif args.nn is True:
+            decide=make_decision_nn
         else:
             decider=make_decision_lr
 
