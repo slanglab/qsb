@@ -6,10 +6,20 @@ echo "" > bottom_up_clean/stat_sig.csv
 echo "" > bottom_up_clean/results.csv
 echo "" > bottom_up_clean/timer.csv
 
-# get f1 and slor for additive + ablated
+
+
+# get f1 and slor for additive (feature based)
 python bottom_up_clean/do_f1_and_slor.py -training_paths preproc/training.paths -skip_training -validation_paths preproc/test.paths
 
+# get F1 and slor for additive (random)
+python bottom_up_clean/do_f1_and_slor.py -training_paths preproc/training.paths -skip_training -validation_paths preproc/test.paths -random
+
+# get F1 and slor for additive (neural network)
+python bottom_up_clean/do_f1_and_slor.py -training_paths preproc/training.paths -skip_training -validation_paths preproc/test.paths -nn
+
+# get F1 and slor for additive (ablated)
 python bottom_up_clean/do_f1_and_slor.py -training_paths preproc/training.paths -skip_training -validation_paths preproc/test.paths -only_locals
+
 
 # get test set f1 and slor for vanilla ILP
 python bottom_up_clean/ilp_wrapper.py -do_jsonl preproc/test.jsonl -ilp_snapshot 5
