@@ -13,7 +13,7 @@ def get_sorted_toks_with_markers(sentence, C, v, F):
     C_toks = [(_["word"] + C_char, _["index"]) for _ in sentence["tokens"] if _["index"] in C]
     V_toks = [(_["word"] + v_char, _["index"]) for _ in sentence["tokens"] if _["index"] == v]
     F_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] in F and _["index"] != v]
-    S_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] not in C + F + [v]]
+    S_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] not in C | F | {v}]
 
     tok = C_toks + V_toks + F_toks + S_toks
     tok.sort(key=lambda x:x[1])
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
                 C, v, decision, F = p
 
-                toks = get_sorted_toks_with_markers(sentence, C, v, F)            
+                toks = get_sorted_toks_with_markers(sentence, set(C), v, set(F))            
 
                 label = decision
 
