@@ -26,7 +26,7 @@ def make_rando():
 
     dt['model']['text_field_embedder']["token_embedders"]['tokens']['embedding_dim'] = inputd
 
-    dt["model"]["abstract_encoder"]["embedding_dim"] = inputd
+    dt["model"]["abstract_encoder"]["input_size"] = inputd
 
     classification_layers = list(range(1, 4))
     random.shuffle(classification_layers)
@@ -51,7 +51,7 @@ def make_rando():
         dt["model"][component]["num_layers"] = classification_layers
         dt["model"][component]["hidden_dims"] = sizes
 
-    x = random.uniform(0,5)
+    x = random.uniform(1,4)
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
@@ -70,5 +70,5 @@ def make_rando():
 
     print(dt)
 
-for i in range(100):
+for i in range(25):
     make_rando()
