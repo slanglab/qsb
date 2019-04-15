@@ -1,0 +1,10 @@
+{"sentence": "FiveF peopleF haveF beenF taken\u03b5 toF hospitalF withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "FiveF people\u03b5 haveF beenF taken\u03c0 toF hospitalF withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "0"}
+{"sentence": "Five\u03b5 people\u03c0 haveF beenF taken\u03c0 toF hospitalF withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03b5 beenF taken\u03c0 toF hospitalF withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03c0 been\u03b5 taken\u03c0 toF hospitalF withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "0"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03c0 been\u03c0 taken\u03c0 toF hospital\u03b5 withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03c0 been\u03c0 taken\u03c0 to\u03b5 hospital\u03c0 withF minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03c0 been\u03c0 taken\u03c0 to\u03c0 hospital\u03c0 with\u03b5 minorF injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03c0 been\u03c0 taken\u03c0 to\u03c0 hospital\u03c0 with\u03c0 minor\u03b5 injuries\u03c0 followingF aF crashF onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
+{"sentence": "Five\u03c0 people\u03c0 have\u03c0 been\u03c0 taken\u03c0 to\u03c0 hospital\u03c0 with\u03c0 minor\u03c0 injuries\u03c0 followingF aF crash\u03b5 onF theF A17F nearF Sleaford\u03c0 thisF morningF .F", "label": "1"}
