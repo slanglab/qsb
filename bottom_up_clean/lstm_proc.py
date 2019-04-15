@@ -16,6 +16,19 @@ fn = args.fn
 tx = [json.loads(i) for i in open(fn)]
 
 
+def get_sorted_toks_with_markers(sentence):
+    C_toks = [(_["word"] + C_char, _["index"]) for _ in sentence["tokens"] if _["index"] in C]
+    V_toks = [(_["word"] + v_char, _["index"]) for _ in sentence["tokens"] if _["index"] == v]
+    F_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] in F and _["index"] != v]
+    S_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] not in C + F + [v]]
+
+    tok = C_toks + V_toks + F_toks + S_toks
+    tok.sort(key=lambda x:x[1])
+
+    # assert len(set(C_toks + V_toks + F_toks + S_toks)) == len(sentence["tokens"])
+
+    return [_[0] for _ in tok]
+
 with open(fn.replace(".paths", ".lstm.jsonl"), "w") as of:
     for i in tx:
 
@@ -25,17 +38,8 @@ with open(fn.replace(".paths", ".lstm.jsonl"), "w") as of:
 
             C, v, decision, F = p
 
-            C_toks = [(_["word"] + C_char, _["index"]) for _ in sentence["tokens"] if _["index"] in C]
-            V_toks = [(_["word"] + v_char, _["index"]) for _ in sentence["tokens"] if _["index"] == v]
-            F_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] in F and _["index"] != v]
-            S_toks = [(_["word"] + f_char, _["index"]) for _ in sentence["tokens"] if _["index"] not in C + F + [v]]
+            toks = get_sorted_toks_with_markers(sentence)            
 
-            tok = C_toks + V_toks + F_toks + S_toks
-            tok.sort(key=lambda x:x[1])
-
-            assert len(set(C_toks + V_toks + F_toks + S_toks)) == len(sentence["tokens"])
-
-            toks = [_[0] for _ in tok]
             label = decision
 
             out = {"sentence": " ".join(toks), "label": str(label)}
