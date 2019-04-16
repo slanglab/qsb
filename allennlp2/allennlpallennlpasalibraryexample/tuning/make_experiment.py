@@ -5,6 +5,7 @@ import random
 import sys
 import os
 import glob
+from random import uniform
 
 experiment = sys.argv[1]
 
@@ -27,7 +28,9 @@ def make_rando():
     dt['model']['text_field_embedder']["token_embedders"]['tokens']['embedding_dim'] = inputd
 
     dt["model"]["abstract_encoder"]["input_size"] = inputd
-
+    dt["model"]["abstract_encoder"]["dropout"] = uniform(0,1)
+    hidden_size = randint(15,200)
+    dt['model']["abstract_encoder"]['hidden_size'] = hidden_size 
     classification_layers = list(range(1, 4))
     random.shuffle(classification_layers)
     classification_layers = classification_layers[0]
@@ -43,7 +46,7 @@ def make_rando():
         dropouts.append(random.uniform(.1, .7))
 
     sizes[-1] = 2
-
+    dt["model"]["classifier_feedforward"]["input_dim"] = hidden_size * 2
     for component in ['classifier_feedforward']:
         dt["model"][component]["dropout"] = dropouts
         #dt["model"][component]["input_dim"] = inputd 
@@ -55,7 +58,7 @@ def make_rando():
 
     dt['trainer']['optimizer']["lr"] = 10 ** -x * random.uniform(1, 10)
 
-    x = random.uniform(1, 9)
+    x = random.uniform(1, 10)
 
     dt['trainer']['optimizer']['weight_decay'] = 10 ** -x * random.uniform(1, 10)
 
