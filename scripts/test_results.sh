@@ -1,4 +1,5 @@
 ## get the results for the test set
+export PYTHONPATH=.:allennlp2/allennlpallennlpasalibraryexample/
 set -e
 rm -rf bottom_up_clean/timing/*
 
