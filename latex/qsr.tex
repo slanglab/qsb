@@ -75,9 +75,9 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing compression techniques are poorly suited to this task. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective \cite{clarke2008global}. Meanwhile, newer LSTM tagging methods \cite{filippova2015sentence} do not allow practitioners to specify length or lexical constraints, and require expensive graphics processing units (GPUs) to achieve low runtime latency. These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search,falke2017graphdocexplore}, where length, lexical and latency requirements are paramount. 
+Existing compression techniques are poorly suited to this task. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency. These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search,falke2017graphdocexplore}, where length, lexical and latency requirements are paramount.
 
-We thus present a new stateful method for query-focused compression, which grows a forest in a sentence's dependency parse. This approach is theoretically and empirically faster than ILP-based techniques, and achieves higher F1 scores.
+We thus present a new stateful method for query-focused compression. Our approach is theoretically and empirically faster than ILP-based techniques, and achieves higher F1 scores.
 
 
 \begin{table}[htb!]
@@ -85,7 +85,7 @@ We thus present a new stateful method for query-focused compression, which grows
 Approach & Complexity & Constrained  \\ \hline
 \textsc{ilp}       &   exponential    & yes     \\
 LSTM tagger & linear              & no         \\   
-\textsc{vertex addition} & \textbf{linear}     &      \textbf{yes}   
+\textbf{\textsc{vertex addition}} & \textbf{linear}     &      \textbf{yes}   
 \end{tabular}
 \caption{Our \textsc{vertex addition} technique (\S\ref{s:system}) constructs constrained compressions in linear time. Prior work (\S\ref{s:relatedwork}) has higher computational complexity (\textsc{ILP}) or does not respect hard constraints (LSTM tagger).} 
 \label{t:algos}
@@ -93,7 +93,7 @@ LSTM tagger & linear              & no         \\
 
 \section{Related work}\label{s:relatedwork}
 
-Extractive compression shortens a sentence by removing tokens, typically for summarization \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}.\footnote{Some methods compress via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under hard length and lexical constraints.\footnote{\citet{Li2013DocumentSV} do not consider constrained compression.} Our work is motivated by search user interfaces (e.g.\ Figure \ref{f:qf}), which might use such restricted shortenings \cite{hearst2009search}.\footnote{Apache Lucene {\small (v7.7)} does not compress sentences to form snippets \cite{lucene}.} 
+Extractive compression shortens a sentence by removing tokens, typically for summarization \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}.\footnote{Some methods compress via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under hard length and lexical constraints.\footnote{\citet{Li2013DocumentSV} do not consider constrained compression.}.
 
 We compare our \textsc{vertex addition} approach to ILP-based compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget restrictions via additional optimization constraints. \textsc{ilp} methods shorten sentences using an integer linear programming objective, requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
 
@@ -181,6 +181,7 @@ Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 \textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
 \textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 1.062}&{\small 3.5}\\
 \textbf{\textsc{vertex addition}}&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
+\textbf{\textsc{vertex addition}$_{NN}$}&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
 \end{tabular}
 \caption{Validation results for constrained compression. All differences are significant {\small $(p < 10^{-2})$}. Latency is shown in milliseconds (ms.)}
 \label{t:results}
