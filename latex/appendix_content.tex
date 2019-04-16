@@ -3,7 +3,7 @@
 \section{Appendix}
 
 \subsection{Algorithm}
-We formally present the \textsc{vertex addition} compression algorithm, using notation defined in the paper. $\ell$ linearizes a vertex set, based on left-to-right position in $S$; $|P|$ indicates the number of tokens in the priority queue.
+We formally present the \textsc{vertex addition} compression algorithm, using notation defined in the paper. $\ell$ linearizes a vertex set, based on left-to-right position in $S$. $|P|$ indicates the number of tokens in the priority queue.
 
 \begin{algorithm}[]
 \SetKwInOut{Input}{input}
@@ -22,15 +22,15 @@ We formally present the \textsc{vertex addition} compression algorithm, using no
 
 In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement a method partially described in \citet{filippova2008dependency}.  There are inevitable discrepancies between our implementation and the methods described in these two prior papers.
 
-\begin{itemize}
+\begin{enumerate}
 \item{Where the original authors train on only 100,000 sentences, we use the full training set to enable are more fair comparison with \textsc{vertex addition} (which trains on the full training set.)}
 \item{We use \citet{gurobi} (v8) to solve the liner program. \citet{filippova2008dependency} report using LPsolve.\footnote{\url{http://
 sourceforge.net/projects/lpsolve}}}
-\item{We exclude a syntactic constraint based on the \rdep{sc} relation. UD does not include this relation.}
+\item{We implement with the common Universal Dependencies (UD, v1) framework \cite{Nivre2016UniversalDV}. Prior work \cite{filippova2008dependency} implements with older dependency formalisms \cite{briscoe-etal-2006-second,Marneffe2006GeneratingTD}.} 
 \item{In Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature described in the table. We do not implement features which are not explicitly described in the paper.}
-\item{\citet{filippova2013overcoming} augment edge labels in the dependency parse of $S$ as a preprocessing step. We reimplement this step by using edge types from the enhanced dependencies representation in CoreNLP \cite{Schuster2016EnhancedEU}. The augmented modifiers and augmented conjuncts from enhanced dependencies are very similar to the augmented edge labels from prior work, but enhanced dependencies are based on dependency types from the commonly-used Universal Dependencies (UD) v1 framework \cite{Nivre2016UniversalDV}.}
-\item{\citet{filippova2013overcoming} preprocess dependency parses by adding an edge between the root node and all verbs in a sentence.\footnote{This step ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence.} We found that replicating this transform literally (i.e. only adding edges from the original root to all tokens tagged as verbs) made it impossible for the ILP to recreate some of the gold compressions in the dataset. We suspect that this is because our part-of-speech tagger and the original part-of-speech tagger employed in \citet{filippova2013overcoming} sometimes return different part-of-speech tags. Our tree transform therefore adds an edge between the root node and \textit{all} tokens in a sentence. With this change, it is always possible for the ILP to return the gold compression.}
-\end{itemize}
+\item{\citet{filippova2013overcoming} augment edge labels in the dependency parse of $S$ as a preprocessing step. We reimplement this step using off-the-shelf augmented modifiers and augmented conjuncts available with the enhanced dependencies representation in CoreNLP \cite{Schuster2016EnhancedEU}.}
+\item{\citet{filippova2013overcoming} preprocess dependency parses by adding an edge between the root node and all verbs in a sentence.\footnote{This step ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence.} We found that replicating this transform literally (i.e. only adding edges from the original root to all tokens tagged as verbs) made it impossible for the ILP to recreate some gold compressions. We suspect that this is due to differences in output from part-of-speech taggers. We thus add an edge between the root node and \textit{all} tokens in a sentence, allowing the ILP to always return the gold compression.}
+\end{enumerate}
 
 Finally, we assess convergence of the ILP by examining the validation F1 score on the traditional sentence compression task after each pass through the training data. We observe that F1 increases for each of five passes through the training data, and then decreases slightly (drops by $10^{-3}$ points). We thus terminate training after five epochs. 
 
@@ -51,6 +51,10 @@ To measure latency, for each technique, we sample 100,000 sentences with replace
 
 \subsection{Query sampling}
 We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths (2) sample a proper or common noun in proportion to the real-world distribution over proper and improper nouns in queries, (3) add a noun or proper noun from the gold compression $C_g$ (based on step 2) to the set $\{Q\}$, if such a token exists (4) repeat steps 2 and 3 until $\{Q\}$ is the length specified in step 1. We exclude sentences in cases where the gold compression $C_g$ does not contain enough nouns to fill $\{Q\}$ to the desired length.
+
+\subsection{Neural network tuning and optimization}
+We tune hyperparameters for \textsc{vertex addition}$_{NN}$ via random search \cite{Bergstra2012RandomSF}. We optimize with \textsc{AdaGrade} \cite{duchi2011adaptive}
+ The hyperparameters are: the hidden state size of the LSTM, the learning rate, the weight decay 
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
