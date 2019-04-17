@@ -85,7 +85,7 @@ def do_sentence(sentence, no_compression, config, model, vno):
     assert f1 <= 1 and f1 >= 0
     compression = [o["word"] for ono, o in enumerate(sentence['tokens'])
                    if y_pred[ono] == 1]
-    compression = " ".join(compression)# SLOR implementation trained on stripped punct b/c models dont include punct b.c not in training data 
+    compression = " ".join(compression)
 
     slor_score = slor(sequence=compression,
                       lm=LANGUAGE_MODEL,
