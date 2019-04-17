@@ -4,6 +4,8 @@ Using this file requires version 1 of the python library fabric.
 
 python3
 
+# source activate allennlp on hobbes
+
 '''
 from __future__ import with_statement
 from fabric import Connection
