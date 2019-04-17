@@ -88,10 +88,14 @@ def do_sentence(sentence, no_compression, config, model, vno):
     compression = " ".join(compression)# SLOR implementation trained on stripped punct b/c models dont include punct b.c not in training data 
 
     slor_score = slor(sequence=compression,
-                     lm=LANGUAGE_MODEL,
-                     unigram_log_probs_=UNIGRAMS)
+                      lm=LANGUAGE_MODEL,
+                      unigram_log_probs_=UNIGRAMS)
+
+    len_sentence = len(" ".join([_["word"] for _ in sentence['tokens']]))
+    len_compression = len(compression)
 
     return {'f1': f1,
+            "cr": len_compression/len_sentence,
             "slor": slor_score,
             "y_pred": y_pred,
             "y_true": y_true}
