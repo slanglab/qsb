@@ -135,7 +135,7 @@ By sampling queries and defining budgets in this manner, we create {199,152} tra
 
 We compare our system to a baseline, \textsc{ilp} method, presented in \citet{filippova2013overcoming}. This approach represents each edge in a syntax tree with a vector of real-valued features, then learns feature weights\footnote{Another ILP sets weights using a neural network \citet{Wang2017CanSH}, achieving similar in-domain performance.} using a structured perceptron trained on a corpus of $(S,C_g)$ pairs.  Learned weights are used to compute a global compression objective, subject to structural constraints which ensure $C$ is a valid tree. This baseline can easily perform constrained compression: at test time, we add optimization constraints specifying that $C$ must include $Q$, and not exceed length $b$.
 
-To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of \ilptest on the unconstrained compression task, lower than the result {\small (F1 = 84.3)} reported by the original authors. There are some important differences between our reimplementation and the method reported in \citet{filippova2013overcoming}, largely resulting from differences in syntactic formalisms. We describe these differences in detail in the appendix. Note that our additive method requires $Q$ and $b$, so we can only compare it to the ILP on the \textit{constrained} (rather than traditional, unconstrained) compression task.
+To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of \ilptest on the unconstrained compression task, lower than the result {\small (F1 = 84.3)} reported by the original authors. There are some important differences between our reimplementation and original approach (described in detail in the appendix). \textsc{vertex addition} requires $Q$ and $b$, so we can only compare it to the ILP on the \textit{constrained} (rather than traditional, unconstrained) compression task.
 
 \subsection{Implementation: \textsc{vertex addition}}\label{s:transition}
 
@@ -189,7 +189,7 @@ Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 
 \section{Conclusion}
 
-Both novel and traditional search interfaces would benefit from low-latency, query-focused and length-constrained compression. We introduce a new \textsc{vertex addition} technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 and readability scores. 
+Low-latency, query-focused compression is important for search user interfaces. We introduce a new \textsc{vertex addition} technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 scores. 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
