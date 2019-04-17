@@ -7,7 +7,6 @@ import numpy as np
 import json
 
 
-
 class SamplingParameters(object):
     '''Configuration object for bootstrap sampling'''
     def __init__(self, b, f, model_one_data, model_two_data):
@@ -47,7 +46,7 @@ def run_sample(params):
 
 def run_b_samples(params):
     samples = [run_sample(params) for _ in tqdm(range(params.b))]
-    pval = np.mean([_ > params.delta_x * 2 for _ in samples])
+    pval = np.mean([int(_ > (params.delta_x * 2)) for _ in samples])
     return pval, samples
 
 
@@ -57,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('-file1', type=str, default="bottom_up_clean/ilp_results.jsonl")
     parser.add_argument('-file2', type=str, default='bottom_up_clean/additive_results.jsonl')
     parser.add_argument('-metric', type=str, default='f1')
+    parser.add_argument('-b', type=int, default=10000)
 
     args = parser.parse_args()
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     params = SamplingParameters(model_one_data=bigger_dataset,
                                 model_two_data=smaller_dataset,
                                 f=np.mean,
-                                b=10000)
+                                b=args.b)
 
     pv, samples = run_b_samples(params)
 
