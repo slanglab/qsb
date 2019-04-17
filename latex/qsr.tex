@@ -120,7 +120,7 @@ During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then,
 
 \section{Evaluation}\label{s:autoeval}
 
-We observe the latency, readability and token-level F1 score of \textsc{vertex addition}, using a standard dataset (\S\ref{s:constrained}). We compare our method to an \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. All methods have similar compression ratios (see appendix), a well-known requirement for evaluation \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and slightly lower readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We observe the latency, readability and token-level F1 score of \textsc{vertex addition}, using a standard dataset (\S\ref{s:constrained}). We compare our method to an \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. All methods have similar compression ratios (see appendix), a well-known requirement for evaluation \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and slightly lower readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of differences between \textsc{vertex addition} and the \textsc{ilp} with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < .01)$}. 
 
 \subsection{Constrained compression experiment}\label{s:constrained}
 
@@ -168,7 +168,6 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \textsc{vertex addition} has lower theoretical complexity than the \textsc{ilp} baseline. We test corresponding latency gains by measuring the speed of each compression method, in milliseconds per sentence. \textsc{vertex addition} is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Added speedups might be possible by reimplementing our Python 3 code in a more performant language such as C. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU; this method is too slow for practical use in settings where GPUs are not available.
 
-In search applications, gains from \textsc{vertex addition} are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,heerschei,Liu2014TheEO}. 
  %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
 
 \begin{table}[]
@@ -181,13 +180,16 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \textsc{vertex addition} & \small 0.881 & {\small 0.745}& \small 5.2 \\
 \textsc{vertex addition}$_{NN}$& {\small 0.884}& {\small 0.731}& {\small 480.9} \\
 \end{tabular}
-\caption{Test results for constrained compression. $^*$Latency is shown in milliseconds (ms.) per sentence. \textsc{vertex addition} achieves higher F1 with \speedup lower latency than the \textsc{ilp}. \textsc{vertex addition}$_{NN}$ achieves highest F1, but runs slowly on a CPU. All differences are significant {\tiny $(p < 10^{-2})$}.}
+\caption{Test results for constrained compression. $^*$Latency is shown in milliseconds (ms.) per sentence. \textsc{vertex addition} achieves higher F1 than the \textsc{ilp} with \speedup lower latency; all differences between the two methods are significant {\tiny $(p < .01)$}. The neural method {\textsc{vertex addition}$_{NN}$} achieves highest F1, but runs slowly on a CPU.}
 \label{t:results}
 \end{table}
 
 \section{Conclusion}
 
-Low-latency, query-focused compression is important for search user interfaces. We introduce a new \textsc{vertex addition} technique for such settings, which is \speedup faster than an ILP baseline while achieving higher F1 scores. 
+Both novel and traditional search user interfaces would benefit from low-latency, query-focused  compression. We introduce a new \textsc{vertex addition} technique for such settings, which is \speedup faster than an \textsc{ilp} baseline while achieving higher F1 scores. 
+
+In search applications, the latency gains from \textsc{vertex addition} are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. Fast, query-focused compression better enables search interfaces to generate query-focused snippets at the ``pace of human thought'' \cite{heerschei}.
+
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
