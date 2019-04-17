@@ -23,6 +23,7 @@ args = parser.parse_args()
 if args.nn:
     args.skip_training = True
 
+
 def do_training(training_paths, validation_paths, only_locals = False):
     clf, vectorizer, validationPreds = train_clf(training_paths=training_paths,
                                                  validation_paths=validation_paths,
@@ -42,6 +43,7 @@ def do_training(training_paths, validation_paths, only_locals = False):
         pickle.dump(vectorizer, of)
 
     return clf, vectorizer
+
 
 def get_scores():
     if socket.gethostname() == "hobbes":
@@ -90,11 +92,11 @@ if __name__ == "__main__":
         paths = json.loads(paths)
         sentence = paths["sentence"]
         if args.random is True:
-            decider=make_decision_random
+            decider = make_decision_random
         elif args.nn is True:
-            decider=make_decision_nn
+            decider = make_decision_nn
         else:
-            decider=make_decision_lr
+            decider = make_decision_lr
 
         predicted = runtime_path(sentence,
                                  frontier_selector=pick_l2r_connected,
@@ -124,6 +126,7 @@ if __name__ == "__main__":
         results = [tot/totalVal, np.mean(slors), np.std(slors), name]
         writer.writerow(results)
 
-    with open("bottom_up_clean/additive_results.jsonl", "w") as of:
+    # this is for significance testing
+    with open("bottom_up_clean/" + name + "_results.jsonl", "w") as of:
         for i in out:
             of.write(json.dumps(i) + "\n")
