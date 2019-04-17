@@ -17,7 +17,7 @@ def get_unigram_probs():
 def slor(sequence, lm, unigram_log_probs_):
     # SLOR function from Jey Han Lau, Alexander Clark, and Shalom Lappin
 
-
+    sequence = sequence.lower()
     words = sequence.lower().split(" ")
     p_u = sum(unigram_log_probs_[u] for u in words if u in unigram_log_probs_.keys())
     p_u += sum(unigram_log_probs_['<unk>'] for u in words if u not in unigram_log_probs_.keys())
@@ -50,4 +50,4 @@ if __name__ == "__main__":
     print(slor("I am a student", lm, up))
     
     print("[*] slor: student I am")
-    print(slor("student I am", lm, up))
+    print(slor("student i am", lm, up))
