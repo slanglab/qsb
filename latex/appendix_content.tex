@@ -32,7 +32,7 @@ sourceforge.net/projects/lpsolve}}}
 \item{\citet{filippova2013overcoming} preprocess dependency parses by adding an edge between the root node and all verbs in a sentence.\footnote{This step ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence.} We found that replicating this transform literally (i.e. only adding edges from the original root to all tokens tagged as verbs) made it impossible for the ILP to recreate some gold compressions. (We suspect that this is due to differences in output from part-of-speech taggers.) We thus add an edge between the root node and \textit{all} tokens in a sentence during preprocessing, allowing the ILP to always return the gold compression.}
 \end{enumerate}
 
-We assess convergence of the ILP by examining the validation F1 score on the traditional sentence compression task after each pass through the training data. We stop training after five epochs, when F1 score does not increase. 
+We assess convergence of the ILP by examining validation F1 score on the traditional sentence compression task. We terminate training after six epochs, when F1 score stabilizes (i.e. changes by less than $10^{-3}$ points).
 
 \subsection{Implementation of SLOR}
 
@@ -47,7 +47,7 @@ where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of thi
 We use a 3-gram language model trained on the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}.
 
 \subsection{Latency evaluation}
-To measure latency, for each technique, we sample 100,000 sentences with replacement from the test test. We observe the mean time per sentence using Python's built in \textit{timeit} module. Code for extracting edge features is shared across both methods, to ensure that each technique incurs very similar latency penalties for edge feature extraction. We use an Intel Xeon processor with a clock rate of 2.80GHz.
+To measure latency, for each technique, we sample 100,000 sentences with replacement from the test test. We observe the mean time per sentence using Python's built in \textit{timeit} module. Code for extracting edge features is shared across both methods, to ensure that each technique incurs very similar latency penalties for edge feature extraction. We use an Intel Xeon processor with a clock rate of 2.80GHz. 
 
 \subsection{Query sampling}
 We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths (2) sample a proper or common noun in proportion to the real-world distribution over proper and improper nouns in queries, (3) add a noun or proper noun from the gold compression $C_g$ (based on step 2) to the set $\{Q\}$, if such a token exists (4) repeat steps 2 and 3 until $\{Q\}$ is the length specified in step 1. We exclude sentences in cases where the gold compression $C_g$ does not contain enough nouns to fill $\{Q\}$ to the desired length.
