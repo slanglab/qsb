@@ -9,7 +9,7 @@ import csv
 import socket
 
 from sklearn.feature_extraction import DictVectorizer
-from bottom_up_clean.all import make_decision_lr, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc, get_labels_and_features
+from bottom_up_clean.all import make_decision_lr, make_decision_nn, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc, get_labels_and_features
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
@@ -99,6 +99,19 @@ def test_additive():
                  decider=decider)
 
 
+def test_additive_nn():
+    decider = make_decision_nn
+    marginal = None
+    sentence = random.sample(S, k=1)[0]
+
+    runtime_path(sentence,
+                 frontier_selector=pick_l2r_connected,
+                 clf=clf,
+                 vectorizer=vectorizer,
+                 marginal=marginal,
+                 decider=decider)
+
+
 def test_additive_at_random():
     decider = make_decision_random
     marginal = .3
@@ -131,9 +144,14 @@ if __name__ == '__main__':
         writer.writerow([mean, var, "test_preproc"])
 
         ## Full feature
-        mean,var, all_= get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        mean, var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "make_decision_lr"])
         write_timing_results(all_, "bottom_up_clean/timing/additive_full.jsonl")
+
+        # neural network
+        mean, var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive_nn")
+        writer.writerow([mean, var, "make_decision_nn"])
+        write_timing_results(all_, "bottom_up_clean/timing/additive_nn.jsonl")
 
         ### Only local vectorizer and classifier. Note reimport clf and vectorizer to only local version
         clf, vectorizer = get_clf_and_vectorizer(only_locals=True)
