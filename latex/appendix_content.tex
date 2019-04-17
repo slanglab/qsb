@@ -53,17 +53,18 @@ To measure latency, for each technique, we sample 100,000 sentences with replace
 We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths (2) sample a proper or common noun in proportion to the real-world distribution over proper and improper nouns in queries, (3) add a noun or proper noun from the gold compression $C_g$ (based on step 2) to the set $\{Q\}$, if such a token exists (4) repeat steps 2 and 3 until $\{Q\}$ is the length specified in step 1. We exclude sentences in cases where the gold compression $C_g$ does not contain enough nouns to fill $\{Q\}$ to the desired length.
 
 \subsection{Neural network tuning and optimization}
-We tune hyperparameters for \textsc{vertex addition}$_{NN}$ via random search \cite{Bergstra2012RandomSF}. We select parameters which optimize for vertex-level accuracy on oracle decisions for the validation set. The hyperparameters are: the hidden state size of the LSTM, the learning rate, the dimensionality of embeddings and the weight decay parameter. During training, we minimize Cross-Entropy loss with \textsc{AdaGrad} \cite{duchi2011adaptive} for 10 epochs.
+We tune hyperparameters for \textsc{vertex addition}$_{NN}$ via random search \cite{Bergstra2012RandomSF}. We select parameters which optimize for vertex-level accuracy on oracle decisions for the validation set. The hyperparameters are: the learning rate, the dimensionality of embeddings, the weight decay parameter, the hidden state size of the LSTM and the dropout . During training, we minimize Cross-Entropy loss with \textsc{AdaGrad} \cite{duchi2011adaptive} for 10 epochs.
 
 \begin{table}[htb!]
 \centering
 \begin{tabular}{@{}ll@{}}
 \toprule
-Learning rate  & A \\ 
-Embedding dim. &  A \\
-Weight decay   &  A\\
-Hidden dim.    &  A \\
+Learning rate  & 4.212 $\times 10^{-2} \\ 
+Embedding dim. &  813  \\
+Weight decay   & 6.677 $ \times 10^{-6}$ \\
+Hidden dim.    &  141 \\
 \end{tabular}
+\caption{Hyperparamters for \textsc{vertex addition}$_{NN}$}
 \end{table}
 
 \bibliography{abe}
