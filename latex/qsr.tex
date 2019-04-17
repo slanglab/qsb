@@ -59,7 +59,7 @@
 \maketitle
 
 \begin{abstract}
-Search applications often display shortened sentences which must contain certain query terms and must fit within the space constraints of a user interface. This work introduces a new transition-based sentence compression technique developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a forest in the dependency parse of a sentence. This approach achieves a \speedup speed up over baseline ILP compression techniques, and better reconstructs gold shortenings under constraints. Such latency gains permit constrained compression of multiple sentences, without unreasonable lag.
+Search applications often display shortened sentences which must contain certain query terms and must fit within the space constraints of a user interface. This work introduces a new transition-based sentence compression technique developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a forest in the dependency parse of a sentence. This approach achieves a \speedup speed up over baseline ILP compression techniques, and better reconstructs gold shortenings under constraints. Such efficiency gains permit constrained compression of multiple sentences, without unreasonable lag.
 \end{abstract}
 
 
@@ -67,7 +67,7 @@ Search applications often display shortened sentences which must contain certain
 
 Traditional study of extractive sentence compression seeks to create short, readable, single-sentence summaries which retain the most ``important'' information from source sentences. But search applications often require compressions which must include a user's query terms and must not exceed some maximum length, permitted by screen space.  Figure \ref{f:qf} shows an example.
 
-This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, a source sentence $S$ is shortened to a compression $C$ which (1) must include all tokens in a set of query terms $Q$ and (2) must be no longer than a maximum character length, $b \in \mathbb{Z}^{+}$. Formally, constrained compression maps $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$. We describe this task as query-focused compression because $Q$ places a hard requirement on words from $S$ which must be included in $C$.
+This study examines the English-language compression problem with such length and lexical requirements. In our constrained compression setting, a source sentence $S$ is shortened to a compression $C$ which (1) must include all tokens in a set of query terms $Q$ and (2) must be no longer than a maximum budgeted character length, $b \in \mathbb{Z}^{+}$. Formally, constrained compression maps $(S,Q,b) \rightarrow C$, such that $C$ respects $Q$ and $b$. We describe this task as query-focused compression because $Q$ places a hard requirement on words from $S$ which must be included in $C$.
 
 \begin{figure}[htb!]
 \includegraphics[width=8.5cm]{qf.pdf}
@@ -75,9 +75,9 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing compression techniques are poorly suited to this task. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency. These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search,falke2017graphdocexplore}, where length, lexical and latency requirements are paramount.
+Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount.
 
-We thus present a new stateful method for query-focused compression. Our approach is theoretically and empirically faster than ILP-based techniques, and achieves higher F1 scores.
+We thus present a new stateful method for query-focused compression. \textbf{Our approach is theoretically and empirically faster than ILP-based techniques, and achieves higher F1 scores.}
 
 
 \begin{table}[htb!]
@@ -93,9 +93,9 @@ LSTM tagger & linear              & no         \\
 
 \section{Related work}\label{s:relatedwork}
 
-Extractive compression shortens a sentence by removing tokens, typically for summarization \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}.\footnote{Some methods compress via generation instead of deletion \cite{rush2015neural,mallinson18}. Our interest in the extractive setting follows from a motivation to create interpretable,  trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under hard length and lexical constraints.\footnote{\citet{Li2013DocumentSV} do not consider constrained compression.}
+Extractive compression shortens a sentence by removing tokens, typically for summarization \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}.\footnote{Some methods compress via generation instead of deletion \cite{rush2015neural,mallinson18}. Our extractive method is intended for interpretable, trustworthy, and practical search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under hard length and lexical constraints.
 
-We compare our \textsc{vertex addition} approach to ILP-based compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget restrictions via additional optimization constraints. \textsc{ilp} methods shorten sentences using an integer linear programming objective, requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global}, and exponential in $|E|$ when selecting edges \cite{filippova2013overcoming}.} 
+We compare our \textsc{vertex addition} approach to ILP-based compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, which can easily accommodate lexical and budget restrictions via additional optimization constraints. \textsc{ilp} methods shorten sentences using an integer linear programming objective, requiring worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting \cite{clarke2008global} tokens and exponential in $|E|$ when selecting edges \cite{filippova2015sentence}.} 
 
 Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation by applying and modifying constrained generation techniques \cite{D16-1140,N18-1119,D18-1443}.
 
@@ -108,7 +108,7 @@ We present a new transition-based method for shortening sentences under lexical 
 \textsc{vertex addition} builds a compression by maintaining a state
 $(C_i,P_i)$ where $C_i \subseteq S$ is a set of added candidates, $P_i  \subseteq S$ is a priority queue of vertexes, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P_0)$ from the head of $P_0$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P_i$ get higher priority than non-neighbors; we break ties in left-to-right order, by sentence position.) If we accept $v_i$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P_i$ is empty or $C_i$ is $b$ characters long.\footnote{We linearize $C$ by left-to-right vertex position in $S$, which is common for English-language compression.} The appendix includes a formal algorithm. 
+During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P_0)$ from the head of $P_0$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P_i$ get higher priority than non-neighbors; we break ties in left-to-right order, by sentence position.) If we accept $v_i$, then $C_i \gets C_i \cup v_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P_i$ is empty or $C_i$ is $b$ characters long.\footnote{We linearize $C$ by left-to-right vertex position in $S$, common for compression in English \cite{filippova2013overcoming}.} The appendix includes a formal algorithm. 
 
 \textsc{vertex addition} is linear in the token length of $S$ because we pop and evaluate some vertex from $P_i$ at each timestep, after $P_0  \gets S \setminus Q$. Additionally, because (1) we never accept $v_i$ if the length of $C_i \cup v_i$ is more than $b$, and (2) we set $C_0 \gets Q$, our method respects $Q$ and $b$.
 
@@ -180,7 +180,7 @@ Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 \textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.678}&{\small 0.5}\\
 \textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
 \textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 1.062}&{\small 3.5}\\
-\textbf{\textsc{vertex addition}}&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
+\textsc{vertex addition} & \small 0.881 &\textbf{\small 1.149}&\textbf{\small 5.2}\\
 \textsc{vertex addition}$_{NN}$&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
 \end{tabular}
 \caption{Validation results for constrained compression. All differences are significant {\small $(p < 10^{-2})$}. Latency is shown in milliseconds (ms.)}
