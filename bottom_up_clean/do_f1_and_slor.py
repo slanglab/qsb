@@ -109,11 +109,16 @@ if __name__ == "__main__":
 
         slor_score, f1_score = get_scores(compression)
 
+        len_sentence = len(" ".join([_["word"] for _ in sentence["tokens"]]))
+
+        len_compression = len(" ".join(compression))
+
         slors.append(slor_score)
 
         tot += f1_score
 
-        out.append({"f1": f1_score, "slor": slor_score, "method": "additive"})
+        out.append({"f1": f1_score, "cr": len_compression/len_sentence,
+                    "slor": slor_score, "method": "additive"})
 
     totalVal = sum(1 for i in open(args.validation_paths, "r"))
 

@@ -77,7 +77,7 @@ This study examines the English-language compression problem with such length an
 
 Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount.
 
-We thus present a new stateful method for query-focused compression. \textbf{Our approach is theoretically and empirically faster than ILP-based techniques, and achieves higher F1 scores.}
+We thus present a new stateful method for query-focused compression. \textbf{Our approach is theoretically and empirically faster than ILP-based techniques, and achieves a higher F1 score.}
 
 
 \begin{table}[htb!]
@@ -120,7 +120,7 @@ During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then,
 
 \section{Evaluation}\label{s:autoeval}
 
-We observe the latency, readability and token-level F1 score (the standard automatic metric in this setting)  of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a leading, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. Each method shortens to the same compression rate, following best evaluation practices \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We observe the latency, readability and token-level F1 score (the standard automatic metric in this setting)  of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a standard, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. All methods use the same compression rate (see \label{s:constrained}), following best evaluation practices \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and slightly lower readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
 \subsection{Constrained compression experiment}\label{s:constrained}
 
@@ -178,12 +178,12 @@ In search applications, gains from \textsc{vertex addition} are non-trivial: rea
 \centering
 Approach & F1 & SLOR &  ms. / sentence  \\ \hline
 \textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.678}&{\small 0.5}\\
-\textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
 \textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 1.062}&{\small 3.5}\\
-\textsc{vertex addition} & \small 0.881 &\textbf{\small 1.149}&\textbf{\small 5.2}\\
+\textsc{vertex addition} & \small 0.881 & {\small 1.149}&\textbf{\small 5.2}\\
+\textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
 \textsc{vertex addition}$_{NN}$&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
 \end{tabular}
-\caption{Validation results for constrained compression. All differences are significant {\small $(p < 10^{-2})$}. Latency is shown in milliseconds (ms.)}
+\caption{Test results for constrained compression, arranged fastest to slowest. Latency is shown in milliseconds (ms.) All differences are significant {\tiny $(p < 10^{-2})$}.}
 \label{t:results}
 \end{table}
 
