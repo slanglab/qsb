@@ -18,6 +18,21 @@ We formally present the \textsc{vertex addition} compression algorithm, using no
  \caption{\textsc{vertex addition}}
 \end{algorithm}\label{a:algo}
 
+\subsection{Neural network tuning and optimization}
+
+We learn network weights for \textsc{vertex addition}$_{NN}$ by minimizing cross-entropy loss with \textsc{AdaGrad} \cite{duchi2011adaptive}. The hyperparameters of the network are: the learning rate, the dimensionality of embeddings, the weight decay parameter, and the hidden state size of the LSTM. We tune hyperparameters via random search \cite{Bergstra2012RandomSF}, selecting parameters which achieve highest accuracy in predicting oracle decisions for the validation set. We train for 10 epochs, and use parameters from the best-performing ecoch (by validation accuracy) at test time.
+
+\begin{table}[htb!]
+\centering
+\begin{tabular}{@{}ll@{}}
+Learning rate  & 4.212 $\times 10^{-2} \\ 
+Embedding dim. &  813  \\
+Weight decay   & 6.677 $ \times 10^{-6}$ \\
+Hidden dim.    &  141 \\
+\end{tabular}
+\caption{Hyperparameters for \textsc{vertex addition}$_{NN}$}\label{t:params}
+\end{table}
+
 \subsection{Reimplementation of \citet{filippova2013overcoming}}
 
 In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement a method partially described in \citet{filippova2008dependency}.  There are inevitable discrepancies between our implementation and the methods described in these two prior papers.
@@ -53,20 +68,6 @@ To measure latency, for each technique, we sample 100,000 sentences with replace
 
 \subsection{Query sampling}
 We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths (2) sample a proper or common noun $n$ from $C_g$ in proportion to the distribution over proper and common nouns in real-world queries (3) add $n$ to the query set $Q$ (4) repeat steps 2 and 3 until the cardinality of $Q$ is the query token length specified in step 1. We exclude sentences in cases where the gold compression $C_g$ does not contain enough nouns to fill $\{Q\}$ to the desired token length.
-
-\subsection{Neural network tuning and optimization}
-We tune hyperparameters for \textsc{vertex addition}$_{NN}$ via random search \cite{Bergstra2012RandomSF}. The hyperparameters are: the learning rate, the dimensionality of embeddings, the weight decay parameter, and the hidden state size of the LSTM. We select parameters (Table \ref{t:params}) to optimize vertex-level accuracy on oracle decisions for the validation set. During training, we minimize cross-entropy loss with \textsc{AdaGrad} \cite{duchi2011adaptive} for 10 epochs. We use parameters from the best-performing ecoch (by validation accuracy) at test time.
-
-\begin{table}[htb!]
-\centering
-\begin{tabular}{@{}ll@{}}
-Learning rate  & 4.212 $\times 10^{-2} \\ 
-Embedding dim. &  813  \\
-Weight decay   & 6.677 $ \times 10^{-6}$ \\
-Hidden dim.    &  141 \\
-\end{tabular}
-\caption{Hyperparameters for \textsc{vertex addition}$_{NN}$}\label{t:params}
-\end{table}
 
 
 \subsection{Compression ratios}

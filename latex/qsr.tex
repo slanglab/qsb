@@ -120,7 +120,7 @@ During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then,
 
 \section{Evaluation}\label{s:autoeval}
 
-We observe the latency, readability and token-level F1 score (the standard automatic metric in this setting)  of our \textsc{vertex addition} method in a constrained compression experiment, using a standard dataset (\S\ref{s:constrained}). We compare to a standard, supervised \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. All methods use the same compression rate (see \label{s:constrained}), following best evaluation practices \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and slightly lower readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
+We observe the latency, readability and token-level F1 score of \textsc{vertex addition}, using a standard dataset (\S\ref{s:constrained}). We compare our method to an \textsc{ilp} baseline (\S\ref{s:relatedwork}) because ILP methods are the only known technique for constrained compression. All methods have similar compression ratios (see appendix), a well-known requirement for evaluation \cite{napoles2011evaluating}. \textsc{vertex addition} achieves higher F1 and slightly lower readability scores (Table \ref{t:results}), with \speedup lower latency  than the \textsc{ilp}. We evaluate the significance of each difference with bootstrap sampling \cite{D12-1091}. All differences are significant {\small $(p < 10^{-2})$}. 
 
 \subsection{Constrained compression experiment}\label{s:constrained}
 
@@ -135,7 +135,7 @@ By sampling queries and defining budgets in this manner, we create {199,152} tra
 
 We compare our system to a baseline, \textsc{ilp} method, presented in \citet{filippova2013overcoming}. This approach represents each edge in a syntax tree with a vector of real-valued features, then learns feature weights\footnote{Another ILP sets weights using a neural network \citet{Wang2017CanSH}, achieving similar in-domain performance.} using a structured perceptron trained on a corpus of $(S,C_g)$ pairs.  Learned weights are used to compute a global compression objective, subject to structural constraints which ensure $C$ is a valid tree. This baseline can easily perform constrained compression: at test time, we add optimization constraints specifying that $C$ must include $Q$, and not exceed length $b$.
 
-To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of \ilptest on the unconstrained compression task, lower than the result {\small (F1 = 84.3)} reported by the original authors. There are some important differences between our reimplementation and original approach (described in detail in the appendix). \textsc{vertex addition} requires $Q$ and $b$, so we can only compare it to the ILP on the \textit{constrained} (rather than traditional, unconstrained) compression task.
+To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of \ilptest on the unconstrained compression task, lower than the result {\small (F1 = 84.3)} reported by the original authors. There are some important differences between our reimplementation and original approach (described in detail in the appendix). Note that \textsc{vertex addition} requires $Q$ and $b$, so we can only compare it to the ILP on the \textit{constrained} (rather than traditional, unconstrained) compression task.
 
 \subsection{Implementation: \textsc{vertex addition}}\label{s:transition}
 
@@ -162,9 +162,7 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 
 Researchers often use human judgements of \textit{importance} and \textit{readability} to evaluate compression techniques \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so human importance evaluations are inappropriate.
 
-We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. SLOR normalizes the probability of a token sequence assigned from a language model, by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.
-%\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} 
-SLOR is known to correlate with human readability judgements \cite{kannConl}.  
+We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. SLOR is known to correlate with human readability judgements \cite{kannConl}. The appendix details our implementation of SLOR.
 
 \subsection{Latency evaluation}\label{s:costs}
 
@@ -176,14 +174,14 @@ In search applications, gains from \textsc{vertex addition} are non-trivial: rea
 \begin{table}[]
 \begin{tabular}{lccc}
 \centering
-Approach & F1 & SLOR &  ms. / sentence  \\ \hline
-\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.678}&{\small 0.5}\\
-\textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 1.062}&{\small 3.5}\\
-\textsc{vertex addition} & \small 0.881 & {\small 1.149}&\textbf{\small 5.2}\\
-\textsc{ilp}&{\small 0.864}&{\small 1.141}&{\small 21.9}\\
-\textsc{vertex addition}$_{NN}$&\textbf{\small 0.884}&\textbf{\small 1.149}&\textbf{\small 5.2}\\
+Approach & F1 & SLOR & $^{*}$Latency \\ \hline
+\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.371}& {\small 0.5}\\
+\textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 0.665}&{\small 3.5}\\
+\textsc{ilp}&{\small 0.856}& {\small 0.755}&{\small 21.9}\\
+\textsc{vertex addition} & \small 0.881 & {\small 0.745}& \small 5.2 \\
+\textsc{vertex addition}$_{NN}$& {\small 0.884}& {\small 0.731}& {\small 480.9} \\
 \end{tabular}
-\caption{Test results for constrained compression, arranged fastest to slowest. Latency is shown in milliseconds (ms.) All differences are significant {\tiny $(p < 10^{-2})$}.}
+\caption{Test results for constrained compression. $^*$Latency is shown in milliseconds (ms.) per sentence. \textsc{vertex addition} achieves higher F1 with \speedup lower latency than the \textsc{ilp}. \textsc{vertex addition}$_{NN}$ achieves highest F1, but runs slowly on a CPU. All differences are significant {\tiny $(p < 10^{-2})$}.}
 \label{t:results}
 \end{table}
 
