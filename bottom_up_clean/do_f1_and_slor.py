@@ -48,7 +48,7 @@ def do_training(training_paths, validation_paths, only_locals = False):
 def get_scores(compression):
     if socket.gethostname() == "hobbes":
         slor_score = slor(" ".join(compression), lm, unigram_log_probs_)
-        print(slor_score, " ".join(compression))
+        #print(slor_score, " ".join(compression))
     else:
         slor_score = 0
     f1_score = get_f1(predicted, sentence)
