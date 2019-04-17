@@ -44,7 +44,7 @@ We use the SLOR function to measure the readability of the shortened sentences p
 
 where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of this sequence of words and $P_m(\xi)$ is the probability of the sequence, assigned by a language model.  $|\xi|$ is the length (in tokens) of the sentence.
 
-We use a 3-gram language model trained on the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}.
+We use a 3-gram language model trained on the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}. Because compression often results in shortenings where the first token is not capitalized (e.g.\ a compression which begins with the third token in $S$) we ignore case when calculating language model probabilities.
 
 \subsection{Latency evaluation}
 To measure latency, for each technique, we sample 100,000 sentences with replacement from the test test. We observe the mean time per sentence using Python's built in \textit{timeit} module. Code for extracting edge features is shared across both methods, to ensure that each technique incurs very similar latency penalties for edge feature extraction. We use an Intel Xeon processor with a clock rate of 2.80GHz. 

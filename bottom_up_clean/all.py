@@ -20,7 +20,7 @@ from allennlp2.allennlpallennlpasalibraryexample.my_library.predictors import *
 
 import json
 
-archive_file = "models/225702707/model.tar.gz"
+archive_file = "models/134932574/model.tar.gz"
 archive = load_archive(archive_file=archive_file)
 predictor = Predictor.from_archive(archive, "paper-classifier") 
 

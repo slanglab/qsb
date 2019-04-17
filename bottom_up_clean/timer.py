@@ -149,7 +149,7 @@ if __name__ == '__main__':
         write_timing_results(all_, "bottom_up_clean/timing/additive_full.jsonl")
 
         # neural network
-        mean, var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive_nn")
+        mean, var, all_ = get_mean_var(f="test_additive_nn()", setup_="from __main__ import test_additive_nn")
         writer.writerow([mean, var, "make_decision_nn"])
         write_timing_results(all_, "bottom_up_clean/timing/additive_nn.jsonl")
 
