@@ -36,7 +36,9 @@ We assess convergence of the ILP by examining validation F1 score on the traditi
 
 \subsection{Implementation of SLOR}
 
-We use the SLOR function to measure the readability of the shortened sentences produced by each compression system. Following \cite{lau2015unsupervised}, we define the function as 
+We use the SLOR function to measure the readability of the shortened sentences produced by each compression system. SLOR normalizes the probability of a token sequence assigned from a language model by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} 
+
+Following \cite{lau2015unsupervised}, we define the function as 
 
 \begin{equation}
 \text{SLOR}=\frac{\text{log}P_m(\xi) - \text{log}P_u(\xi)}{|\xi|}
@@ -64,6 +66,25 @@ Weight decay   & 6.677 $ \times 10^{-6}$ \\
 Hidden dim.    &  141 \\
 \end{tabular}
 \caption{Hyperparameters for \textsc{vertex addition}$_{NN}$}\label{t:params}
+\end{table}
+
+
+\subsection{Compression ratios}
+
+When comparing sentence compression systems, it is important to ensure that all approaches use the same compression ratio \cite{napoles2011evaluating}. Following \citet{filippova2015sentence}, we define the compression ratio as the character length of the compression divided by the character length of the sentence. We present test set compression ratios for all methods in Table \ref{t:cr}. Because ratios are similar, our comparison is appropriate.
+
+\begin{table}[htb!]
+\centering
+\begin{tabular}{@{}l | l@{}}
+\textsc{random} & 0.404\\ 
+\textsc{ilp} &  0.407 \\
+\textsc{ablated} & 0.398 \\
+\textsc{vertex addition} &  0.404  \\
+\textsc{vertex addition}_{NN} &  0.405  \\ \midrule
+Train  & 0.383 \\
+Test   & 0.412 \\
+\end{tabular}
+\caption{Mean test time compression ratios (CR) for all techniques. We also show mean ratios for gold compressions across the train and test sets.}\label{t:cr}.
 \end{table}
 
 \bibliography{abe}
