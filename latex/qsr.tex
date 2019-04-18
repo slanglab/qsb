@@ -24,6 +24,7 @@
 
 \newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
 \newcommand{\speedup}[0]{4x~}
+\newcommand{\exact}[0]{4.2~}
 \newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
 \newcommand{\ilptest}[0]{0.76~}
 
@@ -77,7 +78,7 @@ This study examines the English-language compression problem with such length an
 
 Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount.
 
-We thus present a new stateful method for query-focused compression. \textbf{Our approach is theoretically and empirically faster than ILP-based techniques, and achieves a higher F1 score.}
+We thus present a new stateful method for query-focused compression. \textbf{Our approach is theoretically and empirically faster than ILP-based techniques, and more accurately reconstructs gold standard compressions.}
 
 
 \begin{table}[htb!]
@@ -140,9 +141,9 @@ To our knowledge, a public implementation of this method does not exist. We reim
 \subsection{Models: \textsc{vertex addition}}\label{s:transition}
 
 Vertex addition accepts or rejects some candidate vertex $v_i$ at each timestep $i$. 
-We learn such decisions $y_i \in \{0,1\}$ using a corpus of tuples $(S,Q,b,C_g)$ (\S\ref{s:constrained}). Given such a tuple, we can always execute an oracle compression path shortening $S$ to $C_g$ by initializing \textsc{vertex addition} and, at each timestep $i$: (A) choosing $v_i = h(P_i)$ and (B) adding $v_i$ to $C_i$ iff $v_i \in C_g$. We say that each $y_i=1$ if $v_i \in C_g$, and that $y_i=0$ if $v_i \notin C_g$. We use such oracle paths to train two models of inclusion decisions, ${p(y_i  = 1 | v_i, C_i, P_i, S)}$.
+We learn such decisions $y_i \in \{0,1\}$ using a corpus of tuples $(S,Q,b,C_g)$ (\S\ref{s:constrained}). Given such a tuple, we can always execute an oracle path shortening $S$ to $C_g$ by first initializing \textsc{vertex addition} and then, at each timestep: (1) choosing $v_i = h(P_i)$ and (2) adding $v_i$ to $C_i$ iff $v_i \in C_g$. We say that each $y_i=1$ if $v_i \in C_g$, and that $y_i=0$ if $v_i \notin C_g$. We use such oracle paths to train two models of inclusion decisions, ${p(y_i  = 1 | v_i, C_i, P_i, S)}$.
 
-The model {\textsc{vertex addition}$_{NN}$ broadly follows the \citet{D14-1082} approach to transition-based parsing: we predict $y_i$ using a LSTM classifier with a standard max-pooling architecture \cite{D17-1070}, and implement with a common neural framework \cite{Gardner2017AllenNLP}. Our classifier maintains four vocabulary embeddings matrixes, corresponding to the four disjoint subsets $C \cup \neg C \cup P \cup \{v_i\} = V$. Each LSTM input vector $x_t$ comes from the appropriate embedding for $v_t \in V$, depending on the state of the compression system at timestep $i$. The appendix details hyperparameter tuning and network optimization.
+The model {\textsc{vertex addition}$_{NN}$ broadly follows the \citet{D14-1082} approach to transition-based parsing: we predict $y_i$ using a LSTM classifier with a standard max-pooling architecture \cite{D17-1070}, implemented with a common neural framework \cite{Gardner2017AllenNLP}. Our classifier maintains four vocabulary embeddings matrixes, corresponding to the four disjoint subsets $C \cup \neg C \cup P \cup \{v_i\} = V$. Each LSTM input vector $x_t$ comes from the appropriate embedding for $v_t \in V$, depending on the state of the compression system at timestep $i$. The appendix details hyperparameter tuning and network optimization.
 
 The model \textsc{vertex addition}$_{LR}$ uses binary logistic regression,\footnote{We implement with Python 3 using scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. We tune the inverse regularization constant to $c=10$ via grid search over powers of ten, to optimize validation set F1.} with features that fall into 3 classes.
 
@@ -167,19 +168,17 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \textsc{vertex addition} has lower theoretical complexity than the \textsc{ilp} baseline. We test corresponding latency gains by measuring the speed of each compression method, in milliseconds per sentence. The appendix describes measurement details. \textsc{vertex addition}$_{LR}$ is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Added speedups might be possible by reimplementing our Python 3 code in a more performant language such as C. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU; this method is too slow for practical use in settings where GPUs are not available.
 
- %Unlike ILP-based methods (which rely on black-box solvers), our Python 3 implementation could also be sped up by reimplementing in faster languages like Java or C. 
-
 \begin{table}[]
 \begin{tabular}{lccc}
 \centering
 Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.371}& {\small 0.5}\\
 \textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 0.665}&{\small 3.5}\\
-\textsc{vertex addition}$_{NN}$& {\small 0.884}& {\small 0.731}& {\small waiting...} \\ \midrule 
+\textsc{vertex addition}$_{NN}$& {\small 0.884}& {\small 0.731}& {\small 98.4} \\ \midrule 
 \textsc{ilp}&{\small 0.856}& {\small 0.755}&{\small 21.9}\\
 \textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 5.2 \\
 \end{tabular}
-\caption{Test results for constrained compression. $^*$Latency is shown in milliseconds (ms.) per sentence. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp} with \speedup lower latency. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} achieves the highest F1, but runs slowly on a CPU.}
+\caption{Test results for constrained compression. $^*$Latency is shown in milliseconds (ms.) per sentence. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp}. The method is also \exact times faster. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} achieves the highest F1, but runs slowly on a CPU.}
 \label{t:results}
 \end{table}
 
