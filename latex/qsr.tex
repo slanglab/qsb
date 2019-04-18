@@ -78,7 +78,7 @@ This study examines the English-language compression problem with such length an
 
 Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount.
 
-We thus present a new stateful method for query-focused compression. \textbf{Our approach is theoretically and empirically faster than ILP-based techniques, and more accurately reconstructs gold standard compressions.}
+We thus present a new stateful method for query-focused compression. Our approach is theoretically and empirically faster than ILP-based techniques, and more accurately reconstructs gold standard compressions.
 
 
 \begin{table}[htb!]
