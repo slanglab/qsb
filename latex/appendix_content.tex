@@ -24,11 +24,11 @@ We learn network weights for \textsc{vertex addition}$_{NN}$ by minimizing cross
 
 \begin{table}[htb!]
 \centering
-\begin{tabular}{@{}ll@{}}
-Learning rate  & 4.212 $\times 10^{-2} \\ 
+\begin{tabular}{ll}
+Learning rate & 4.212 $\times 10^{-2}$ \\ 
 Embedding dim. &  813  \\
 Weight decay   & 6.677 $ \times 10^{-6}$ \\
-Hidden dim.    &  141 \\
+Hidden dim. & 141 \\
 \end{tabular}
 \caption{Hyperparameters for \textsc{vertex addition}$_{NN}$}\label{t:params}
 \end{table}
@@ -38,7 +38,7 @@ Hidden dim.    &  141 \\
 In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement a method partially described in \citet{filippova2008dependency}.  There are inevitable discrepancies between our implementation and the methods described in these two prior papers.
 
 \begin{enumerate}
-\item{Where the original authors train on only 100,000 sentences, we learn weights with the full training set to compare fairly with \textsc{vertex addition} (which trains on the full training set.)}
+\item{Where the original authors train on only 100,000 sentences, we learn weights with the full training set to compare fairly with \textsc{vertex addition} (each model trains on the full training set.)}
 \item{We use \citet{gurobi} (v8) to solve the liner program. \citet{filippova2008dependency} report using LPsolve.\footnote{\url{http://
 sourceforge.net/projects/lpsolve}}}
 \item{We implement with the common Universal Dependencies (UD, v1) framework \cite{Nivre2016UniversalDV}. Prior work \cite{filippova2008dependency} implements with older dependency formalisms \cite{briscoe-etal-2006-second,Marneffe2006GeneratingTD}.} 
@@ -64,7 +64,7 @@ where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of thi
 We use a 3-gram language model trained on the training set of the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}. Because compression often results in shortenings where the first token is not capitalized (e.g.\ a compression which begins with the third token in $S$) we ignore case when calculating language model probabilities.
 
 \subsection{Latency evaluation}
-To measure latency, for each technique, we sample 100,000 sentences with replacement from the test test. We observe the mean time per sentence using Python's built in \textit{timeit} module. Code for extracting edge features is shared across both methods, to ensure that each technique incurs identical latency penalties for edge feature extraction. We measure with an Intel Xeon processor with a clock rate of 2.80GHz. 
+To measure latency, for each technique, we sample 100,000 sentences with replacement from the test test. We observe the mean time per sentence using Python's built in \textit{timeit} module. We measure with an Intel Xeon processor with a clock rate of 2.80GHz. 
 
 \subsection{Query sampling}
 We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths (2) sample a proper or common noun $n$ from $C_g$ in proportion to the distribution over proper and common nouns in real-world queries (3) add $n$ to the query set $Q$ (4) repeat steps 2 and 3 until the cardinality of $Q$ is the query token length specified in step 1. We exclude sentences in cases where the gold compression $C_g$ does not contain enough nouns to fill $\{Q\}$ to the desired token length.
@@ -72,7 +72,7 @@ We sample queries for our synthetic constrained compression experiment to mimic 
 
 \subsection{Compression ratios}
 
-When comparing sentence compression systems, it is important to ensure that all approaches use the same compression ratio \cite{napoles2011evaluating}. Following \citet{filippova2015sentence}, we define the compression ratio as the character length of the compression divided by the character length of the sentence. We present test set compression ratios for all methods in Table \ref{t:cr}. Because ratios are similar, our comparison is appropriate.
+When comparing sentence compression systems, it is important to ensure that all approaches use the same rate of compression \cite{napoles2011evaluating}. Following \citet{filippova2015sentence}, we define the compression ratio as the character length of the compression divided by the character length of the sentence. We present test set compression ratios for all methods in Table \ref{t:cr}. Because ratios are similar, our comparison is appropriate.
 
 \begin{table}[htb!]
 \centering
@@ -80,12 +80,12 @@ When comparing sentence compression systems, it is important to ensure that all 
 \textsc{random} & 0.404\\ 
 \textsc{ilp} &  0.407 \\
 \textsc{ablated} & 0.398 \\
-\textsc{vertex addition} &  0.404  \\
-\textsc{vertex addition}_{NN} &  0.405  \\ \midrule
-Train  & 0.383 \\
-Test   & 0.412 \\
+\textsc{vertex addition}$_{LR}$ &  0.404  \\
+\textsc{vertex addition}$_{NN}$ &  0.405  \\ \midrule
+$C_g$ Train  & 0.383 \\
+$C_g$ Test   & 0.412 \\
 \end{tabular}
-\caption{Mean test time compression ratios (CR) for all techniques. We also show mean ratios for gold compressions across the train and test sets.}\label{t:cr}.
+\caption{Mean test time compression ratios (CR) for all techniques. We also show mean ratios for gold compressions $C_g$ across the train and test sets.}\label{t:cr}.
 \end{table}
 
 \bibliography{abe}

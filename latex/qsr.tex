@@ -76,7 +76,7 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount. We thus present a new stateful method for query-focused compression. 
+Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing interface lag. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount. We thus present a new stateful method for query-focused compression, and release supporting code. 
 
 Our approach is theoretically and empirically faster than ILP-based techniques, and more accurately reconstructs gold standard compressions.
 
@@ -168,7 +168,9 @@ We use the automated SLOR metric \cite{lau2015unsupervised} to check the readabi
 
 \subsection{Latency evaluation}\label{s:costs}
 
-\textsc{vertex addition} has lower theoretical complexity than the \textsc{ilp} baseline. We test corresponding latency gains by measuring the speed of each compression method, in milliseconds per sentence. The appendix describes measurement details. \textsc{vertex addition}$_{LR}$ is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Added speedups might be possible by reimplementing our Python 3 code in a more performant language such as C. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU. This method is impractical in search applications that do not use a GPU.
+\textsc{vertex addition} has lower theoretical complexity than the \textsc{ilp} baseline. We test corresponding latency gains by measuring the speed of each compression method, in milliseconds per sentence. The appendix describes measurement details. \textsc{vertex addition}$_{LR}$ is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Edge feature extraction code is shared across both methods. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU: this method is impractical in search applications without GPUs.
+
+%We might reimplement our Python 3 code in a more performant language for added gains. 
 
 \begin{table}[]
 \begin{tabular}{lccc}
@@ -195,7 +197,7 @@ In search applications, the latency gains from \textsc{vertex addition}$_{LR}$ a
 
 % ack => Katie, Javier, Nick Eubank, NLP reading group! 
 
-%\include{appendix_content}
+\include{appendix_content}
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
