@@ -31,13 +31,10 @@ python bottom_up_clean/ilp_wrapper.py -test_set_score -ilp_snapshot 5
 # run timing experiments
 python bottom_up_clean/timer.py -path_to_set_to_evaluate preproc/test.paths -N 100000 -ilp_snapshot 5
 
-# do significance tests on time
-python code/significance_testing.py -file1 bottom_up_clean/timing/random.jsonl -file2 bottom_up_clean/timing/ilp.jsonl -metric time
+# do significance tests
 python code/significance_testing.py -file1 bottom_up_clean/timing/additive_full.jsonl -file2 bottom_up_clean/timing/ilp.jsonl -metric time
-python code/significance_testing.py -file1 bottom_up_clean/timing/additive_full.jsonl -file2 bottom_up_clean/timing/ilp.jsonl -metric time
-python code/significance_testing.py -file1 bottom_up_clean/timing/additive_ablated.jsonl -file2 bottom_up_clean/timing/ilp.jsonl -metric time
+python code/significance_testing.py -file1 bottom_up_clean/make_decision_lr_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric slor
+python code/significance_testing.py -file1 bottom_up_clean/make_decision_lr_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric f1
 
-
-# do results on slor/f1
-python code/significance_testing.py -file1 bottom_up_clean/additive_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric slor
-python code/significance_testing.py -file1 bottom_up_clean/additive_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric f1 
+# compression rate results
+python bottom_up_clean/cr_results.py

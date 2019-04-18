@@ -16,7 +16,7 @@ def get_cr(i):
     return len(c)/len(s)
 
 test = np.mean([get_cr(json.loads(i)["sentence"]) for i in open("preproc/test.paths")])
-train = np.mean([get_cr(json.loads(i)["sentence"]) for i in open("preproc/train.paths")])
+train = np.mean([get_cr(json.loads(i)["sentence"]) for i in open("preproc/training.paths")])
 
 
 lr = np.mean([json.loads(i)["cr"] for i in open(lr)])
