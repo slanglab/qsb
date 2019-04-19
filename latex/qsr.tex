@@ -154,17 +154,17 @@ The model \textsc{vertex addition}$_{LR}$ uses binary logistic regression,\footn
 
 \textbf{Interaction features} are formed by crossing all stateful features with the type of the dependency edge governing $v_i$, as well as with indicators identifying if $u$ governs $v_i$, if $v_i$ governs $u$ or if there is no edge $(u,v_i)$ in the parse.
 
+\subsection{Metrics: F1, Latency and SLOR}\label{s:f1}
+We measure the token-level F1 score of each compression method against gold compressions in the test set. F1 is the standard automatic evaluation metric for extractive compression \cite{filippova2015sentence,Klerke2016ImprovingSC,Wang2017CanSH}. 
+
+In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated SLOR metric \cite{lau2015unsupervised}, which correlates with human readability judgements \cite{kannConl}. 
+
+Finally, we measure the latency of each compression method, in milliseconds per sentence. We observe that theoretical gains from \textsc{vertex addition} (Table \ref{s:relatedwork}) translate to real speedups: \textsc{vertex addition}$_{LR}$ is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Edge feature extraction code is shared across both methods. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPUs. The appendix describes additional details related to our measurement of latency and SLOR.
+
 \subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
 For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features (Table \ref{t:results}) to inform local vertex addition decisions raises the F1 score. The relatively strong performance of \textsc{ablated} hints that edge-level information alone can largely guide acceptance decisions, e.g.\ should some verb $v_i$ governing some object in $C_i$ via $(v_i,u)$ be included?
 
 We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data. \textsc{random} achieves reasonable F1 because (1) $C_0 = Q \in C_g$ and (2) F1 correlates with compression rate \cite{napoles2011evaluating}, and $b$ is set to the length of $C_g$.
-
-\subsection{Metrics: F1, Latency and SLOR}\label{s:f1}
-We measure the token-level F1 score of each compression method, against gold compressions in the test set. F1 is the standard automatic evaluation metric for extractive compression \cite{filippova2015sentence,Klerke2016ImprovingSC,Wang2017CanSH}. 
-
-In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. We use the automated SLOR metric \cite{lau2015unsupervised} to check the readability of compressions. The metric is known to correlate with human readability judgements \cite{kannConl}. 
-
-Finally, we measure the latency of each compression method, in milliseconds per sentence to determine if the theoretical gains from \textsc{vertex addition} (Table \ref{s:relatedwork}) translate to real speedups. \textsc{vertex addition}$_{LR}$ is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). Edge feature extraction code is shared across both methods. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPU support. The appendix describes additional details related to our measurement of latency and SLOR.
 
 %We might reimplement our Python 3 code in a more performant language for added gains. 
 
@@ -184,9 +184,9 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 
 \section{Conclusion}
 
-Both novel and traditional search user interfaces would benefit from low-latency, query-focused sentence compression. We introduce a new \textsc{vertex addition}$_{LR}$ technique for such settings. Or method is \speedup faster than an \textsc{ilp} baseline while better reconstructing known-good compressions, as measured by F1 score. 
+Both novel and traditional search user interfaces would benefit from low-latency, query-focused sentence compression. We introduce a new \textsc{vertex addition}$_{LR}$ technique for such settings. Our method is \speedup faster than an \textsc{ilp} baseline while better reconstructing known-good compressions, as measured by F1 score. 
 
-In search applications, the latency gains from \textsc{vertex addition}$_{LR}$ are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. Fast, query-focused compression better enables search interfaces to create query-focused snippets at the ``pace of human thought'' \cite{heerschei}.
+In search applications, the latency gains from \textsc{vertex addition}$_{LR}$ are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. Fast, query-focused compression better enables search systems to create snippets at the ``pace of human thought'' \cite{heerschei}.
 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
