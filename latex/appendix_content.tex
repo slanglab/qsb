@@ -47,7 +47,7 @@ sourceforge.net/projects/lpsolve}}}
 \item{\citet{filippova2013overcoming} preprocess dependency parses by adding an edge between the root node and all verbs in a sentence.\footnote{This step ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence.} We found that replicating this transform literally (i.e. only adding edges from the original root to all tokens tagged as verbs) made it impossible for the ILP to recreate some gold compressions. (We suspect that this is due to differences in output from part-of-speech taggers.) We thus add an edge between the root node and \textit{all} tokens in a sentence during preprocessing, allowing the ILP to always return the gold compression.}
 \end{enumerate}
 
-We assess convergence of the ILP by examining validation F1 score on the traditional sentence compression task. We terminate training after six epochs, when F1 score stabilizes (i.e. changes by less than $10^{-3}$ points).
+We assess convergence of the ILP by examining validation F1 score on the traditional sentence compression task. We terminate training after six epochs, when F1 score stabilizes (i.e. changes by fewer than $10^{-3}$ points).
 
 \subsection{Implementation of SLOR}
 
@@ -85,6 +85,6 @@ When comparing sentence compression systems, it is important to ensure that all 
 $C_g$ Train  & 0.383 \\
 $C_g$ Test   & 0.412 \\
 \end{tabular}
-\caption{Mean test time compression ratios (CR) for all techniques. We also show mean ratios for gold compressions $C_g$ across the train and test sets.}\label{t:cr}.
+\caption{Mean test time compression ratios for all techniques. We also show mean ratios for gold compressions $C_g$ across the train and test sets.}\label{t:cr}.
 \end{table}
 
