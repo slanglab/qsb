@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import copy
 import numpy as np
 import json
 import random
@@ -68,6 +69,8 @@ def get_mean_var(f):
         start = timer()
         f(s)
         end = timer()
+        s = copy.deepcopy(s)
+        s["q"] = list(s["q"])
         all_.append({"s": s, "time": end - start})
     times = [_["time"] for _ in all_]
     return np.mean(times), np.std(times), all_
