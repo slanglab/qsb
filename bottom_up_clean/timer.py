@@ -71,6 +71,7 @@ def get_mean_var(f):
         end = timer()
         s = copy.deepcopy(s)
         s["q"] = list(s["q"])
+        s["indexes"] = list(s["indexes"])
         all_.append({"s": s, "time": end - start})
     times = [_["time"] for _ in all_]
     return np.mean(times), np.std(times), all_
@@ -115,6 +116,7 @@ def test_additive_at_random(s):
 def write_timing_results(all_, method):
     with open("bottom_up_clean/all_times.csv", "a") as of:
         for i in all_:
+            import ipdb;ipdb.set_trace()
             ln = "{},{}\n".format(method, json.dumps(i))
             of.write(ln)
 
