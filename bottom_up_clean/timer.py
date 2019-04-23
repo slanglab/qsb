@@ -9,11 +9,10 @@ import csv
 import socket
 
 from sklearn.feature_extraction import DictVectorizer
-from bottom_up_clean.all import make_decision_lr, make_decision_nn, runtime_path, pick_l2r_connected,make_decision_random, bfs, preproc, get_labels_and_features
+from bottom_up_clean.all import make_decision_lr, make_decision_nn, runtime_path, pick_l2r_connected,make_decision_random, preproc, get_labels_and_features
 
 if socket.gethostname() == "hobbes":
     from ilp2013.fillipova_altun import run_model
-    from ilp2013.fillipova_altun_supporting_code import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-path_to_set_to_evaluate', type=str, default="validation.paths")
@@ -55,22 +54,6 @@ def test_ILP():
     """Do compression"""
     s = random.sample(S, k=1)[0]
     run_model(s, r=s["r"], Q=s["q"], vectorizer=vectorizer, weights=weights)
-
-
-def test_ILP_feature_extraction():
-    '''how long does it take to just do feature extraction?'''
-    s = random.sample(S, k=1)[0]
-
-    def to_edge(d):
-        return (d["governor"], d["dependent"])
-
-    d, pi, c = bfs(s, hop_s=0)
-    for d in s["enhancedDependencies"]:
-        e = to_edge(d)
-        syntactic(e, s, vocabs)
-        semantic(e, s, vocabs)
-        structural(e, s)
-        lexical(e, s, vocabs)
 
 
 def test_preproc():
@@ -124,10 +107,13 @@ def test_additive_at_random():
                  marginal=marginal,
                  decider=decider)
 
-def write_timing_results(all_, outfile):
-    with open(outfile, "w") as of:
+
+def write_timing_results(all_, method, outfile):
+    with open("bottom_up_clean/all_times.csv", "a") as of:
         for i in all_:
-            of.write(json.dumps({"method": "additive", "time": i}) + "\n")
+            ln = "{},{}\n".format(method, i)
+            of.write(ln)
+
 
 if __name__ == '__main__':
     with open("bottom_up_clean/timer.csv", "a") as of:
@@ -146,23 +132,23 @@ if __name__ == '__main__':
         ## Full feature
         mean, var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "make_decision_lr"])
-        write_timing_results(all_, "bottom_up_clean/timing/additive_full.jsonl")
+        write_timing_results(all_, "additive")
 
         # neural network
         mean, var, all_ = get_mean_var(f="test_additive_nn()", setup_="from __main__ import test_additive_nn")
         writer.writerow([mean, var, "make_decision_nn"])
-        write_timing_results(all_, "bottom_up_clean/timing/additive_nn.jsonl")
+        write_timing_results(all_, "additive_nn")
 
         ### Only local vectorizer and classifier. Note reimport clf and vectorizer to only local version
         clf, vectorizer = get_clf_and_vectorizer(only_locals=True)
         mean,var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
         writer.writerow([mean, var, "only_locals"])
-        write_timing_results(all_, "bottom_up_clean/timing/additive_ablated.jsonl")
+        write_timing_results(all_, "ablated")
 
         ## Random
         mean,var, all_ = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
         writer.writerow([mean, var, "make_decision_random"]) 
-        write_timing_results(all_, "bottom_up_clean/timing/random.jsonl")
+        write_timing_results(all_, "random")
 
         ### now get the vectorizer for the ILP. again copying from FA learning, should be refactored at some point
 
@@ -178,4 +164,4 @@ if __name__ == '__main__':
 
         mean, var, all_ = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
         writer.writerow([mean, var, "ilp"])
-        write_timing_results(all_, "bottom_up_clean/timing/ilp.jsonl")
+        write_timing_results(all_, "ilp")
