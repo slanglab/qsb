@@ -115,9 +115,10 @@ def test_additive_at_random(s):
 
 def write_timing_results(all_, method):
     with open("bottom_up_clean/all_times.csv", "a") as of:
-        for i in all_:
-            ln = "{},{}\n".format(method, json.dumps(i))
-            of.write(ln)
+        for ino, i in enumerate(all_):
+            keeps = ["original", "r", "lqwords"]
+            ln = ",".join([method] + [str(v) for k, v in i["s"].items() if k in keeps])
+            of.write(ln + "\n")
 
 
 if __name__ == '__main__':
@@ -167,6 +168,6 @@ if __name__ == '__main__':
         for i in S:
             i["q"] = list(i['q'])
 
-        mean, var, all_ = get_mean_var(f="test_ILP()", setup_="from __main__ import test_ILP")
+        mean, var, all_ = get_mean_var(f=test_ILP)
         writer.writerow([mean, var, "ilp"])
         write_timing_results(all_, "ilp")
