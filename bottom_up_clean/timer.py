@@ -108,7 +108,7 @@ def test_additive_at_random():
                  decider=decider)
 
 
-def write_timing_results(all_, method, outfile):
+def write_timing_results(all_, method):
     with open("bottom_up_clean/all_times.csv", "a") as of:
         for i in all_:
             ln = "{},{}\n".format(method, i)
