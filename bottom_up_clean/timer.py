@@ -4,9 +4,11 @@ import json
 import random
 import pickle
 import argparse
-import timeit
 import csv
 import socket
+
+# https://stackoverflow.com/questions/7370801/measure-time-elapsed-in-python
+from timeit import default_timer as timer
 
 from sklearn.feature_extraction import DictVectorizer
 from bottom_up_clean.all import make_decision_lr, make_decision_nn, runtime_path, pick_l2r_connected,make_decision_random, preproc, get_labels_and_features
@@ -50,31 +52,32 @@ with open(args.path_to_set_to_evaluate, "r") as inf:
         S.append(ln)
 
 
-def test_ILP():
+def test_ILP(s):
     """Do compression"""
-    s = random.sample(S, k=1)[0]
     run_model(s, r=s["r"], Q=s["q"], vectorizer=vectorizer, weights=weights)
 
 
-def test_preproc():
-    s = random.sample(S, k=1)[0]
+def test_preproc(s):
     preproc(s)
 
 
-def get_mean_var(f='test_ILP()', setup_='from __main__ import test_ILP'):
+def get_mean_var(f):
     all_ = []
     for i in tqdm(range(args.N)):
-        a = timeit.timeit(f, setup=setup_, number=1)
-        all_.append(a)
-    return np.mean(all_), np.std(all_), all_
+        s = random.sample(S, k=1)[0]
+        start = timer()
+        f(s)
+        end = timer()
+        all_.append({"s": s, "time": end - start})
+    times = [_["time"] for _ in all_]
+    return np.mean(times), np.std(times), all_
 
 
-def test_additive():
+def test_additive(s):
     decider = make_decision_lr
     marginal = None
-    sentence = random.sample(S, k=1)[0]
 
-    runtime_path(sentence,
+    runtime_path(s,
                  frontier_selector=pick_l2r_connected,
                  clf=clf,
                  vectorizer=vectorizer,
@@ -82,12 +85,11 @@ def test_additive():
                  decider=decider)
 
 
-def test_additive_nn():
+def test_additive_nn(s):
     decider = make_decision_nn
     marginal = None
-    sentence = random.sample(S, k=1)[0]
 
-    runtime_path(sentence,
+    runtime_path(s,
                  frontier_selector=pick_l2r_connected,
                  clf=clf,
                  vectorizer=vectorizer,
@@ -95,12 +97,11 @@ def test_additive_nn():
                  decider=decider)
 
 
-def test_additive_at_random():
+def test_additive_at_random(s):
     decider = make_decision_random
     marginal = .3
-    sentence = random.sample(S, k=1)[0]
 
-    runtime_path(sentence,
+    runtime_path(s,
                  frontier_selector=pick_l2r_connected,
                  clf=clf,
                  vectorizer=vectorizer,
@@ -111,7 +112,7 @@ def test_additive_at_random():
 def write_timing_results(all_, method):
     with open("bottom_up_clean/all_times.csv", "a") as of:
         for i in all_:
-            ln = "{},{}\n".format(method, i)
+            ln = "{},{}\n".format(method, json.dumps(i))
             of.write(ln)
 
 
@@ -126,27 +127,27 @@ if __name__ == '__main__':
         #global clf and vectorizer b/c of timing problems 
         clf, vectorizer = get_clf_and_vectorizer()
 
-        mean, var, all_ = get_mean_var(f="test_preproc()", setup_="from __main__ import test_preproc")
+        mean, var, all_ = get_mean_var(f=test_preproc)
         writer.writerow([mean, var, "test_preproc"])
 
         ## Full feature
-        mean, var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        mean, var, all_ = get_mean_var(f=test_additive)
         writer.writerow([mean, var, "make_decision_lr"])
         write_timing_results(all_, "additive")
 
         # neural network
-        mean, var, all_ = get_mean_var(f="test_additive_nn()", setup_="from __main__ import test_additive_nn")
+        mean, var, all_ = get_mean_var(f=test_additive_nn)
         writer.writerow([mean, var, "make_decision_nn"])
         write_timing_results(all_, "additive_nn")
 
         ### Only local vectorizer and classifier. Note reimport clf and vectorizer to only local version
         clf, vectorizer = get_clf_and_vectorizer(only_locals=True)
-        mean,var, all_ = get_mean_var(f="test_additive()", setup_="from __main__ import test_additive")
+        mean,var, all_ = get_mean_var(f=test_additive)
         writer.writerow([mean, var, "only_locals"])
         write_timing_results(all_, "ablated")
 
         ## Random
-        mean,var, all_ = get_mean_var(f="test_additive_at_random()", setup_="from __main__ import test_additive_at_random")
+        mean,var, all_ = get_mean_var(f=test_additive_at_random)
         writer.writerow([mean, var, "make_decision_random"]) 
         write_timing_results(all_, "random")
 
