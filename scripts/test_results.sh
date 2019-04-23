@@ -6,7 +6,7 @@ rm -rf bottom_up_clean/timing/*
 echo "" > bottom_up_clean/stat_sig.csv
 echo "" > bottom_up_clean/results.csv
 echo "" > bottom_up_clean/timer.csv
-
+echo "" > bottom_up_clean/all_times.csv
 
 
 # get f1 and slor for additive (feature based)
