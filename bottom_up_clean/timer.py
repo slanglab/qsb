@@ -120,6 +120,10 @@ def write_timing_results(all_, method):
         for ino, i in enumerate(all_):
             keeps = ["original", "r", "lqwords"]
             ln = [method] + [i["time"]] + [str(v) for k, v in i["s"].items() if k in keeps]
+            if i["s"]["r"] == i["s"]["lqwords"]:
+                with open("wut", "wb") as of:
+                    pickle.dump(i["s"], of)
+                import os;os._exit(0)
             writer.writerow(ln)
 
 
@@ -134,8 +138,8 @@ if __name__ == '__main__':
         #global clf and vectorizer b/c of timing problems 
         clf, vectorizer = get_clf_and_vectorizer()
 
-        mean, var, all_ = get_mean_var(f=test_preproc)
-        writer.writerow([mean, var, "test_preproc"])
+        #mean, var, all_ = get_mean_var(f=test_preproc)
+        #writer.writerow([mean, var, "test_preproc"])
 
         ## Full feature
         mean, var, all_ = get_mean_var(f=test_additive)

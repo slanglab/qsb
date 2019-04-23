@@ -26,8 +26,6 @@ def get_q(sentence):
     coursener["NNP"] = "noun"
     coursener["NNPS"] = "noun" # proper-noun (40.2%)
 
-    q = set()
-
     querylen = draw_query_len()
 
     cix = sentence["compression_indexes"]
@@ -37,5 +35,4 @@ def get_q(sentence):
 
     shuffle(nouns)
 
-    assert len(q) > 0
     return set(nouns[0:querylen])
