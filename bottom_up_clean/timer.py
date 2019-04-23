@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import csv
 import copy
 import numpy as np
 import json
@@ -115,10 +116,11 @@ def test_additive_at_random(s):
 
 def write_timing_results(all_, method):
     with open("bottom_up_clean/all_times.csv", "a") as of:
+        writer = csv.writer(of, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for ino, i in enumerate(all_):
             keeps = ["original", "r", "lqwords"]
-            ln = ",".join([method] + [str(v) for k, v in i["s"].items() if k in keeps])
-            of.write(ln + "\n")
+            ln = [method] + [i["time"]] + [str(v) for k, v in i["s"].items() if k in keeps]
+            writer.writerow(ln)
 
 
 if __name__ == '__main__':
