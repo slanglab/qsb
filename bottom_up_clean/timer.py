@@ -67,6 +67,8 @@ def get_mean_var(f):
     all_ = []
     for i in tqdm(range(args.N)):
         s = random.sample(S, k=1)[0]
+        s = copy.deepcopy(s)
+        assert len(s["q"]) <= 3 # old bug was writing to q during compression and then rerunning s
         start = timer()
         f(s)
         end = timer()
@@ -118,12 +120,8 @@ def write_timing_results(all_, method):
     with open("bottom_up_clean/all_times.csv", "a") as of:
         writer = csv.writer(of, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for ino, i in enumerate(all_):
-            keeps = ["original", "r", "lqwords"]
+            keeps = ["r", "lqwords"]
             ln = [method] + [i["time"]] + [str(v) for k, v in i["s"].items() if k in keeps]
-            if i["s"]["r"] == i["s"]["lqwords"]:
-                with open("wut", "wb") as of:
-                    pickle.dump(i["s"], of)
-                import os;os._exit(0)
             writer.writerow(ln)
 
 

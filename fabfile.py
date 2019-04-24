@@ -42,6 +42,7 @@ def preproc():
         
         local("./scripts/proc_test.sh")  # finally, process the test set
         local("python bottom_up_clean/oracle_paths.py") # make oracle paths
+        local("./scripts/lstm_preproc.sh")
         print("[*] preprocessed done")
     else:
         print("[*] Can't find data. Do you need to run download? Try $fab download")
