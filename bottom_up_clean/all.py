@@ -4,6 +4,8 @@ import string
 import numpy as np
 import copy
 import random
+import json
+import socket
 
 from bottom_up_clean.utils import bfs
 from collections import defaultdict
@@ -14,15 +16,14 @@ from bottom_up_clean.lstm_proc import get_sorted_toks_with_markers
 from allennlp.predictors.predictor import Predictor
 from allennlp.models.archival import load_archive
 
-from allennlp2.allennlpallennlpasalibraryexample.my_library.models import *
-from allennlp2.allennlpallennlpasalibraryexample.my_library.dataset_readers import *
-from allennlp2.allennlpallennlpasalibraryexample.my_library.predictors import *
 
-import json
-
-archive_file = "models/134932574/model.tar.gz"
-archive = load_archive(archive_file=archive_file)
-predictor = Predictor.from_archive(archive, "paper-classifier") 
+if socket.gethostname() == "hobbes":
+    from allennlp2.allennlpallennlpasalibraryexample.my_library.models import *
+    from allennlp2.allennlpallennlpasalibraryexample.my_library.dataset_readers import *
+    from allennlp2.allennlpallennlpasalibraryexample.my_library.predictors import *
+    archive_file = "models/134932574/model.tar.gz"
+    archive = load_archive(archive_file=archive_file)
+    predictor = Predictor.from_archive(archive, "paper-classifier") 
 
 NULLSET = set()
 
@@ -114,8 +115,6 @@ def init_frontier(sentence, Q):
     '''initalize the frontier for additive compression'''
     return sentence["indexes"].difference(Q)
 
-import datetime
-
 def make_decision_nn(**kwargs):
     sentence=kwargs["sentence"]
     C = kwargs["current_compression"]
@@ -124,10 +123,7 @@ def make_decision_nn(**kwargs):
     toks = get_sorted_toks_with_markers(sentence, C, v, F)
     markup = " ".join(toks)
     instance = predictor._dataset_reader.text_to_instance(markup)
-    #now = datetime.datetime.now()
     decide = int(predictor.predict_instance(instance)['label'])
-    #later = datetime.datetime.now()
-    #print((now - later).total_seconds())
     return decide
 
 def make_decision_lr(**kwargs):
@@ -143,7 +139,6 @@ def make_decision_lr(**kwargs):
                              sentence=kwargs["sentence"],
                              feats=feats,
                              current_compression=kwargs["current_compression"],
-                             frontier=kwargs["frontier"],
                              lc=kwargs["len_current_compression"])
 
     X = kwargs["vectorizer"].transform(feats)
@@ -238,12 +233,9 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
 
     preproc(sentence)
 
-
     current_compression =  sentence["q"]
 
-
     frontier = init_frontier(sentence, sentence["q"])
-
     
     lt = len_current_compression(current_compression, sentence)
 
@@ -255,19 +247,19 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                                    current_compression=current_compression,
                                    sentence=sentence)
 
-        y = decider(vertex=vertex,
-                    sentence=sentence,
-                    depths=depths,
-                    current_compression=current_compression,
-                    vectorizer=vectorizer,
-                    marginal=marginal,
-                    clf=clf,
-                    frontier=frontier,
-                    len_current_compression=lt)
+        wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
 
-        if y == 1:
-            wouldbe = lt + 1 + sentence["ix2tok"][vertex]["len"]
-            if wouldbe <= sentence["r"]:
+        if wouldbe <= sentence["r"]:
+            y = decider(vertex=vertex,
+                        sentence=sentence,
+                        depths=depths,
+                        current_compression=current_compression,
+                        vectorizer=vectorizer,
+                        marginal=marginal,
+                        clf=clf,
+                        len_current_compression=lt)
+
+            if y == 1:
                 current_compression.add(vertex)
                 lt = wouldbe
 
@@ -337,7 +329,7 @@ def add_feat(name, val, feats):
     feats[name, feats["type"], feats["dep"]] = val # type (parent/gov/child) + dep + global feat
 
 
-def get_global_feats(sentence, feats, vertex, current_compression, frontier, lc):
+def get_global_feats(sentence, feats, vertex, current_compression, lc):
     '''return global features of the edits'''
 
     len_tok = sentence["ix2tok"][vertex]["len"]
@@ -406,7 +398,7 @@ def get_labels_and_features(list_of_paths, only_locals=False):
                 # global features
                 if not only_locals:
                     lc = len_current_compression(current_compression=current_compression, sentence=sentence)
-                    feats = get_global_feats(sentence, feats, vertex, set(current_compression), frontier, lc)
+                    feats = get_global_feats(sentence, feats, vertex, set(current_compression), lc)
 
                 labels.append(decision)
                 features.append(feats)
@@ -471,6 +463,7 @@ def train_clf(training_paths="training.paths",
     clf = LogisticRegression(random_state=0,
                              solver='lbfgs',
                              C=10,
+                             max_iter=1000,
                              multi_class='ovr').fit(X_train, y_train)
 
     print(clf.score(X_val, y_val))
