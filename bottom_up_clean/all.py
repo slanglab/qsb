@@ -256,6 +256,7 @@ def runtime_path(sentence, frontier_selector, clf, vectorizer, decider=make_deci
                         current_compression=current_compression,
                         vectorizer=vectorizer,
                         marginal=marginal,
+                        frontier=frontier,
                         clf=clf,
                         len_current_compression=lt)
 

@@ -39,8 +39,9 @@ def preproc():
         local("ls sentence-compression/data/*jsonl | parallel -j 5 --eta 'python preproc/proc_filipova.py {}'") # do corenlp processing
         local("ls sentence-compression/data/*sent-comp.train*jsonl | parallel rm")
         local("python preproc/split_validation_and_training.py")
-        local("python bottom_up_clean/oracle_paths.py") # make oracle paths
+        
         local("./scripts/proc_test.sh")  # finally, process the test set
+        local("python bottom_up_clean/oracle_paths.py") # make oracle paths
         print("[*] preprocessed done")
     else:
         print("[*] Can't find data. Do you need to run download? Try $fab download")
