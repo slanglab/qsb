@@ -77,7 +77,8 @@ def get_mean_var(f):
         s["indexes"] = list(s["indexes"])
         all_.append({"s": s, "time": end - start})
     times = [_["time"] for _ in all_]
-    return np.mean(times), np.std(times), all_
+    mu = np.exp(np.mean(np.log(np.asarray(times))))
+    return mu, np.std(times), all_
 
 
 def test_additive(s):
