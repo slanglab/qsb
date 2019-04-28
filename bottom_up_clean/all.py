@@ -21,7 +21,7 @@ if socket.gethostname() == "hobbes":
     from allennlp2.allennlpallennlpasalibraryexample.my_library.models import *
     from allennlp2.allennlpallennlpasalibraryexample.my_library.dataset_readers import *
     from allennlp2.allennlpallennlpasalibraryexample.my_library.predictors import *
-    archive_file = "models/134932574/model.tar.gz"
+    archive_file = "models/125249540/model.tar.gz"
     archive = load_archive(archive_file=archive_file)
     predictor = Predictor.from_archive(archive, "paper-classifier") 
 
