@@ -129,7 +129,7 @@ We compare our method to an \textsc{ilp} baseline (\S\ref{s:relatedwork}) becaus
 In order to evaluate different approaches to constrained compression, we require a dataset of sentences, constraints and known-good shortenings, which respect the constraints. This means we need tuples $(S, Q, b, C_g)$, where $C_g$ is a known-good compression of $S$ which respects $Q$ and $b$ (\S\ref{s:intro}).
 
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
-as a collection of input triples and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using news headlines. For our experiment, we set $b$ equal to the character length of the gold compression $C_g$. We then sample some query set $Q$ from the nouns in $C_g$ so that the distribution of cardinalities of queries across our dataset simulates the observed distribution of cardinalities (i.e.\ number of query tokens) in real-world search \cite{Jansen2000RealLR}. Sampled queries are short sets of nouns, such as ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR,'' approximating real-world behavior \cite{Barr2008TheLS}.\footnote{See appendix for detailed discussion of query sampling.} 
+as a collection of input sentences and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using news headlines. For our experiment, we set $b$ equal to the character length of the gold compression $C_g$. We then sample a small number of nouns\footnote{1 to 3 nouns; cardinality chosen uniformly at random.} from $C_g$ to form a query set $Q$, approximating both the observed number of tokens and observed parts of speech in real-world search \cite{Jansen2000RealLR,Barr2008TheLS}. Sampled $Q$ include reasonable queries like ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR''.
 
 By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {9,969} test tuples, each of the form $(S,Q,b,C_g)$. \citet{filippova2013overcoming} define the train/test split. We re-tokenize, parse and tag with CoreNLP v3.8.0 \cite{corenlp}. We reserve 24,999 training tuples as a validation set. 
 
@@ -159,7 +159,7 @@ We measure the token-level F1 score of each compression method against gold comp
 
 In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated SLOR metric \cite{lau2015unsupervised}, which correlates with human readability judgements \cite{kannConl}. 
 
-Finally, we measure the latency of each compression method, in milliseconds per sentence. We observe that theoretical gains from \textsc{vertex addition} (Table \ref{t:algos}) translate to real speedups: \textsc{vertex addition}$_{LR}$ is on average \speedup faster than the \textsc{ilp} (Table \ref{t:results}). (Edge feature extraction code is shared across both methods.) We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPUs. The appendix describes additional details related to our measurement of latency and SLOR.
+We also measure the mean latency of each compression method in milliseconds per sentence. For clear comparison, we use the same edge feature extraction code for \textsc{ilp} and \textsc{vertex addition}$_{LR}$. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPUs. The appendix describes additional details related to measurement of latency and SLOR.
 
 \subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
 For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features in \textsc{vertex addition}$_{LR}$ raises the F1 score. The relatively strong performance of \textsc{ablated} hints that edge-level information alone can largely guide acceptance decisions, e.g.\ should some verb $v_i$ governing some object in $C_i$ via $(v_i,u)$ be included?
@@ -172,26 +172,32 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 \begin{tabular}{lccc}
 \centering
 Approach & F1 & SLOR & $^{*}$Latency \\ \hline
-\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.371}& {\small 0.5}\\
+\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.371}& {\small 0.5} \\
 \textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 0.665}&{\small 3.5}\\
 \textsc{vertex addition}$_{NN}$& {\small 0.884}& {\small 0.731}& {\small 98.4} \\ \midrule 
 \textsc{ilp}&{\small 0.856}& {\small 0.755}&{\small 21.9}\\
 \textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 5.2 \\
 \end{tabular}
-\caption{Test results for constrained compression. $^*$Latency is shown in milliseconds (ms.) per sentence. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp}. The method is also \exact times faster. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} achieves the highest F1, but runs slowly on a CPU.}
+\caption{Test results for constrained compression. Because observed runtimes are log normal, $^*$latency is shown as the geometric mean in milliseconds per sentence. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp}. The method is also \exact times faster. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} achieves the highest F1, but runs slowly on a CPU.}
 \label{t:results}
 \end{table}
 
+\begin{figure}[htb!]
+\centering
+\includegraphics[width=5.5cm]{times.pdf}
+\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right); theoretical gains (Table \ref{t:algos}) enable real speedups. \textsc{Vertex Addition}$_{LR}$ runtimes also have lower variance.}
+\label{f:times}
+\end{figure}
+
 \section{Conclusion}
 
-Both novel and traditional search user interfaces would benefit from low-latency, query-focused sentence compression. We introduce a new \textsc{vertex addition}$_{LR}$ technique for such settings. Our method is \speedup faster than an \textsc{ilp} baseline while better reconstructing known-good compressions, as measured by F1 score. 
-
-In search applications, the latency gains from \textsc{vertex addition}$_{LR}$ are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. Fast, query-focused compression better enables search systems to create snippets at the ``pace of human thought'' \cite{heerschei}.
+We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused compression method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.
 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
 
 % ack => Katie, Javier, Nick Eubank, NLP reading group! 
+% Javier Burroni for extensive help with optimizing and measuring the latency of vertex addition  
 
 \include{appendix_content}
 
