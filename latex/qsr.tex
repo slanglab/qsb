@@ -159,7 +159,7 @@ We measure the token-level F1 score of each compression method against gold comp
 
 In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated SLOR metric \cite{lau2015unsupervised}, which correlates with human readability judgements \cite{kannConl}. 
 
-We also measure the mean latency of each compression method in milliseconds per sentence. For clear comparison, we use the same edge feature extraction code for \textsc{ilp} and \textsc{vertex addition}$_{LR}$. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPUs. The appendix describes additional details related to measurement of latency and SLOR.
+We check the theoretical gains from \textsc{vertex addition}  (Table \ref{t:algos}) by measuring the empirical mean latency of each compression method, in milliseconds per sentence. We use the same edge feature extraction code for \textsc{ilp} and \textsc{vertex addition}$_{LR}$ to ensure each method incurs similar delay for this step. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPUs. The appendix further details measurement of latency and SLOR.
 
 \subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
 For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features in \textsc{vertex addition}$_{LR}$ raises the F1 score. The relatively strong performance of \textsc{ablated} hints that edge-level information alone can largely guide acceptance decisions, e.g.\ should some verb $v_i$ governing some object in $C_i$ via $(v_i,u)$ be included?
@@ -178,14 +178,14 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \textsc{ilp}&{\small 0.856}& {\small 0.755}&{\small 21.9}\\
 \textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 5.2 \\
 \end{tabular}
-\caption{Test results for constrained compression. Because observed runtimes are log normal, $^*$latency is shown as the geometric mean in milliseconds per sentence. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp}. The method is also \exact times faster. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} achieves the highest F1, but runs slowly on a CPU.}
+\caption{Test results for constrained compression. Because observed runtimes are log normal, $^*$latency is reported as the geometric mean (in milliseconds per sentence), across 300,000 sentences. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp}. The method is also \exact times faster. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} runs slowly on a CPU.}
 \label{t:results}
 \end{table}
 
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=5.5cm]{times.pdf}
-\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right); theoretical gains (Table \ref{t:algos}) enable real speedups. \textsc{Vertex Addition}$_{LR}$ runtimes also have lower variance.}
+\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) enable real speedups. Our method also has more consistent runtimes (lower variance) than the \textsc{ilp}.}
 \label{f:times}
 \end{figure}
 
