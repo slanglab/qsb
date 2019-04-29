@@ -20,15 +20,16 @@ We formally present the \textsc{vertex addition} compression algorithm, using no
 
 \subsection{Neural network tuning and optimization}
 
-We learn network weights for \textsc{vertex addition}$_{NN}$ by minimizing cross-entropy loss with \textsc{AdaGrad} \cite{duchi2011adaptive}. The hyperparameters of the network are: the learning rate, the dimensionality of embeddings, the weight decay parameter, and the hidden state size of the LSTM. We tune hyperparameters via random search \cite{Bergstra2012RandomSF}, selecting parameters which achieve highest accuracy in predicting oracle decisions for the validation set. We train for 10 epochs, and use parameters from the best-performing ecoch (by validation accuracy) at test time.
+We learn network parameters for \textsc{vertex addition}$_{NN}$ by minimizing cross-entropy loss against oracle decisions $y_i$. We optimize with \textsc{AdaGrad} \cite{duchi2011adaptive}. We learn input embeddings after initializing randomly. The hyperparameters of our network and training procedure are: the learning rate, the dimensionality of input embeddings, the weight decay parameter, the batch size, and the hidden state size of the LSTM. We tune via random search \cite{Bergstra2012RandomSF}, selecting parameters which achieve highest accuracy in predicting oracle decisions for the validation set. We train for 15 epochs, and we use parameters from the best-performing epoch (by validation accuracy) at test time.
 
 \begin{table}[htb!]
 \centering
 \begin{tabular}{ll}
-Learning rate & 4.212 $\times 10^{-2}$ \\ 
-Embedding dim. &  813  \\
-Weight decay   & 6.677 $ \times 10^{-6}$ \\
-Hidden dim. & 141 \\
+Learning rate & 0.025 \\ 
+Embedding dim. &  315 \\
+Weight decay   & 1.88 $ \times 10^{-9}$ \\
+Hidden dim. & 158  \\
+Batch size & 135 \\
 \end{tabular}
 \caption{Hyperparameters for \textsc{vertex addition}$_{NN}$}\label{t:params}
 \end{table}
@@ -64,11 +65,7 @@ where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of thi
 We use a 3-gram language model trained on the training set of the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}. Because compression often results in shortenings where the first token is not capitalized (e.g.\ a compression which begins with the third token in $S$) we ignore case when calculating language model probabilities.
 
 \subsection{Latency evaluation}
-To measure latency, for each technique, we sample 100,000 sentences with replacement from the test test. We observe the mean time per sentence using Python's built-in \textit{timeit} module. We measure with an Intel Xeon processor with a clock rate of 2.80GHz. 
-
-\subsection{Query sampling}
-We sample queries for our synthetic constrained compression experiment to mimic real-world searches: the distribution of query token lengths and the distribution of query part-of-speech tags employed in our experiment closely match empirical distributions observed in real search \cite{Jansen2000RealLR,Barr2008TheLS}. To create queries, for each sentence in our corpus we: (1) sample a query token length in proportion to the real-world distribution over query token lengths (2) sample a proper or common noun $n$ from $C_g$ in proportion to the distribution over proper and common nouns in real-world queries (3) add $n$ to the query set $Q$ (4) repeat steps 2 and 3 until the cardinality of $Q$ is the query token length specified in step 1. We exclude sentences in cases where the gold compression $C_g$ does not contain enough nouns to fill $\{Q\}$ to the desired token length.
-
+To measure latency, for each technique, we sample 100,000 sentences with replacement from the test set. We observe the mean time to compress each sentence using Python's built-in \textit{timeit} module. In order to minimize effects from unanticipated confounds, we repeat this experiment three separate times (one hour apart). Thus in total we collect 300,000 observations for each compression technique. We observe that runtimes are log normal, and thus report each latency as the geometric mean of 300,000 observations. We use an Intel Xeon processor with a clock rate of 2.80GHz.
 
 \subsection{Compression ratios}
 
