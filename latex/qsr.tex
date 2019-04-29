@@ -102,7 +102,7 @@ Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} 
 
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
-We present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as \textsc{vertex addition} because it constructs a shortening by \textit{growing} a (possibly disconnected) subgraph in the dependency parse of a sentence, one vertex at a time. This approach can construct constrained compressions with a linear algorithm, leading to \speedup lower latency than ILP techniques (\S\ref{s:autoeval}). To our knowledge, our method is also the first to construct compressions by $\textit{adding}$ vertexes rather than \textit{pruning} subtrees in a parse \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. We assume a boolean relevance model: $S$ must contain $Q$. We leave more sophisticated relevance models for future work.
+We present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as \textsc{vertex addition} because it constructs a shortening by \textit{growing} a (possibly disconnected) subgraph in the dependency parse of a sentence, one vertex at a time. This approach can construct constrained compressions with a linear algorithm, leading to \speedup lower latency than ILP techniques (\S\ref{s:autoeval}). To our knowledge, our method is also the first to construct compressions by $\textit{adding}$ vertexes rather than \textit{pruning} subtrees in a parse \cite{Knight2000StatisticsBasedS,almeida2013fast,Filippova2015FastKS}. We assume a boolean relevance model: $S$ must contain $Q$. We leave more sophisticated relevance models for future work.
 
 \subsection{Formal description}\label{s:formal}
 
@@ -157,9 +157,9 @@ The model \textsc{vertex addition}$_{LR}$ uses binary logistic regression,\footn
 \subsection{Metrics: F1, Latency and SLOR}\label{s:f1}
 We measure the token-level F1 score of each compression method against gold compressions in the test set. F1 is the standard automatic evaluation metric for extractive compression \cite{filippova2015sentence,Klerke2016ImprovingSC,Wang2017CanSH}. 
 
-In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated SLOR metric \cite{lau2015unsupervised}, which correlates with human readability judgements \cite{kannConl}. 
+In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated readability metric SLOR \cite{lau2015unsupervised}, which correlates with human judgements \cite{kannConl}. 
 
-We evaluate the theoretical gains from \textsc{vertex addition}  (Table \ref{t:algos}) by measuring the empirical latency of each compression method (in milliseconds per sentence) for a sample of $N=300,000$ sentences. We observe that runtimes are log-normally distributed, and thus report latency as the sample geometric mean. \textsc{ilp} and \textsc{vertex addition}$_{LR}$ share edge feature extraction code to support to fair comparison. We test \textsc{vertex addition}$_{NN}$ using a CPU, to determine performance in settings without GPUs. The appendix further details latency and SLOR experiments.
+We evaluate theoretical gains from \textsc{vertex addition}  (Table \ref{t:algos}) by measuring empirical latency. For each compression method, we sample and compress $N=300,000$ sentences, and record the runtime (in milliseconds per sentence). We observe that runtimes are distributed log-normally (Figure \ref{t:times}), and thus summarize each sample using the geometric mean. \textsc{ilp} and \textsc{vertex addition}$_{LR}$ share edge feature extraction code to support to fair comparison. We test \textsc{vertex addition}$_{NN}$ using a CPU, to determine performance in settings without GPUs. The appendix further details latency and SLOR experiments.
 
 \subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
 For comparison, we implement an \textsc{ablated} vertex addition method, which learns inclusion decisions using only edge features from \citet{filippova2013overcoming}. \textsc{ablated} has a lower F1 score than \textsc{ilp}, which uses the same edge-level information to optimize a global objective; stateful and interaction features (i.e.\ \textsc{vertex addition}$_{LR}$) improve F1 score. Nonetheless, strong performance from \textsc{ablated} hints that edge-level information alone (e.g.\ dependency type) can mostly guide acceptance decisions.
@@ -186,7 +186,7 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \centering
 \includegraphics[width=5.5cm]{times.pdf}
 \caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. \textsc{Vertex Addition}$_{LR}$ also has lower variance than the \textsc{ilp}.}
-\label{f:times}
+\label{t:times}
 \end{figure}
 
 \section{Conclusion}
