@@ -1,0 +1,87 @@
+\appendix
+
+\section{Appendix}
+
+\subsection{Algorithm}
+We formally present the \textsc{vertex addition} compression algorithm, using notation defined in the paper. $\ell$ linearizes a vertex set, based on left-to-right position in $S$. $|P|$ indicates the number of tokens in the priority queue.
+
+\begin{algorithm}[]
+\SetKwInOut{Input}{input}
+\SetAlgoLined
+\Input{$s=(V,E)$, $Q \subseteq V$, $b \in \mathbb{R^+}$}
+ $ C \gets Q;  P \gets V \setminus Q$; \\
+ \While{ $\ell(C) < b $ and $ |P| > 0 $   }{
+  $v \gets \text{pop}(P)$; \\
+  \If{$p(y=1) > .5$ and $\ell(C \cup \{v\}) \leq b$}{$C \gets C \cup \{v\}$}
+ }
+\KwRet{$\ell(C)$}
+ \caption{\textsc{vertex addition}}
+\end{algorithm}\label{a:algo}
+
+\subsection{Neural network tuning and optimization}
+
+We learn network parameters for \textsc{vertex addition}$_{NN}$ by minimizing cross-entropy loss against oracle decisions $y_i$. We optimize with \textsc{AdaGrad} \cite{duchi2011adaptive}. We learn input embeddings after initializing randomly. The hyperparameters of our network and training procedure are: the learning rate, the dimensionality of input embeddings, the weight decay parameter, the batch size, and the hidden state size of the LSTM. We tune via random search \cite{Bergstra2012RandomSF}, selecting parameters which achieve highest accuracy in predicting oracle decisions for the validation set. We train for 15 epochs, and we use parameters from the best-performing epoch (by validation accuracy) at test time.
+
+\begin{table}[htb!]
+\centering
+\begin{tabular}{ll}
+Learning rate & 0.025 \\ 
+Embedding dim. &  315 \\
+Weight decay   & 1.88 $ \times 10^{-9}$ \\
+Hidden dim. & 158  \\
+Batch size & 135 \\
+\end{tabular}
+\caption{Hyperparameters for \textsc{vertex addition}$_{NN}$}\label{t:params}
+\end{table}
+
+\subsection{Reimplementation of \citet{filippova2013overcoming}}
+
+In this work, we reimplement the method of \citet{filippova2013overcoming}, who in turn implement a method partially described in \citet{filippova2008dependency}.  There are inevitable discrepancies between our implementation and the methods described in these two prior papers.
+
+\begin{enumerate}
+\item{Where the original authors train on only 100,000 sentences, we learn weights with the full training set to compare fairly with \textsc{vertex addition} (each model trains on the full training set.)}
+\item{We use \citet{gurobi} (v8) to solve the liner program. \citet{filippova2008dependency} report using LPsolve.\footnote{\url{http://
+sourceforge.net/projects/lpsolve}}}
+\item{We implement with the common Universal Dependencies (UD, v1) framework \cite{Nivre2016UniversalDV}. Prior work \cite{filippova2008dependency} implements with older dependency formalisms \cite{briscoe-etal-2006-second,Marneffe2006GeneratingTD}.} 
+\item{In Table 1 of their original paper, \citet{filippova2013overcoming} provide an overview of the syntactic, structural, semantic and lexical features in their model. We implement every feature described in the table. We do not implement features which are not described in the paper.}
+\item{\citet{filippova2013overcoming} augment edge labels in the dependency parse of $S$ as a preprocessing step. We reimplement this step using off-the-shelf augmented modifiers and augmented conjuncts available with the enhanced dependencies representation in CoreNLP \cite{Schuster2016EnhancedEU}.}
+\item{\citet{filippova2013overcoming} preprocess dependency parses by adding an edge between the root node and all verbs in a sentence.\footnote{This step ensures that subclauses can be removed from parse trees, and then merged together to create a compression from different clauses of a sentence.} We found that replicating this transform literally (i.e. only adding edges from the original root to all tokens tagged as verbs) made it impossible for the ILP to recreate some gold compressions. (We suspect that this is due to differences in output from part-of-speech taggers.) We thus add an edge between the root node and \textit{all} tokens in a sentence during preprocessing, allowing the ILP to always return the gold compression.}
+\end{enumerate}
+
+We assess convergence of the ILP by examining validation F1 score on the traditional sentence compression task. We terminate training after six epochs, when F1 score stabilizes (i.e. changes by fewer than $10^{-3}$ points).
+
+\subsection{Implementation of SLOR}
+
+We use the SLOR function to measure the readability of the shortened sentences produced by each compression system. SLOR normalizes the probability of a token sequence assigned from a language model by adjusting for both the probability of the individual unigrams in the sentence and for the sentence length.\footnote{Longer sentences are always less probable than shorter sentences; rarer words make a sequence less probable.} 
+
+Following \cite{lau2015unsupervised}, we define the function as 
+
+\begin{equation}
+\text{SLOR}=\frac{\text{log}P_m(\xi) - \text{log}P_u(\xi)}{|\xi|}
+\end{equation}
+
+where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of this sequence of words and $P_m(\xi)$ is the probability of the sequence, assigned by a language model.  $|\xi|$ is the length (in tokens) of the sentence.
+
+We use a 3-gram language model trained on the training set of the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}. Because compression often results in shortenings where the first token is not capitalized (e.g.\ a compression which begins with the third token in $S$) we ignore case when calculating language model probabilities.
+
+\subsection{Latency evaluation}
+To measure latency, for each technique, we sample 100,000 sentences with replacement from the test set. We observe the mean time to compress each sentence using Python's built-in \textit{timeit} module. In order to minimize effects from unanticipated confounds, we repeat this experiment three separate times (one hour apart). Thus in total we collect 300,000 observations for each compression technique. We observe that runtimes are log normal, and thus report each latency as the geometric mean of 300,000 observations. We use an Intel Xeon processor with a clock rate of 2.80GHz.
+
+\subsection{Compression ratios}
+
+When comparing sentence compression systems, it is important to ensure that all approaches use the same rate of compression \cite{napoles2011evaluating}. Following \citet{filippova2015sentence}, we define the compression ratio as the character length of the compression divided by the character length of the sentence. We present test set compression ratios for all methods in Table \ref{t:cr}. Because ratios are similar, our comparison is appropriate.
+
+\begin{table}[htb!]
+\centering
+\begin{tabular}{@{}l | l@{}}
+\textsc{random} & 0.404\\ 
+\textsc{ilp} &  0.407 \\
+\textsc{ablated} & 0.398 \\
+\textsc{vertex addition}$_{LR}$ &  0.404  \\
+\textsc{vertex addition}$_{NN}$ &  0.405  \\ \midrule
+$C_g$ Train  & 0.383 \\
+$C_g$ Test   & 0.412 \\
+\end{tabular}
+\caption{Mean test time compression ratios for all techniques. We also show mean ratios for gold compressions $C_g$ across the train and test sets.}\label{t:cr}.
+\end{table}
+
