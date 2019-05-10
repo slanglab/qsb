@@ -1,7 +1,9 @@
 %
-% File naacl2019.tex
+% File emnlp2019.tex
 %
-%% Based on the style files for ACL 2018 and NAACL 2018, which were
+%% Based on the style files for ACL 2019, which were
+%% Based on the style files for EMNLP 2018, which were
+%% Based on the style files for ACL 2018, which were
 %% Based on the style files for ACL-2015, with some improvements
 %%  taken from the NAACL-2016 style
 %% Based on the style files for ACL-2014, which were, in turn,
@@ -12,26 +14,21 @@
 %% and that of ACL 08 by Joakim Nivre and Noah Smith
 
 \documentclass[11pt,a4paper]{article}
-\usepackage[hyperref]{naaclhlt2019}
+\usepackage[hyperref]{emnlp-ijcnlp-2019}
 \usepackage{times}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\newcommand{\speedup}[0]{4x~}
+\newcommand{\exact}[0]{4.2~}
+\newcommand{\ilptest}[0]{0.76~}
+\usepackage{url}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[ruled,vlined]{algorithm2e}
-\usepackage{latexsym}
-\usepackage{amsmath}
-\usepackage{amssymb}
 \usepackage{bm}
+\usepackage{amsfonts}
 
-\newcommand{\rdep}[1]{\ $\xrightarrow{\text{\tiny #1}}$\ }
-\newcommand{\speedup}[0]{4x~}
-\newcommand{\exact}[0]{4.2~}
-\newcommand{\ahcomment}[1]{\textcolor{blue}{[#1 -AH]}}
-\newcommand{\ilptest}[0]{0.76~}
-
-\usepackage{url}
-
-\aclfinalcopy % Uncomment this line for the final submission
-%\def\aclpaperid{***} %  Enter the acl Paper ID here
+%\aclfinalcopy % Uncomment this line for the final submission
 
 %\setlength\titlebox{5cm}
 % You can expand the titlebox if you need extra space
@@ -39,26 +36,23 @@
 % smaller than 5cm (the original size); we will check this
 % in the camera-ready version and ask you to change it back.
 
-%\hypersetup{draft} % THIS IS NEEDED TO GET IT TO COMPILE. Does not like the tables. AH 11/27
-
 \newcommand\BibTeX{B{\sc ib}\TeX}
+\newcommand\confname{EMNLP-IJCNLP 2019}
+\newcommand\conforg{SIGDAT}
 
-\DeclareMathOperator*{\argmaxA}{arg\,max} % Jan Hlavacek
-
-% Linear-time Sentence Compression under Lexical and Length Constraints
-% I think we should call our method query-focused because it sells why you want this in the first place. We are similar enuf to query-focused summairzation I think ths is fine.
 \title{Query-focused Sentence Compression in Linear Time}
 
-\author{Abram Handler {\normalfont and} Brendan O'Connor \\
-  College of Information and Computer Sciences \\
-  University of Massachusetts, Amherst \\
-  {\tt ahandler@cs.umass.edu}  \\}
+\author{First Author \\
+  Affiliation / Address line 1 \\
+  {\tt email@domain} \\\And
+  Second Author \\
+  Affiliation / Address line 1 \\
+  {\tt email@domain} \\}
 
 \date{}
 
 \begin{document}
 \maketitle
-
 \begin{abstract}
 Search applications often display shortened sentences which must contain certain query terms and must fit within the space constraints of a user interface. This work introduces a new transition-based sentence compression technique developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a subgraph in the dependency parse of a sentence. This approach achieves a \speedup speed up over baseline ILP compression techniques, and better reconstructs gold shortenings under constraints. Such efficiency gains permit constrained compression of multiple sentences, without unreasonable lag.
 \end{abstract}
@@ -102,7 +96,7 @@ Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} 
 
 \section{Compression via \textsc{vertex addition}}\label{s:system}
 
-We present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as \textsc{vertex addition} because it constructs a shortening by \textit{growing} a (possibly disconnected) subgraph in the dependency parse of a sentence, one vertex at a time. This approach can construct constrained compressions with a linear algorithm, leading to \speedup lower latency than ILP techniques (\S\ref{s:autoeval}). To our knowledge, our method is also the first to construct compressions by $\textit{adding}$ vertexes rather than \textit{pruning} subtrees in a parse \cite{Knight2000StatisticsBasedS,berg2011jointly,almeida2013fast,Filippova2015FastKS}. We assume a boolean relevance model: $S$ must contain $Q$. We leave more sophisticated relevance models for future work.
+We present a new transition-based method for shortening sentences under lexical and length constraints, inspired by similar approaches in transition-based parsing \cite{nivre2003}. We describe our technique as \textsc{vertex addition} because it constructs a shortening by \textit{growing} a (possibly disconnected) subgraph in the dependency parse of a sentence, one vertex at a time. This approach can construct constrained compressions with a linear algorithm, leading to \speedup lower latency than ILP techniques (\S\ref{s:autoeval}). To our knowledge, our method is also the first to construct compressions by $\textit{adding}$ vertexes rather than \textit{pruning} subtrees in a parse \cite{Knight2000StatisticsBasedS,almeida2013fast,Filippova2015FastKS}. We assume a boolean relevance model: $S$ must contain $Q$. We leave more sophisticated relevance models for future work.
 
 \subsection{Formal description}\label{s:formal}
 
@@ -157,12 +151,12 @@ The model \textsc{vertex addition}$_{LR}$ uses binary logistic regression,\footn
 \subsection{Metrics: F1, Latency and SLOR}\label{s:f1}
 We measure the token-level F1 score of each compression method against gold compressions in the test set. F1 is the standard automatic evaluation metric for extractive compression \cite{filippova2015sentence,Klerke2016ImprovingSC,Wang2017CanSH}. 
 
-In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated SLOR metric \cite{lau2015unsupervised}, which correlates with human readability judgements \cite{kannConl}. 
+In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated readability metric SLOR \cite{lau2015unsupervised}, which correlates with human judgements \cite{kannConl}. 
 
-We also measure the mean latency of each compression method in milliseconds per sentence. For clear comparison, we use the same edge feature extraction code for \textsc{ilp} and \textsc{vertex addition}$_{LR}$. We measure latency of \textsc{vertex addition}$_{NN}$ using a CPU, to test if the method is practical in settings without GPUs. The appendix describes additional details related to measurement of latency and SLOR.
+We evaluate theoretical gains from \textsc{vertex addition}  (Table \ref{t:algos}) by measuring empirical latency. For each compression method, we sample and compress $N=300,000$ sentences, and record the runtime (in milliseconds per sentence). We observe that runtimes are distributed log-normally (Figure \ref{t:times}), and thus summarize each sample using the geometric mean. \textsc{ilp} and \textsc{vertex addition}$_{LR}$ share edge feature extraction code to support to fair comparison. We test \textsc{vertex addition}$_{NN}$ using a CPU, to determine performance in settings without GPUs. The appendix further details latency and SLOR experiments.
 
 \subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
-For comparison, we implement an \textsc{ablated} vertex addition method, which makes inclusion decisions using a model trained on only edge features from \citet{filippova2013overcoming}. This method achieves a lower F1 than the ILP, which integrates the same edge-level information to optimize a global objective. However, adding stateful and interaction features in \textsc{vertex addition}$_{LR}$ raises the F1 score. The relatively strong performance of \textsc{ablated} hints that edge-level information alone can largely guide acceptance decisions, e.g.\ should some verb $v_i$ governing some object in $C_i$ via $(v_i,u)$ be included?
+For comparison, we implement an \textsc{ablated} vertex addition method, which learns inclusion decisions using only edge features from \citet{filippova2013overcoming}. \textsc{ablated} has a lower F1 score than \textsc{ilp}, which uses the same edge-level information to optimize a global objective; stateful and interaction features (i.e.\ \textsc{vertex addition}$_{LR}$) improve F1 score. Nonetheless, strong performance from \textsc{ablated} hints that edge-level information alone (e.g.\ dependency type) can mostly guide acceptance decisions.
 
 We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly in proportion to $p(y_i = 1)$ across training data. \textsc{random} achieves reasonable F1 because (1) $C_0 = Q \in C_g$ and (2) F1 correlates with compression rate \cite{napoles2011evaluating}, and $b$ is set to the length of $C_g$.
 
@@ -178,15 +172,15 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \textsc{ilp}&{\small 0.856}& {\small 0.755}&{\small 21.9}\\
 \textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 5.2 \\
 \end{tabular}
-\caption{Test results for constrained compression. Because observed runtimes are log normal, $^*$latency is shown as the geometric mean in milliseconds per sentence. \textsc{vertex addition}$_{LR}$ achieves higher F1 than the \textsc{ilp}. The method is also \exact times faster. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}. {\textsc{vertex addition}$_{NN}$} achieves the highest F1, but runs slowly on a CPU.}
+\caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
 \label{t:results}
 \end{table}
 
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=5.5cm]{times.pdf}
-\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right); theoretical gains (Table \ref{t:algos}) enable real speedups. \textsc{Vertex Addition}$_{LR}$ runtimes also have lower variance.}
-\label{f:times}
+\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. \textsc{Vertex Addition}$_{LR}$ also has lower variance than the \textsc{ilp}.}
+\label{t:times}
 \end{figure}
 
 \section{Conclusion}
@@ -203,5 +197,6 @@ We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search u
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
+
 
 \end{document}
