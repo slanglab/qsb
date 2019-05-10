@@ -18,8 +18,8 @@
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage{amsmath}
-\newcommand{\speedup}[0]{4x~}
-\newcommand{\exact}[0]{4.2~}
+\newcommand{\speedup}[0]{11x~}
+\newcommand{\exact}[0]{11.75~}
 \newcommand{\ilptest}[0]{0.76~}
 \usepackage{url}
 \usepackage{graphicx}
@@ -166,11 +166,11 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 \begin{tabular}{lccc}
 \centering
 Approach & F1 & SLOR & $^{*}$Latency \\ \hline
-\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.371}& {\small 0.5} \\
-\textsc{ablated} {\small (edge only) }&{\small 0.820}&{\small 0.665}&{\small 3.5}\\
-\textsc{vertex addition}$_{NN}$& {\small 0.884}& {\small 0.731}& {\small 98.4} \\ \midrule 
-\textsc{ilp}&{\small 0.856}& {\small 0.755}&{\small 21.9}\\
-\textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 5.2 \\
+\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
+\textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
+\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} \\ \midrule 
+\textsc{ilp}&{\small 0.852}& {\small 0.756}&{\small 48.2}\\
+\textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 4.1 \\
 \end{tabular}
 \caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
 \label{t:results}
