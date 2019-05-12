@@ -54,7 +54,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-file1', type=str, default="bottom_up_clean/ilp_results.jsonl")
-    parser.add_argument('-file2', type=str, default='bottom_up_clean/additive_results.jsonl')
+    parser.add_argument('-file2', type=str, default='bottom_up_clean/make_decision_lr_results.jsonl')
     parser.add_argument('-metric', type=str, default='f1')
     parser.add_argument('-b', type=int, default=10000)
 
