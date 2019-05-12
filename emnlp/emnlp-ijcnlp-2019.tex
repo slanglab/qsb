@@ -153,7 +153,7 @@ We measure the token-level F1 score of each compression method against gold comp
 
 In addition to measuring F1, researchers often evaluate compression systems with human \textit{importance} and \textit{readability} judgements \cite{Knight2000StatisticsBasedS,filippova2015sentence}. In our setting $Q$ determines the ``important'' information from $S$, so importance evaluations are inappropriate. To check readability, we use the automated readability metric SLOR \cite{lau2015unsupervised}, which correlates with human judgements \cite{kannConl}. 
 
-We evaluate theoretical gains from \textsc{vertex addition}  (Table \ref{t:algos}) by measuring empirical latency. For each compression method, we sample and compress $N=300,000$ sentences, and record the runtime (in milliseconds per sentence). We observe that runtimes are distributed log-normally (Figure \ref{t:times}), and thus summarize each sample using the geometric mean. \textsc{ilp} and \textsc{vertex addition}$_{LR}$ share edge feature extraction code to support to fair comparison. We test \textsc{vertex addition}$_{NN}$ using a CPU, to determine performance in settings without GPUs. The appendix further details latency and SLOR experiments.
+We evaluate theoretical gains from \textsc{vertex addition}  (Table \ref{t:algos}) by measuring empirical latency. For each compression method, we sample and compress $N=300,000$ sentences, and record the runtime (in milliseconds per sentence). We observe that runtimes are distributed log-normally (Figure \ref{t:times}), and thus summarize each sample using the geometric mean. \textsc{ilp} and \textsc{vertex addition}$_{LR}$ share edge feature extraction code to support to fair comparison. We test \textsc{vertex addition}$_{NN}$ using a CPU: the method is too slow for practical use in settings without access to specialized hardware (Table \ref{t:results}). The appendix further details latency and SLOR experiments.
 
 \subsection{Analysis:  \textsc{ablated} \& \textsc{random}}\label{s:ablated}
 For comparison, we implement an \textsc{ablated} vertex addition method, which learns inclusion decisions using only edge features from \citet{filippova2013overcoming}. \textsc{ablated} has a lower F1 score than \textsc{ilp}, which uses the same edge-level information to optimize a global objective; stateful and interaction features (i.e.\ \textsc{vertex addition}$_{LR}$) improve F1 score. Nonetheless, strong performance from \textsc{ablated} hints that edge-level information alone (e.g.\ dependency type) can mostly guide acceptance decisions.
@@ -168,7 +168,7 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
 \textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
-\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} \\ \midrule 
+\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} {\tiny  (CPU)} \\ \midrule 
 \textsc{ilp}&{\small 0.852}& {\small 0.756}&{\small 48.2}\\
 \textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 4.1 \\
 \end{tabular}
@@ -179,7 +179,7 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=5.5cm]{times.pdf}
-\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. \textsc{Vertex Addition}$_{LR}$ also has lower variance than the \textsc{ilp}.}
+\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. \textsc{Vertex Addition}$_{LR}$ also has lower variance than the \textsc{ilp}. Multimodal variation in \textsc{ilp} latency might reflect varying strategies from the  solver \cite{gurobi}.}
 \label{t:times}
 \end{figure}
 

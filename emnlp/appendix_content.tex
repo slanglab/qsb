@@ -65,7 +65,7 @@ where $\xi$ is a sequence of words, $P_u(\xi)$ is the unigram probability of thi
 We use a 3-gram language model trained on the training set of the \citet{filippova2013overcoming} corpus. We implement with KenLM \cite{Heafield-kenlm}. Because compression often results in shortenings where the first token is not capitalized (e.g.\ a compression which begins with the third token in $S$) we ignore case when calculating language model probabilities.
 
 \subsection{Latency evaluation}
-To measure latency, for each technique, we sample 100,000 sentences with replacement from the test set. We observe the mean time to compress each sentence using Python's built-in \textit{timeit} module. In order to minimize effects from unanticipated confounds, we repeat this experiment three separate times (one hour apart). Thus in total we collect 300,000 observations for each compression technique. We observe that runtimes are log normal, and thus report each latency as the geometric mean of 300,000 observations. We use an Intel Xeon processor with a clock rate of 2.80GHz.
+To measure latency, for each technique, we sample 100,000 sentences with replacement from the test set. We observe the mean time to compress each sentence using Python's built-in \textit{timeit} module. In order to minimize effects from unanticipated confounds in measuring latency, we repeat this experiment three separate times (with a one hour delay between experiments). Thus in total we collect 300,000 observations for each compression technique. We observe that runtimes are log normal, and thus report each latency as the geometric mean of 300,000 observations. We use an Intel Xeon processor with a clock rate of 2.80GHz.
 
 \subsection{Compression ratios}
 
