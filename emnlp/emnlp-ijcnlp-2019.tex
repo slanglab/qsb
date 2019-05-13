@@ -54,7 +54,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Search applications often display shortened sentences which must contain certain query terms and must fit within the space constraints of a user interface. This work introduces a new transition-based sentence compression technique developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a subgraph in the dependency parse of a sentence. This computationally efficient approach achieves a \speedup speed up over baseline ILP compression techniques, while better reconstructing gold constrained shortenings. Our fast method is well-suited to search applications, which are hindered by interface lags.
+Search applications often display shortened sentences which must contain certain query terms and must fit within the space constraints of a user interface. This work introduces a new transition-based sentence compression technique developed for such settings. Our method constructs length and lexically constrained compressions in linear time, by growing a subgraph in the dependency parse of a sentence. This efficient approach achieves a \speedup speed up over baseline ILP compression techniques, while better reconstructing gold constrained shortenings. The fast method is well-suited to search applications, which are hindered by interface lags.
 \end{abstract}
 
 
@@ -70,7 +70,7 @@ This study examines the English-language compression problem with such length an
 \label{f:qf}
 \end{figure}
 
-Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing user wait time. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (access to GPUs is a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount. We thus present a new stateful method for query-focused compression designed for such settings. 
+Existing techniques are poorly suited to constrained compression. While methods based on integer linear programming (ILP) can trivially accommodate such length and lexical restrictions \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, these approaches rely on slow third-party solvers to optimize an NP-hard integer linear programming objective, causing user wait time. An alternative LSTM tagging approach \cite{filippova2015sentence} does not allow practitioners to specify length or lexical constraints, and requires an expensive graphics processing unit (GPU) to achieve low runtime latency (access to GPUs is a barrier in fields like social science and journalism). These deficits prevent application of existing compression techniques in search user interfaces \cite{marchionini2006exploratory,hearst2009search}, where length, lexical and latency requirements are paramount. We thus present a new stateful method for query-focused compression.
 
 Our approach is theoretically and empirically faster than ILP-based techniques, and more accurately reconstructs gold standard compressions.
 
@@ -140,7 +140,7 @@ We learn such decisions $y_i \in \{0,1\}$ using a corpus of tuples $(S,Q,b,C_g)$
 
 The model {\textsc{vertex addition}$_{NN}$ broadly follows neural approaches to transition-based parsing (e.g.\ \citet{D14-1082}): we predict $y_i$ using a LSTM classifier with a standard max-pooling architecture \cite{D17-1070}, implemented with a common neural framework \cite{Gardner2017AllenNLP}. Our classifier maintains four vocabulary embeddings matrixes, corresponding to the four disjoint subsets $C \cup \neg C \cup P \cup \{v_i\} = V$. Each LSTM input vector $x_t$ comes from the appropriate embedding for $v_t \in V$, depending on the state of the compression system at timestep $i$. The appendix details network tuning and  optimization.
 
-The model \textsc{vertex addition}$_{LR}$ uses binary logistic regression,\footnote{We implement with Python 3 using scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. We tune the inverse regularization constant to $c=10$ via grid search over powers of ten, to optimize validation set F1.} with features that fall into 3 classes.
+The model \textsc{vertex addition}$_{LR}$ uses binary logistic regression,\footnote{We implement with Python 3 using scikit-learn \cite{Pedregosa:2011:SML:1953048.2078195}. We tune the inverse regularization constant to $c=10$ via grid search over powers of ten, to optimize validation set F1.} with 3 classes of features.
 
 \textbf{Edge features} describe the properties of the edge $(u,v_i)$ between $v_i \in P_i$ and $u \in C_i$. We use the edge-based feature function from \citet{filippova2013overcoming}, described in detail in the appendix. This allows us to compare the performance of a vertex addition method based on local decisions with an ILP method that optimizes a global objective (\S \ref{s:ablated}), using the same feature set.
 
@@ -179,13 +179,13 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \begin{figure}[htb!]
 \centering
 \includegraphics[width=5.5cm]{times.pdf}
-\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. \textsc{Vertex Addition}$_{LR}$ also has lower variance than the \textsc{ilp}. Variation in \textsc{ilp} latency might reflect varying solution strategies from \citet{gurobi}.}
+\caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. The \textsc{ilp} shows greater runtime variance, possibly reflecting varying approaches from \citet{gurobi}.}
 \label{t:times}
 \end{figure}
 
 \section{Conclusion}
 
-We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused compression method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.
+We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.
 
 
 %Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
