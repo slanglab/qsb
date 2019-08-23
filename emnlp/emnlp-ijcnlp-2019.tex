@@ -131,6 +131,21 @@ We compare our system to a baseline \textsc{ilp} method, presented in \citet{fil
 
 To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of \ilptest on the unconstrained compression task, lower than the result {\small (F1 = 84.3)} reported by the original authors. There are some important differences between our reimplementation and original approach (described in detail in the appendix). Since \textsc{vertex addition} requires $Q$ and $b$, we can only compare it to the ILP on the \textit{constrained} (rather than traditional, unconstrained) compression task.
 
+
+\begin{table*}[htb!]
+\centering
+\begin{tabular}{lccc}
+Approach & F1 & SLOR & $^{*}$Latency \\ \hline
+\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
+\textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
+\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} {\tiny  (CPU)} \\ \midrule 
+\textsc{ilp}&{\small 0.852}& {\small 0.756}&{\small 48.2}\\
+\textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 4.1 \\
+\end{tabular}
+\caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
+\label{t:results}
+\end{table*}
+
 \subsection{Models: \textsc{vertex addition}}\label{s:transition}
 
 Vertex addition accepts or rejects some candidate vertex $v_i$ at each timestep $i$. 
@@ -160,26 +175,13 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 
 %We might reimplement our Python 3 code in a more performant language for added gains. 
 
-\begin{table*}[]
-\centering
-\begin{tabular}{lccc}
-Approach & F1 & SLOR & $^{*}$Latency \\ \hline
-\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
-\textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
-\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} {\tiny  (CPU)} \\ \midrule 
-\textsc{ilp}&{\small 0.852}& {\small 0.756}&{\small 48.2}\\
-\textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 4.1 \\
-\end{tabular}
-\caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
-\label{t:results}
-\end{table*}
 
-\begin{figure}[htb!]
+\begin{figure*}[htb!]
 \centering
-\includegraphics[width=5.5cm]{times.pdf}
+\includegraphics[width=10cm]{times.pdf}
 \caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. The \textsc{ilp} shows greater runtime variance, possibly reflecting varying approaches from \citet{gurobi}.}
 \label{t:times}
-\end{figure}
+\end{figure*}
 
 \section{Conclusion}
 
