@@ -28,7 +28,7 @@
 \usepackage{bm}
 \usepackage{amsfonts}
 
-%\aclfinalcopy % Uncomment this line for the final submission
+\aclfinalcopy % Uncomment this line for the final submission
 
 %\setlength\titlebox{5cm}
 % You can expand the titlebox if you need extra space
@@ -42,12 +42,10 @@
 
 \title{Query-focused Sentence Compression in Linear Time}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  {\tt email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  {\tt email@domain} \\}
+\author{Abram Handler {\normalfont and} Brendan O'Connor  \\
+  College of Information and Computer Sciences \\
+  University of Massachusetts Amherst \\ 
+  {\tt \string{ahandler,brenocon\string}@cs.umass.edu} \\}
 
 \date{}
 
@@ -162,9 +160,9 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 
 %We might reimplement our Python 3 code in a more performant language for added gains. 
 
-\begin{table}[]
-\begin{tabular}{lccc}
+\begin{table*}[]
 \centering
+\begin{tabular}{lccc}
 Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
 \textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
@@ -174,7 +172,7 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 \end{tabular}
 \caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
 \label{t:results}
-\end{table}
+\end{table*}
 
 \begin{figure}[htb!]
 \centering
@@ -187,8 +185,11 @@ Approach & F1 & SLOR & $^{*}$Latency \\ \hline
 
 We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.
 
+Because some shortened sentences will modify the meaning of a sentence, in the future, we hope to apply ongoing research into textual entailment \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression} towards better approaches to the compression task.  
 
-%Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
+\section{Acknowledgments}
+
+Thanks to Javier Burroni and Nick Eubank for extensive help with optimizing and measuring performance of Python code. Thanks to Jeffrey Flanigan, Katie Keith and the UMass NLP reading group for suggesting edits and changes which clarified our work. 
 
 % ack => Katie, Javier, Nick Eubank, NLP reading group!
 % Thanks to Jeff Flannigan suggesting plot N. 
