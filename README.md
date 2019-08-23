@@ -25,7 +25,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ##### Some notes
 
-### `Table 2` 
+### Table 2 
     - The script `bottom_up_clean/make_results_table.py` gets the numbers for this table based on two files: 
         - `bottom_up_clean/results.csv`
         - `bottom_up_clean/timer.csv`
@@ -33,9 +33,11 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
     - The neural net uses models/125249540
 
-### `Figure 3`
+### Figure 3
 - The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
 - `R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
 - `Tidyverse version 1.2.1`
 
+### Neural network params
 
+- The params of the network are stored in the AllenNLP config file `models/125249540/config.json`
