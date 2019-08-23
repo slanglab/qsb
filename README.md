@@ -1,5 +1,4 @@
-## Supporting code for our short paper "Query-focused Sentence Compression in Linear Time" (EMNLP, 2019)
-    - Abram Handler and Brendan O'Connor 
+## Supporting code for our short paper "Query-focused Sentence Compression in Linear Time" (EMNLP, 2019), Abram Handler and Brendan O'Connor 
 
 ### Summary
 Extractive [sentence compression](https://www.isi.edu/~marcu/papers/aaai-stat-sum-00.pdf) shortens a source sentence S to a shorter compression C by removing words from S. 
@@ -28,6 +27,10 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 - `snapshots` ILP weights, learned from training. Committed for replicability b/c ILP training takes days
 
 ##### Some notes
+
+### Timing results
+ 
+- `scripts/test_timing_results.sh`
 
 ### Table 2 
     - The script `bottom_up_clean/make_results_table.py` gets the numbers for this table based on two files: 
