@@ -1,3 +1,6 @@
+### Supporting code for our paper "Query-focused Sentence Compression in Linear Time" (EMNLP, 2018)
+    - Abram Handler and Brendan O'Connor 
+
 Extractive [sentence compression](https://www.isi.edu/~marcu/papers/aaai-stat-sum-00.pdf) shortens a source sentence S to a shorter compression C by removing words from S. 
 
 For instance:
