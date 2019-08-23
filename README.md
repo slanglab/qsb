@@ -25,6 +25,11 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ##### Some notes
 
+### `Table 2` 
+    - The script `bottom_up_clean/make_results_table.py` gets the numbers for this table 
+
+
+### `Figure 3`
 - The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
 - `R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
 - `Tidyverse version 1.2.1`
