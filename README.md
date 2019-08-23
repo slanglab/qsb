@@ -22,3 +22,9 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 - `preproc` holds preprocessing code
 - `scripts` runs experiments
 - `snapshots` ILP weights, learned from training. Committed for replicability b/c ILP training takes days
+
+##### Some notes
+
+- The plot 
+`R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
+`Tidyverse version 1.2.1`
