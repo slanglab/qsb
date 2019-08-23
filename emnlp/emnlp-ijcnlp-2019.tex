@@ -28,7 +28,7 @@
 \usepackage{bm}
 \usepackage{amsfonts}
 
-%\aclfinalcopy % Uncomment this line for the final submission
+\aclfinalcopy % Uncomment this line for the final submission
 
 %\setlength\titlebox{5cm}
 % You can expand the titlebox if you need extra space
@@ -42,12 +42,10 @@
 
 \title{Query-focused Sentence Compression in Linear Time}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  {\tt email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  {\tt email@domain} \\}
+\author{Abram Handler {\normalfont and} Brendan O'Connor  \\
+  College of Information and Computer Sciences \\
+  University of Massachusetts Amherst \\ 
+  {\tt \string{ahandler,brenocon\string}@cs.umass.edu} \\}
 
 \date{}
 
@@ -90,7 +88,7 @@ LSTM tagger & linear              & no         \\
 
 Extractive compression shortens a sentence by removing tokens, typically for summarization \cite{Knight2000StatisticsBasedS,clarke2008global,filippova2015sentence,Wang2017CanSH}.\footnote{Some methods compress via generation instead of deletion \cite{rush2015neural,mallinson18}. Our extractive method is intended for practical, interpretable and trustworthy search systems \cite{Chuang2012InterpretationAT}. Users might not trust abstractive summaries \cite{Zhang:2018:MSG:3290265.3274465}, particularly in cases with semantic error.} To our knowledge, this work is the first to consider extractive compression under hard length and lexical constraints.
 
-We compare our \textsc{vertex addition} approach to ILP-based compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, which shorten sentences using an integer linear programming objective. \textsc{ilp} methods can easily accommodate lexical and budget restrictions via additional optimization constraints, but require worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting \cite{clarke2008global} tokens and exponential in $|E|$ when selecting edges \cite{filippova2015sentence}.} 
+We compare our \textsc{vertex addition} approach to ILP-based compression methods \cite{clarke2008global,filippova2013overcoming,Wang2017CanSH}, which shorten sentences using an integer linear programming objective. \textsc{ilp} methods can easily accommodate lexical and budget restrictions via additional optimization constraints, but require worst-case exponential computation.\footnote{ILPs are exponential in $|V|$ when selecting tokens \cite{clarke2008global} and exponential in $|E|$ when selecting edges \cite{filippova2015sentence}.} 
 
 Finally, compression methods based on LSTM taggers \cite{filippova2015sentence} cannot currently enforce lexical or length requirements. Future work might address this limitation by applying and modifying constrained generation techniques \cite{D16-1140,N18-1119,D18-1443}.
 
@@ -133,6 +131,21 @@ We compare our system to a baseline \textsc{ilp} method, presented in \citet{fil
 
 To our knowledge, a public implementation of this method does not exist. We reimplement from scratch using \citet{gurobi}, achieving a test-time, token-level F1 score of \ilptest on the unconstrained compression task, lower than the result {\small (F1 = 84.3)} reported by the original authors. There are some important differences between our reimplementation and original approach (described in detail in the appendix). Since \textsc{vertex addition} requires $Q$ and $b$, we can only compare it to the ILP on the \textit{constrained} (rather than traditional, unconstrained) compression task.
 
+
+\begin{table*}[htb!]
+\centering
+\begin{tabular}{lccc}
+Approach & F1 & SLOR & $^{*}$Latency \\ \hline
+\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
+\textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
+\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} {\tiny  (CPU)} \\ \midrule 
+\textsc{ilp}&{\small 0.852}& {\small 0.756}&{\small 48.2}\\
+\textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 4.1 \\
+\end{tabular}
+\caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
+\label{t:results}
+\end{table*}
+
 \subsection{Models: \textsc{vertex addition}}\label{s:transition}
 
 Vertex addition accepts or rejects some candidate vertex $v_i$ at each timestep $i$. 
@@ -162,33 +175,23 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 
 %We might reimplement our Python 3 code in a more performant language for added gains. 
 
-\begin{table}[]
-\begin{tabular}{lccc}
-\centering
-Approach & F1 & SLOR & $^{*}$Latency \\ \hline
-\textsc{random} {\small (lower bound) }&{\small 0.653}&{\small 0.377}& {\small 0.5} \\
-\textsc{ablated} {\small (edge only) }&{\small 0.827}&{\small 0.669}&{\small 3.8}\\
-\textsc{vertex addition}$_{NN}$& {\small 0.873}& {\small 0.728}& {\small 3,524.4} {\tiny  (CPU)} \\ \midrule 
-\textsc{ilp}&{\small 0.852}& {\small 0.756}&{\small 48.2}\\
-\textsc{vertex addition}$_{LR}$ & \small 0.881 & {\small 0.745}& \small 4.1 \\
-\end{tabular}
-\caption{Test results for constrained compression. $^*$Latency is the geometric mean of observed runtimes (in milliseconds per sentence). \textsc{vertex addition}$_{LR}$ achieves the highest F1, and also runs \exact times faster than the \textsc{ilp}. Differences between all scores for \textsc{vertex addition}$_{LR}$ and \textsc{ilp} are significant {\tiny $(p < .01)$}.}
-\label{t:results}
-\end{table}
 
-\begin{figure}[htb!]
+\begin{figure*}[htb!]
 \centering
-\includegraphics[width=5.5cm]{times.pdf}
+\includegraphics[width=10cm]{times.pdf}
 \caption{Density plot of log transformed latencies for \textsc{Vertex Addition}$_{LR}$ (left) and \textsc{ilp} (right). Theoretical gains (Table \ref{t:algos}) create real speedups. The \textsc{ilp} shows greater runtime variance, possibly reflecting varying approaches from \citet{gurobi}.}
 \label{t:times}
-\end{figure}
+\end{figure*}
 
 \section{Conclusion}
 
 We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.
 
+Because some shortened sentences will modify the meaning of a sentence, in the future, we hope to apply ongoing research into textual entailment \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression} towards better approaches to the compression task.  
 
-%Finally, some shortened sentences will modify the meaning of a sentence. Identifying such cases is a special case of the unsolved textual entailment problem \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression}. In the future, we plan to apply entailment research to the compression task.  
+\section{Acknowledgments}
+
+Thanks to Javier Burroni and Nick Eubank for suggesting ways to optimize and measure performance of Python code. Thanks to Jeffrey Flanigan, Katie Keith and the UMass NLP reading group for helping us clarify our work. 
 
 % ack => Katie, Javier, Nick Eubank, NLP reading group!
 % Thanks to Jeff Flannigan suggesting plot N. 
