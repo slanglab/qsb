@@ -1,0 +1,65 @@
+{
+    "dataset_reader": {
+        "type": "s2_papers"
+    },
+    "iterator": {
+        "type": "bucket",
+        "batch_size": 135,
+        "padding_noise": 0,
+        "sorting_keys": [
+            [
+                "abstract",
+                "num_tokens"
+            ],
+            [
+                "title",
+                "num_tokens"
+            ]
+        ]
+    },
+    "model": {
+        "type": "paper_classifier",
+        "abstract_encoder": {
+            "type": "lstm",
+            "bidirectional": true,
+            "dropout": 0.53108712573741,
+            "hidden_size": 79,
+            "input_size": 315
+        },
+        "classifier_feedforward": {
+            "activations": [
+                "linear"
+            ],
+            "dropout": [
+                0.10300857724548754
+            ],
+            "hidden_dims": [
+                2
+            ],
+            "input_dim": 158,
+            "num_layers": 1
+        },
+        "text_field_embedder": {
+            "token_embedders": {
+                "tokens": {
+                    "type": "embedding",
+                    "embedding_dim": 315,
+                    "trainable": true
+                }
+            }
+        }
+    },
+    "train_data_path": "experiments/training.lstm.jsonl",
+    "validation_data_path": "experiments/validation.lstm.jsonl",
+    "trainer": {
+        "cuda_device": 0,
+        "grad_clipping": 5,
+        "num_epochs": 15,
+        "optimizer": {
+            "type": "adagrad",
+            "lr": 0.025008195660171123,
+            "weight_decay": 1.8831968822566774e-09
+        },
+        "validation_metric": "+accuracy"
+    }
+}
