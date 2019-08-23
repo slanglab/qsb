@@ -25,6 +25,6 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ##### Some notes
 
-- The plot 
-`R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
-`Tidyverse version 1.2.1`
+- The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
+- `R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
+- `Tidyverse version 1.2.1`
