@@ -26,7 +26,9 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 ##### Some notes
 
 ### `Table 2` 
-    - The script `bottom_up_clean/make_results_table.py` gets the numbers for this table 
+    - The script `bottom_up_clean/make_results_table.py` gets the numbers for this table based on two files: 
+        - `bottom_up_clean/results.csv`
+        - `bottom_up_clean/timer.csv`
 
 
 ### `Figure 3`
