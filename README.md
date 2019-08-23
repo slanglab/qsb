@@ -31,7 +31,11 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
         - `bottom_up_clean/timer.csv`
     - Those files are created via the script `scripts/test_results.sh`
 
+    - The neural net uses models/125249540
+
 ### `Figure 3`
 - The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
 - `R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
 - `Tidyverse version 1.2.1`
+
+
