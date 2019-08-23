@@ -29,7 +29,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
     - The script `bottom_up_clean/make_results_table.py` gets the numbers for this table based on two files: 
         - `bottom_up_clean/results.csv`
         - `bottom_up_clean/timer.csv`
-
+    - Those files are created via the script `scripts/test_results.sh`
 
 ### `Figure 3`
 - The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
