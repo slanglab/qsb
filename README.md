@@ -47,3 +47,11 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 - The neural net uses models/125249540
 - The params of the network are stored in the AllenNLP config file `models/125249540/config.json`
+
+### Pickled paths files
+
+The preprocessing scripts (`$fab preproc`) create files of the form preproc/training.paths ect.
+
+Some of these files are too big to commit directly (even zipped) but the split and zipped form are included in the repo
+
+To remake them from the split/zipped versions run `./scripts/unzip_paths.sh`
