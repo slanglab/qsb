@@ -1,4 +1,3 @@
-## Supporting code for our short paper "Query-focused Sentence Compression in Linear Time" (EMNLP, 2019), Abram Handler and Brendan O'Connor 
 
 ### Summary
 Extractive [sentence compression](https://www.isi.edu/~marcu/papers/aaai-stat-sum-00.pdf) shortens a source sentence S to a shorter compression C by removing words from S. 
@@ -44,6 +43,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 - The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
 - `R version 3.4.4 (2018-03-15) -- "Someone to Lean On"`
 - `Tidyverse version 1.2.1`
+- This runs on server 
 
 ### Neural network params
 
