@@ -16,6 +16,7 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[hyperref]{emnlp-ijcnlp-2019}
 \usepackage{times}
+\usepackage{soul}
 \usepackage{latexsym}
 \usepackage{amsmath}
 \newcommand{\speedup}[0]{11x~}
@@ -183,11 +184,21 @@ We also evaluate a \textsc{random} baseline, which accepts each $v_i$ randomly i
 \label{t:times}
 \end{figure*}
 
+\section{Future work: practical compression}
+
+This work presents a new method for fast query-focused sentence compression, motivated by the need for query-biased snippets in search user interfaces \cite{tombros1998advantages,marchionini2006exploratory}. We show how to construct query-focused snippets in linear time, using linguistic information encoded in a sentence's dependency parse. While our technique performs well in simulated experiments, further work is needed before our method can find wide use.
+
+One limitation of our simulated experiments is that they set the length restriction $b$ to be equal to the length of the gold compression $C_g$, and also set the query $Q$ to be a set of nouns from $C_g$. This means that our work assumes that there is always some readable compression $c=C_g$ containing $Q$, with length no greater than $b$, which can be constructed from $s$. 
+
+However, real users and real applications may present $Q$ and $b$ which violate this assumption. For instance, there is no well-formed shortening for the toy sentence ``Kennedy kept running'' which can be constructed when $Q$=``Kennedy'' and $b$=15. While ``Kennedy kept'' and ``Kennedy running'' each formally respect the query constraints, neither is a well-formed sentence. Real applications will need to accommodate this limitation, for instance by backing off to a simpler snippeting method. We look forward to investigating which $(Q,S,b)$ triples can and cannot return well-formed compressions (even from an oracle) in future work.
+
+Our experiments also ignore the interface conventions of search applications, which typically display missing words using an ellipsis. Some well-formed compressions might be bad snippets when displayed in this format. For instance the sentence ``Aristide quickly fled Haiti in September 1991'' can be shortened to the well-formed compression ``Aristide fled in 1991,'' but this compression does not read fluidly when using ellipses to indicate missing words: i.e.\ ``Aristide...fled...Haiti...in...1991.''  Human experiments aimed at enumerating the desirable and undesirable properties of compressions displayed in this snippet format (e.g.\ compressions should minimize number of ellipses?) could help guide user-focused snippet algorithms in future work. 
+
+Finally, our method assumes access to a reliable, dependency parse, and ignores any latency penalties incurred from parsing. Both assumptions are unreasonable. Like other NLP tools, dependency parsers often perform poorly on out of domain text \cite{bamman2017natural} and users looking to quickly investigate a new corpus early in an investigation (e.g.\ a collection of digitized historical reports) might not wish to wait for a parser. Faster approaches based on low-latency part-of-speech tagging offer an exciting possibility for future work. Because some shortened sentences will modify the meaning of a sentence, in the future, we also hope to apply ongoing research into textual entailment \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression} towards better approaches to the compression task.
+
 \section{Conclusion}
 
-We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.
-
-Because some shortened sentences will modify the meaning of a sentence, in the future, we hope to apply ongoing research into textual entailment \cite{snli_bowman,Pavlick2016SoCalledNA,linzencompression} towards better approaches to the compression task.  
+We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.  
 
 \section{Acknowledgments}
 
