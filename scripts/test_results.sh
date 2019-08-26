@@ -28,7 +28,9 @@ python bottom_up_clean/ilp_wrapper.py -do_jsonl preproc/test.jsonl -ilp_snapshot
 # get test set f1 for the vanilla ILP
 python bottom_up_clean/ilp_wrapper.py -test_set_score -ilp_snapshot 5
 
-./scripts/test_timing_results.sh
+
+# this takes a long time and so is commented out
+#./scripts/test_timing_results.sh
 
 # do significance tests
 python code/significance_testing.py -file1 bottom_up_clean/timing/additive_full.jsonl -file2 bottom_up_clean/timing/ilp.jsonl -metric time

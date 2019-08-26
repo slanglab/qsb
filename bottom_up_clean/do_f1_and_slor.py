@@ -5,6 +5,12 @@ import argparse
 import socket
 import numpy as np
 
+
+#This seems to be required to get it running in a new venv. commented out b/c was not included in old venv. some sort of 
+#issues about environment variables
+#import sys
+#sys.path.append("allennlp2/allennlpallennlpasalibraryexample")
+ 
 from tqdm import tqdm
 
 from bottom_up_clean.all import train_clf, runtime_path, get_f1, pick_l2r_connected, has_forest, get_marginal, make_decision_lr, make_decision_random, make_decision_nn
