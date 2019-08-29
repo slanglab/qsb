@@ -32,10 +32,11 @@ python bottom_up_clean/ilp_wrapper.py -test_set_score -ilp_snapshot 5
 # this takes a long time and so is commented out
 #./scripts/test_timing_results.sh
 
-# do significance tests
-python code/significance_testing.py -file1 bottom_up_clean/timing/additive_full.jsonl -file2 bottom_up_clean/timing/ilp.jsonl -metric time
-python code/significance_testing.py -file1 bottom_up_clean/make_decision_lr_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric slor
-python code/significance_testing.py -file1 bottom_up_clean/make_decision_lr_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric f1
 
 # compression rate results
 python bottom_up_clean/cr_results.py
+
+
+# do significance tests
+python code/significance_testing.py -file1 bottom_up_clean/make_decision_lr_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric slor
+python code/significance_testing.py -file1 bottom_up_clean/make_decision_lr_results.jsonl -file2 bottom_up_clean/ilp_results.jsonl -metric f1
