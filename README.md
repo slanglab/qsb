@@ -25,7 +25,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 - `scripts` runs experiments
 - `snapshots` ILP weights, learned from training. Committed for replicability b/c ILP training takes days
 
-##### Some notes
+## Some notes on results in paper
 
 ### Timing results (including Fig 3)
  
