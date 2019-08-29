@@ -52,7 +52,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ### Pickled paths files
 
-The train/test data is packaged as preproc/*.paths files (for oracle path). These files are created by the preprocessing scripts (`$fab preproc`).
+The train/test data is packaged as preproc/*.paths files (for oracle path). These files are created by the preprocessing scripts (`$fab preproc`). These files are actually jsonl but not a priority to rename them. They were once pickled. 
 
 Some of these files are too big to commit directly (even zipped) but split and zipped forms are included in the repo
 
