@@ -50,8 +50,8 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ### Pickled paths files
 
-The preprocessing scripts (`$fab preproc`) create files of the form preproc/training.paths ect.
+The train/test data is packaged as preproc/*.paths files (for oracle path). These files are created by the preprocessing scripts (`$fab preproc`).
 
-Some of these files are too big to commit directly (even zipped) but the split and zipped form are included in the repo
+Some of these files are too big to commit directly (even zipped) but split and zipped forms are included in the repo
 
 To remake them from the split/zipped versions run `./scripts/unzip_paths.sh`
