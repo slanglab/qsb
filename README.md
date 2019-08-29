@@ -21,7 +21,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 - `code` utilities, such as printers, loggers and significance testers
 - `dead_code` old code not in use
 - `ilp2013` F & A implementation
-- `latex` paper & writing
+- `emnlp` paper & writing
 - `klm` some utilties for computing slor
 - `preproc` holds preprocessing code
 - `scripts` runs experiments
