@@ -124,7 +124,7 @@ In order to evaluate different approaches to constrained compression, we require
 To support large-scale automatic evaluation, we reinterpret a standard compression corpus \cite{filippova2013overcoming}
 as a collection of input sentences and constrained compressions. The original dataset contains pairs of sentences $S$ and compressions $C_g$, generated using news headlines. For our experiment, we set $b$ equal to the character length of the gold compression $C_g$. We then sample a small number of nouns\footnote{1 to 3 nouns; cardinality chosen uniformly at random.} from $C_g$ to form a query set $Q$, approximating both the observed number of tokens and observed parts of speech in real-world search \cite{Jansen2000RealLR,Barr2008TheLS}. Sampled $Q$ include reasonable queries like ``police, Syracuse'', ``NHS'' and ``Hughes, manager, QPR''.
 
-By sampling queries and defining budgets in this manner, we create {199,152} training tuples and {9,969} test tuples, each of the form $(S,Q,b,C_g)$. \citet{filippova2013overcoming} define the train/test split. We re-tokenize, parse and tag with CoreNLP v3.8.0 \cite{corenlp}. We reserve 24,999 training tuples as a validation set. 
+By sampling queries and defining budgets in this manner, we create {198,570} training tuples and {9949} test tuples, each of the form $(S,Q,b,C_g)$. \citet{filippova2013overcoming} define the train/test split. We re-tokenize, parse and tag with CoreNLP v3.8.0 \cite{corenlp}. We reserve 25,000 training tuples as a validation set. 
 
 \subsection{Model: \textsc{ilp}}\label{s:ilp}
 
