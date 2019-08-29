@@ -27,16 +27,18 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 
 ##### Some notes
 
-### Timing results
+### Timing results (including Fig 3)
  
 - `scripts/test_timing_results.sh`
+- `scripts/rollup_times.R`
+- `scripts/latencies.R`
 
 ### Table 2
     - The script `make_results_master.ipynb` gets the numbers for this table based on two files: 
         - `bottom_up_clean/results.csv`
         - `bottom_up_clean/all_times_rollup.csv`
-    - This notebook also runs scripts/latencies.R to make figure 3
-    - Those files are created via the script `scripts/test_results.sh`
+    - Note: this notebook also runs scripts/latencies.R to make figure 3
+    - Those results files are created via the script `scripts/test_results.sh`
 
 ### Figure 3
 - The plot `emnlp/times.pdf` comes from `scripts/latencies.R` 
