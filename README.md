@@ -23,6 +23,7 @@ Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/m
 - `ilp2013` F & A implementation
 - `emnlp` paper & writing
 - `klm` some utilties for computing slor
+- `paperzip` has .tex for softconf, for XML proceedings
 - `preproc` holds preprocessing code
 - `scripts` runs experiments
 - `snapshots` ILP weights, learned from training. Committed for replicability b/c ILP training takes days
