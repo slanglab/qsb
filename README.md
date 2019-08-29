@@ -13,7 +13,7 @@ This repo presents our linear-time, query-focused sentence compression technique
 Our method is much faster than [ILP-based methods](https://www.jamesclarke.net/media/papers/clarke-lapata-jair2008.pdf), another class of algorithms that can also perform query-focused compression. We describe our method in our companion paper.
 
 
-##### Repo tour
+### Repo tour
 
 - `bottom_up_clean` code for vertex addition is here
 - `code` utilities, such as printers, loggers and significance testers
