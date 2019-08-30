@@ -1,7 +1,5 @@
 .DS_Store
-emnlp/emnlp-ijcnlp-2019.synctex.gz
 dead_code/old_latex_arvix_version_april_2018/*
-emnlp/emnlp-ijcnlp-2019.pdf
 .vscode/*
 preproc/*
 *arpa*
@@ -40,3 +38,5 @@ dead_code/comp_experiments_f1*
 emnlp/qsr.synctex.gz
 emnlp/qsr.pdf
 emnlp/anthology.bib
+emnlp/emnlp-ijcnlp-2019.synctex.gz
+emnlp/emnlp-ijcnlp-2019.pdf
