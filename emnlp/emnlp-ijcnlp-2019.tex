@@ -102,7 +102,9 @@ We present a new transition-based method for shortening sentences under lexical 
 \textsc{vertex addition} builds a compression by maintaining a state
 $(C_i,P_i)$ where $C_i \subseteq S$ is a set of added candidates, $P_i  \subseteq S$ is a priority queue of vertexes, and $i$ indexes a timestep during compression. Figure \ref{f:walkthru} shows a step-by-step example. 
 
-During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P_i)$ from the head of $P_i$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P_i$ get higher priority than non-neighbors; we break ties in left-to-right order, by sentence position). If we accept $v_i$, then $C_{i + 1} \gets C_i \cup v_i$; if not, $C_{i + 1} \gets C_i$. We discuss acceptance decisions in detail in \S\ref{s:transition}. We continue adding vertexes to $C$ until either $P_i$ is empty or $C_i$ is $b$ characters long.\footnote{We linearize $C$ by left-to-right vertex position in $S$, common for compression in English \cite{filippova2013overcoming}.} The appendix includes a formal algorithm. 
+During initialization, we set $C_0 \gets Q$ and $P_0 \gets S \setminus Q$. Then, at each timestep, we pop some candidate $v_i =h(P_i)$ from the head of $P_i$ and evaluate $v_i$ for inclusion in $C_i$. (Neighbors of $C_i$ in $P_i$ get higher priority than non-neighbors; we break ties in left-to-right order, by sentence position). If we accept $v_i$, then $C_{i + 1} \gets C_i \cup v_i$; if not, $C_{i + 1} \gets C_i$. 
+(Acceptance decisions are detailed in \S\ref{s:transition}.) % BTO aug30: it was confusing to use ``we'' for both `we'=algorithm and `we'=writer
+We continue adding vertexes to $C$ until either $P_i$ is empty or $C_i$ is $b$ characters long.\footnote{We linearize $C$ by left-to-right vertex position in $S$, common for compression in English \cite{filippova2013overcoming}.} The appendix includes a formal algorithm. 
 
 \textsc{vertex addition} is linear in the token length of $S$ because we pop and evaluate some vertex from $P_i$ at each timestep, after $P_0  \gets S \setminus Q$. Additionally, because (1) we never accept $v_i$ if the length of $C_i \cup v_i$ is more than $b$, and (2) we set $C_0 \gets Q$, our method respects $Q$ and $b$.
 
@@ -200,9 +202,11 @@ Finally, some shortened sentences will modify the meaning of a sentence, but we 
 
 We introduce a query-focused \textsc{vertex addition}$_{LR}$ method for search user interfaces, with much lower theoretical complexity (and empirical runtimes) than baseline techniques. In search applications, such gains are non-trivial: real users are measurably hindered by interface lags \cite{Nielsen,Liu2014TheEO}. We hope that our fast, query-focused method better enables snippet creation at the ``pace of human thought'' \cite{heerschei}.  
 
-\section{Acknowledgments}
+\section*{Acknowledgments}
 
-Thanks to Javier Burroni and Nick Eubank for suggesting ways to optimize and measure performance of Python code. Thanks to Jeffrey Flanigan, Katie Keith and the UMass NLP reading group for helping us clarify our work. 
+Thanks to Javier Burroni and Nick Eubank for suggesting ways to optimize and measure performance of Python code. Thanks to Jeffrey Flanigan, Katie Keith and the UMass NLP reading group for feedback.
+%helping us clarify our work. 
+This work was partially supported by IIS-1814955.
 
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
