@@ -31,6 +31,16 @@
 
 \aclfinalcopy % Uncomment this line for the final submission
 
+
+% for emnlp
+\newcommand{\emnlponly}[1]{#1}
+\newcommand{\hideforemnlp}[1]{}
+
+% for arxiv
+%\newcommand{\emnlponly}[1]{}
+%\newcommand{\hideforemnlp}[1]{#1}
+
+
 %\setlength\titlebox{5cm}
 % You can expand the titlebox if you need extra space
 % to show all the authors. Please do not make the titlebox
@@ -208,10 +218,18 @@ Thanks to Javier Burroni and Nick Eubank for suggesting ways to optimize and mea
 %helping us clarify our work. 
 This work was partially supported by IIS-1814955.
 
+\emnlponly{
+\section*{Appendix}
+The appendix is available with the arXiv version of this paper:
+\url{https://arxiv.org/abs/1904.09051}
+}
+
 \bibliography{abe}
 \bibliographystyle{acl_natbib}
 
+\hideforemnlp{
 \appendix
 \include{appendix_content}
+}
 
 \end{document}
