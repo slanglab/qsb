@@ -1,5 +1,6 @@
 ## Code and data for Linear-time Sentence Compression under Lexical and Length Constraints (EMNLP '19)
 
+![](gif/b.gif)
 
 ### Summary
 Extractive [sentence compression](https://www.isi.edu/~marcu/papers/aaai-stat-sum-00.pdf) shortens a source sentence S to a shorter compression C by removing words from S. 
